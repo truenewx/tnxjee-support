@@ -3,7 +3,7 @@ package org.truenewx.tnxjeex.log.model;
 import java.util.List;
 import java.util.Map;
 
-import org.truenewx.tnxjee.model.ValueModel;
+import org.truenewx.tnxjee.model.core.ValueModel;
 
 /**
  * 操作
