@@ -3,7 +3,6 @@ package org.truenewx.tnxjeex.unstructured.service.aliyun;
 import org.apache.commons.lang3.StringUtils;
 
 import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClient;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.profile.DefaultProfile;
@@ -83,7 +82,7 @@ public class AliyunAccountProvider implements AliyunAccount {
     @Override
     public OSS getOssClient() {
         if (this.oss == null) {
-            this.oss = new OSSClient(this.ossEndpoint, this.adminAccessKeyId,
+            this.oss = AliyunOssUtil.buildOss(this.ossEndpoint, this.adminAccessKeyId,
                     this.adminAccessKeySecret);
         }
         return this.oss;

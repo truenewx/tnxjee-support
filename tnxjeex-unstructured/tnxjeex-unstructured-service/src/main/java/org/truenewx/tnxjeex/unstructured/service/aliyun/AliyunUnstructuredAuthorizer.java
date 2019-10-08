@@ -9,7 +9,6 @@ import org.truenewx.tnxjeex.unstructured.service.UnstructuredAuthorizer;
 import org.truenewx.tnxjeex.unstructured.service.model.UnstructuredProvider;
 
 import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.ObjectAcl;
@@ -89,7 +88,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                 Credentials credentials = this.readStsRoleAssumer.assumeRole(userKey,
                         policyDocument);
                 if (credentials != null) {
-                    OSS oss = new OSSClient(this.account.getOssEndpoint(),
+                    OSS oss = AliyunOssUtil.buildOss(this.account.getOssEndpoint(),
                             credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
                             credentials.getSecurityToken());
                     GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket,
