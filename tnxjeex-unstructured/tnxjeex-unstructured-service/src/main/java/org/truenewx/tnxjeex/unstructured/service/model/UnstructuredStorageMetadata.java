@@ -13,8 +13,7 @@ public class UnstructuredStorageMetadata {
     private long size;
     private long lastModifiedTime;
 
-    public UnstructuredStorageMetadata(final String filename, final long size,
-            final long lastModifiedTime) {
+    public UnstructuredStorageMetadata(String filename, long size, long lastModifiedTime) {
         this.filename = filename;
         this.size = size;
         this.lastModifiedTime = lastModifiedTime;
@@ -24,7 +23,7 @@ public class UnstructuredStorageMetadata {
         return this.filename;
     }
 
-    public void setFilename(final String filename) {
+    public void setFilename(String filename) {
         this.filename = filename;
     }
 
@@ -32,7 +31,7 @@ public class UnstructuredStorageMetadata {
         return this.size;
     }
 
-    public void setSize(final long size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
@@ -40,7 +39,7 @@ public class UnstructuredStorageMetadata {
         return this.lastModifiedTime;
     }
 
-    public void setLastModifiedTime(final long lastModifiedTime) {
+    public void setLastModifiedTime(long lastModifiedTime) {
         this.lastModifiedTime = lastModifiedTime;
     }
 
