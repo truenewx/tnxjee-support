@@ -98,11 +98,4 @@ public class AliyunAccountProvider implements AliyunAccount {
         return this.acsClient;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        if (this.oss != null) {
-            this.oss.shutdown();
-        }
-    }
-
 }
