@@ -1,6 +1,6 @@
 package org.truenewx.tnxjeex.unstructured.service.model;
 
-import org.truenewx.tnxjee.core.annotation.Caption;
+import org.truenewx.tnxjee.core.caption.Caption;
 
 /**
  * 非结构化存储服务提供商
