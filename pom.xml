@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>tnxjeex-log</module>
-        <module>tnxjeex-unstructured</module>
+        <module>tnxjeex-fss</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -26,8 +26,8 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.truenewx.tnxjeex.unstructured</groupId>
-                <artifactId>tnxjeex-unstructured-service</artifactId>
+                <groupId>org.truenewx.tnxjeex.fss</groupId>
+                <artifactId>tnxjeex-fss-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
