@@ -30,6 +30,16 @@
                 <artifactId>tnxjeex-fss-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.fss</groupId>
+                <artifactId>tnxjeex-fss-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <version>1.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

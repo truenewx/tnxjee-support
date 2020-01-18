@@ -12,5 +12,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>tnxjeex-fss-service</module>
+        <module>tnxjeex-fss-web</module>
     </modules>
 </project>
