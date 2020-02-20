@@ -82,6 +82,9 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
                 // 以双斜杠开头，表示采用当前上下文的相同协议
                 StringBuffer url = new StringBuffer("//").append(getReadHost(bucket))
                         .append(Strings.SLASH).append(path);
+                if (parameterString.length() > 0) {
+                    url.append(Strings.QUESTION).append(parameterString);
+                }
                 return url.toString();
             } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
                 String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
