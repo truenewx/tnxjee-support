@@ -10,8 +10,9 @@
     <artifactId>tnxjeex</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>tnxjeex-log</module>
         <module>tnxjeex-fss</module>
+        <module>tnxjeex-log</module>
+        <module>tnxjeex-seata</module>
     </modules>
     <dependencyManagement>
         <dependencies>
