@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>org.truenewx.tnxjee</groupId>
-            <artifactId>tnxjee-web-controller</artifactId>
+            <artifactId>tnxjee-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.truenewx.tnxjeex.fss</groupId>
