@@ -1,16 +1,6 @@
 package org.truenewx.tnxjeex.fss.web.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.aliyun.oss.internal.Mimetypes;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -18,30 +8,32 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.util.WebControllerUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 import org.truenewx.tnxjeex.fss.web.model.UploadResult;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
-import com.aliyun.oss.internal.Mimetypes;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 非结构化存储授权控制器模板
  *
  * @author jianglei
- *
  */
 public abstract class FssControllerTemplate<T extends Enum<T>, U> implements FssReadUrlResolver {
 
@@ -214,7 +206,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
      * @return 存储桶和路径所在的URL片段
      */
     protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {
-        String url = WebControllerUtil.getRelativeRequestUrl(request);
+        String url = WebUtil.getRelativeRequestUrl(request);
         try {
             url = URLDecoder.decode(url, Strings.ENCODING_UTF8);
         } catch (UnsupportedEncodingException e) {
