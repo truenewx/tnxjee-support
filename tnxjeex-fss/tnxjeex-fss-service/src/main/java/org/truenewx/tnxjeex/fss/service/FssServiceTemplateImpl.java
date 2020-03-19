@@ -18,7 +18,7 @@ import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.model.spec.user.UserSpecific;
-import org.truenewx.tnxjee.service.api.exception.BusinessException;
+import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssStorageMetadata;

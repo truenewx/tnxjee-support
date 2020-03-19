@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.truenewx.tnxjee.service.api.Service;
+import org.truenewx.tnxjee.service.Service;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
