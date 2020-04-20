@@ -1,5 +1,6 @@
 package org.truenewx.tnxjeex.fss.service;
 
+import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
 /**
@@ -27,11 +28,11 @@ public interface FssAuthorizer {
     /**
      * 获取指定资源读取URL
      *
-     * @param userKey 用户唯一标识
-     * @param bucket  存储桶名称
-     * @param path    资源路径
+     * @param userIdentity 用户标识
+     * @param bucket       存储桶名称
+     * @param path         资源路径
      * @return 资源读取URL
      */
-    String getReadUrl(String userKey, String bucket, String path);
+    String getReadUrl(UserIdentity userIdentity, String bucket, String path);
 
 }

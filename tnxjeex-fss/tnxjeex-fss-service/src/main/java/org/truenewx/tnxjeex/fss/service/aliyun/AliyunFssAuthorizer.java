@@ -5,6 +5,7 @@ import java.util.Date;
 import org.slf4j.LoggerFactory;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.DateUtil;
+import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjeex.fss.service.FssAuthorizer;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
@@ -69,7 +70,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
     }
 
     @Override
-    public String getReadUrl(String userKey, String bucket, String path) {
+    public String getReadUrl(UserIdentity userIdentity, String bucket, String path) {
         // 拆分请求参数，确保路径不带参数
         int index = path.indexOf(Strings.QUESTION);
         String parameterString = Strings.EMPTY;
@@ -88,7 +89,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
                 return url.toString();
             } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
                 String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
-                Credentials credentials = this.readStsRoleAssumer.assumeRole(userKey,
+                Credentials credentials = this.readStsRoleAssumer.assumeRole(userIdentity.toString(),
                         policyDocument);
                 if (credentials != null) {
                     OSS oss = AliyunOssUtil.buildOss(this.account.getOssEndpoint(),

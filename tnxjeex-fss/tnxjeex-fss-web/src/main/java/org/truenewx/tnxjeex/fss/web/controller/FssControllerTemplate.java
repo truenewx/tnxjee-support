@@ -1,6 +1,16 @@
 package org.truenewx.tnxjeex.fss.web.controller;
 
-import com.aliyun.oss.internal.Mimetypes;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -10,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
 import org.springframework.web.bind.annotation.*;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.core.util.JsonUtil;
+import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.util.WebUtil;
@@ -20,42 +30,36 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 import org.truenewx.tnxjeex.fss.web.model.UploadResult;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
+import com.aliyun.oss.internal.Mimetypes;
 
 /**
- * 非结构化存储授权控制器模板
+ * 文件存储控制器模板
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<T extends Enum<T>, U> implements FssReadUrlResolver {
+public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity>
+        implements FssReadUrlResolver {
 
     @Autowired
-    private FssServiceTemplate<T, U> service;
+    private FssServiceTemplate<T, I> service;
     @Autowired
     private PlaceholderResolver placeholderResolver;
 
     /**
-     * 获取在当前方针下，当前用户能上传指定授权类型的文件的最大容量，单位：B<br/>
-     * 注意：因模板方法中无法确定授权枚举类型，故需要子类覆写该方法，由于覆写方法不能继承注解，故同时需要使用{@link RpcMethod}注解进行标注
+     * 获取指定用户上传指定业务类型的文件上传限制条件
      *
-     * @param authorizeType 授权类型
-     * @return 当前用户能上传指定授权类型的文件的最大容量
+     * @param type 业务类型
+     * @return 指定用户上传指定业务类型的文件上传限制条件
      */
-    public FssUploadLimit getUploadLimit(T authorizeType) {
-        return this.service.getUploadLimit(authorizeType, getUser());
+    @GetMapping("/upload-limit/{type}")
+    @ResponseBody
+    public FssUploadLimit getUploadLimit(T type) {
+        return this.service.getUploadLimit(type, getUserIdentity());
     }
 
     // 跨域上传支持
-    @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.OPTIONS)
-    public String upload(@PathVariable("authorizeType") T authorizeType, HttpServletResponse response) {
+    @RequestMapping(value = "/upload/{type}", method = RequestMethod.OPTIONS)
+    public String upload(@PathVariable("type") T type, HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
         response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
@@ -63,17 +67,18 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
         return null;
     }
 
-    @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.POST)
+    @PostMapping("/upload/{type}")
     @ResponseBody
-    public String upload(@PathVariable("authorizeType") T authorizeType, HttpServletRequest request,
+    public List<UploadResult> upload(@PathVariable("type") T type, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        return upload(authorizeType, null, request, response);
+        return upload(type, null, request, response);
     }
 
-    @RequestMapping(value = "/upload/{authorizeType}/{token}", method = RequestMethod.POST)
+    @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
-    public String upload(@PathVariable("authorizeType") T authorizeType, @PathVariable("token") String token,
-            HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public List<UploadResult> upload(@PathVariable("type") T type,
+            @PathVariable("resource") String resource, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
         List<UploadResult> results = new ArrayList<>();
         FileItemFactory fileItemFactory = new DiskFileItemFactory();
         ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
@@ -84,12 +89,12 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
                 String filename = fileItem.getName();
                 InputStream in = fileItem.getInputStream();
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
-                U user = getUser();
-                String storageUrl = this.service.write(authorizeType, token, user, filename, in);
+                I user = getUserIdentity();
+                String storageUrl = this.service.write(type, resource, user, filename, in);
                 in.close();
 
                 UploadResult result;
-                boolean noReadUrl = Boolean.valueOf(request.getParameter("noReadUrl"));
+                boolean noReadUrl = Boolean.parseBoolean(request.getParameter("noReadUrl"));
                 if (!noReadUrl) { // 指定不需要返回读取地址，则不需要生成读取地址
                     String readUrl = this.service.getReadUrl(user, storageUrl, false);
                     readUrl = getFullReadUrl(readUrl);
@@ -104,18 +109,17 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
             }
         }
         // 跨域上传支持
-        response.setHeader("Access-Control-Allow-Credentials", "false");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
         response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
-        response.setHeader("Content-Type", "text/plain;charset=utf-8");
-        return JsonUtil.toJson(results);
+        return results;
     }
 
     @Override
     public String getReadUrl(String storageUrl, boolean thumbnail) {
         if (StringUtils.isNotBlank(storageUrl)) {
-            String readUrl = this.service.getReadUrl(getUser(), storageUrl, thumbnail);
+            String readUrl = this.service.getReadUrl(getUserIdentity(), storageUrl, thumbnail);
             return getFullReadUrl(readUrl);
         }
         return null;
@@ -161,12 +165,13 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
      * @param storageUrls 内部存储URL集
      * @return 资源读取元信息集
      */
-    @GetMapping(value = "/read-metadatas")
+    @GetMapping("/read-metadatas")
     @ConfigAnonymous // 默认匿名可获取，用户读取权限控制由各方针决定
+    @ResponseBody
     public FssReadMetadata[] getReadMetadatas(@RequestParam("storageUrls") String[] storageUrls) {
         FssReadMetadata[] metadatas = new FssReadMetadata[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
-            metadatas[i] = this.service.getReadMetadata(getUser(), storageUrls[i]);
+            metadatas[i] = this.service.getReadMetadata(getUserIdentity(), storageUrls[i]);
             if (metadatas[i] != null) {
                 String readUrl = metadatas[i].getReadUrl();
                 readUrl = getFullReadUrl(readUrl);
@@ -176,16 +181,17 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
         return metadatas;
     }
 
-    @RequestMapping(value = "/dl/**", method = RequestMethod.GET)
-    @ConfigAnonymous // 默认匿名可下载，用户读取权限控制由各方针决定
-    public String download(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @GetMapping("/dl/**")
+    @ConfigAnonymous // 默认匿名可下载，用户读取权限控制由各策略决定
+    public String download(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         String url = getBucketAndPathFragmentUrl(request);
         int index = url.indexOf(Strings.SLASH);
         String bucket = url.substring(0, index);
         String path = url.substring(index + 1);
 
         long modifiedSince = request.getDateHeader("If-Modified-Since");
-        U user = getUser();
+        I user = getUserIdentity();
         long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);
         response.setDateHeader("Last-Modified", modifiedTime);
         response.setContentType(Mimetypes.getInstance().getMimetype(path));
@@ -207,15 +213,11 @@ public abstract class FssControllerTemplate<T extends Enum<T>, U> implements Fss
      */
     protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {
         String url = WebUtil.getRelativeRequestUrl(request);
-        try {
-            url = URLDecoder.decode(url, Strings.ENCODING_UTF8);
-        } catch (UnsupportedEncodingException e) {
-            // 可以保证字符集不会有错
-        }
+        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
         int index = url.indexOf("/dl/");
         return url.substring(index + 4); // 通配符部分
     }
 
-    protected abstract U getUser();
+    protected abstract I getUserIdentity();
 
 }
