@@ -17,7 +17,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.bind.annotation.*;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
@@ -27,6 +27,7 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
+import org.truenewx.tnxjeex.fss.web.config.FssWebProperties;
 import org.truenewx.tnxjeex.fss.web.model.UploadResult;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
@@ -37,13 +38,14 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
+@EnableConfigurationProperties(FssWebProperties.class)
 public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity>
         implements FssReadUrlResolver {
 
-    @Autowired
+    @Autowired(required = false)
     private FssServiceTemplate<T, I> service;
-    @Autowired
-    private PlaceholderResolver placeholderResolver;
+    @Autowired(required = false)
+    private FssWebProperties webProperties;
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -134,7 +136,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                 readUrl = contextPath + readUrl;
             }
             // 再加上主机地址
-            String host = getHost();
+            String host = this.webProperties.getHost();
             if (host != null) {
                 String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
                 // 如果配置的主机地址以//开头，说明允许各种访问协议，此时需去掉请求地址中的协议部分再进行比较
@@ -149,14 +151,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
             }
         }
         return readUrl;
-    }
-
-    protected String getHost() {
-        return this.placeholderResolver.resolvePlaceholder(getHostPlaceholderKey());
-    }
-
-    protected String getHostPlaceholderKey() {
-        return "context.host.unstructured";
     }
 
     /**
