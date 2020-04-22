@@ -11,15 +11,13 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
@@ -27,8 +25,7 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
-import org.truenewx.tnxjeex.fss.web.config.FssWebProperties;
-import org.truenewx.tnxjeex.fss.web.model.UploadResult;
+import org.truenewx.tnxjeex.fss.web.model.FssUploadResult;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
 import com.aliyun.oss.internal.Mimetypes;
@@ -38,15 +35,14 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-@EnableConfigurationProperties(FssWebProperties.class)
 @ConfigAnonymous // 匿名即可访问，具体的权限控制由各访问策略决定
 public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity>
         implements FssReadUrlResolver {
 
     @Autowired(required = false)
     private FssServiceTemplate<T, I> service;
-    @Autowired(required = false)
-    private FssWebProperties webProperties;
+    @Autowired
+    private CookieSerializer cookieSerializer;
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -62,44 +58,49 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @PostMapping("/upload/{type}")
     @ResponseBody
-    public List<UploadResult> upload(@PathVariable("type") T type, HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    public List<FssUploadResult> upload(@PathVariable("type") T type,
+            MultipartHttpServletRequest request, HttpServletResponse response) {
         return upload(type, null, request, response);
     }
 
     @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
-    public List<UploadResult> upload(@PathVariable("type") T type,
-            @PathVariable("resource") String resource, HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        List<UploadResult> results = new ArrayList<>();
-        FileItemFactory fileItemFactory = new DiskFileItemFactory();
-        ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
-        servletFileUpload.setHeaderEncoding(Strings.ENCODING_UTF8);
-        List<FileItem> fileItems = servletFileUpload.parseRequest(request);
-        for (FileItem fileItem : fileItems) {
-            if (!fileItem.isFormField()) {
-                String filename = fileItem.getName();
-                InputStream in = fileItem.getInputStream();
+    public List<FssUploadResult> upload(@PathVariable("type") T type,
+            @PathVariable("resource") String resource, MultipartHttpServletRequest request,
+            HttpServletResponse response) {
+        List<FssUploadResult> results = new ArrayList<>();
+        request.getFileMap().values().forEach(file -> {
+            try {
+                String filename = file.getOriginalFilename();
+                InputStream in = file.getInputStream();
+
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
-                I user = getUserIdentity();
-                String storageUrl = this.service.write(type, resource, user, filename, in);
+                I userIdentity = getUserIdentity();
+                String storageUrl = this.service.write(type, resource, userIdentity, filename, in);
                 in.close();
 
-                UploadResult result;
+                FssUploadResult result;
                 boolean noReadUrl = Boolean.parseBoolean(request.getParameter("noReadUrl"));
-                if (!noReadUrl) { // 指定不需要返回读取地址，则不需要生成读取地址
-                    String readUrl = this.service.getReadUrl(user, storageUrl, false);
+                if (noReadUrl) { // 指定不需要返回读取地址，则不需要生成读取地址
+                    result = new FssUploadResult(filename, storageUrl, null, null);
+                } else {
+                    String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
                     readUrl = getFullReadUrl(readUrl);
                     // 缩略读取地址附加的缩略参数对最终URL可能产生影响，故需要重新生成，而不能在读取URL上简单附加缩略参数
-                    String thumbnailReadUrl = this.service.getReadUrl(user, storageUrl, true);
+                    String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl,
+                            true);
                     thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new UploadResult(filename, storageUrl, readUrl, thumbnailReadUrl);
-                } else {
-                    result = new UploadResult(filename, storageUrl, null, null);
+                    result = new FssUploadResult(filename, storageUrl, readUrl, thumbnailReadUrl);
                 }
                 results.add(result);
+            } catch (IOException e) {
+                LogUtil.error(getClass(), e);
             }
+        });
+        // TODO 抽取到过滤器中
+        List<String> sessionIds = this.cookieSerializer.readCookieValues(request);
+        if (sessionIds.size() > 0) {
+            this.cookieSerializer.writeCookieValue(new CookieSerializer.CookieValue(request, response, sessionIds.get(0)));
         }
         return results;
     }
@@ -114,29 +115,30 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     }
 
     private String getFullReadUrl(String readUrl) {
-        // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需考虑添加主机地址和上下文根
-        if (readUrl != null && readUrl.length() > 1 && readUrl.startsWith(Strings.SLASH) && readUrl.charAt(1) != '/') {
-            // 先加上上下文根路径
+        // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需考虑添加下载路径前缀、上下文根和主机地址
+        if (readUrl != null && readUrl.startsWith(Strings.SLASH) && !readUrl.startsWith("//")) {
+            // 加上下载路径前缀
+            readUrl = getDownloadUrlPrefix() + readUrl;
+            // 加上上下文根路径
             String contextPath = SpringWebContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 readUrl = contextPath + readUrl;
             }
-            // 再加上主机地址
-            String host = this.webProperties.getHost();
-            if (host != null) {
-                String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
-                // 如果配置的主机地址以//开头，说明允许各种访问协议，此时需去掉请求地址中的协议部分再进行比较
-                if (host.startsWith("//")) {
-                    int index = requestUrl.indexOf("://");
-                    requestUrl = requestUrl.substring(index + 1); // 让请求地址也以//开头
-                }
-                // 当前请求地址与非结构化存储的外部读取主机地址不一致，则需要将主机地址加入读取地址中
-                if (!requestUrl.startsWith(host)) {
-                    readUrl = host + readUrl;
-                }
-            }
+            // 加上主机地址
+            String host = WebUtil.getHost(SpringWebContext.getRequest());
+            readUrl = "//" + host + readUrl;
         }
         return readUrl;
+    }
+
+    /**
+     * 获取下载路径前缀<br/>
+     * 子类如果覆写，必须与download()方法的路径前缀相同
+     *
+     * @return 下载路径前缀
+     */
+    protected String getDownloadUrlPrefix() {
+        return "/dl";
     }
 
     /**

@@ -5,14 +5,15 @@ package org.truenewx.tnxjeex.fss.web.model;
  *
  * @author jianglei
  */
-public class UploadResult {
+public class FssUploadResult {
 
     private String filename;
     private String storageUrl;
     private String readUrl;
     private String thumbnailReadUrl;
 
-    public UploadResult(String filename, String storageUrl, String readUrl, String thumbnailReadUrl) {
+    public FssUploadResult(String filename, String storageUrl, String readUrl,
+            String thumbnailReadUrl) {
         this.filename = filename;
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;

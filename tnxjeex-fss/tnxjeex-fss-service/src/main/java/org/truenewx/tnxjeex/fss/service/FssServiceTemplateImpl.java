@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
+import org.truenewx.tnxjee.core.util.ArrayUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
@@ -97,7 +98,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
         }
 
         String bucket = strategy.getBucket();
-        // 如果方针指定需要本地存储，则进行本地存储；
+        // 如果访问策略指定需要本地存储，则进行本地存储；
         // 但如果此时服务提供商是自有，则为了避免重复存储，跳过本地存储
         if (strategy.isStoreLocally() && provider != FssProvider.OWN) {
             this.localAccessor.write(bucket, path, filename, in);
@@ -120,12 +121,12 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
         String[] extensions = uploadLimit.getExtensions();
         if (ArrayUtils.isNotEmpty(extensions)) { // 上传限制中没有设置扩展名，则不限定扩展名
             if (uploadLimit.isExtensionsRejected()) { // 拒绝扩展名模式
-                if (ArrayUtils.contains(extensions, extension)) {
+                if (ArrayUtil.containsIgnoreCase(extensions, extension)) {
                     throw new BusinessException(FssExceptionCodes.UNSUPPORTED_EXTENSION,
                             StringUtils.join(extensions, Strings.COMMA), filename);
                 }
             } else { // 允许扩展名模式
-                if (!ArrayUtils.contains(extensions, extension)) {
+                if (!ArrayUtil.containsIgnoreCase(extensions, extension)) {
                     throw new BusinessException(FssExceptionCodes.ONLY_SUPPORTED_EXTENSION,
                             StringUtils.join(extensions, Strings.COMMA), filename);
                 }
@@ -168,9 +169,9 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
             String bucket = url.getBucket();
             String path = standardizePath(url.getPath());
             FssAccessStrategy<T, I> strategy = validateUserRead(userIdentity, bucket, path);
-            // 如果方针要求读取地址为本地地址，则使用自有提供商
+            // 如果访问策略要求读取地址为本地地址，则使用自有提供商
             FssProvider provider = strategy.isReadLocally() ? FssProvider.OWN
-                    : url.getProvider(); // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
+                    : url.getProvider(); // 使用内部协议确定的提供商而不是访问策略下现有的提供商，以免访问策略的历史提供商有变化
             FssAuthorizer authorizer = this.authorizers.get(provider);
             if (thumbnail) {
                 path = appendThumbnailParameters(strategy, path);
@@ -205,18 +206,16 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
         return path;
     }
 
-    private FssAccessStrategy<T, I> validateUserRead(I user, String bucket, String path) {
+    private FssAccessStrategy<T, I> validateUserRead(I userIdentity, String bucket, String path) {
         // 存储桶相同，且用户对指定路径具有读权限，则匹配
-        // 这要求方针具有唯一的存储桶，或者与其它方针的存储桶相同时，下级存放路径不同
-        FssAccessStrategy<T, I> strategy = this.strategies.values().stream()
-                .filter(p -> p.getBucket().equals(bucket) && p.isReadable(user, path)).findFirst()
-                .orElse(null);
-        if (strategy == null) {
-            // 如果没有找到匹配的方针，则说明没有读权限
-            String url = Strings.SLASH + bucket + path;
-            throw new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, url);
-        }
-        return strategy;
+        // 这要求访问策略具有唯一的存储桶，或者与其它访问策略的存储桶相同时，下级存放路径不同
+        return this.strategies.values().stream()
+                .filter(s -> s.getBucket().equals(bucket) && s.isReadable(userIdentity, path)).findFirst()
+                .orElseThrow(() -> {
+                    // 如果没有找到匹配的访问策略，则说明没有读权限
+                    String url = Strings.SLASH + bucket + path;
+                    return new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, url);
+                });
     }
 
     @Override
