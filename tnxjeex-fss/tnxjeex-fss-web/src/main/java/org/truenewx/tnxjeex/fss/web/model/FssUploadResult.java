@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.fss.web.model;
 
+import org.truenewx.tnxjee.core.util.StringUtil;
+
 /**
  * 上传结果
  *
@@ -7,6 +9,7 @@ package org.truenewx.tnxjeex.fss.web.model;
  */
 public class FssUploadResult {
 
+    private String id;
     private String filename;
     private String storageUrl;
     private String readUrl;
@@ -14,10 +17,15 @@ public class FssUploadResult {
 
     public FssUploadResult(String filename, String storageUrl, String readUrl,
             String thumbnailReadUrl) {
+        this.id = StringUtil.uuid32();
         this.filename = filename;
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;
         this.thumbnailReadUrl = thumbnailReadUrl;
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     public String getFilename() {
