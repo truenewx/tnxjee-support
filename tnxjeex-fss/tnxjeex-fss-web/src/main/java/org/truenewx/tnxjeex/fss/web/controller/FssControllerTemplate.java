@@ -39,6 +39,7 @@ import com.aliyun.oss.internal.Mimetypes;
  * @author jianglei
  */
 @EnableConfigurationProperties(FssWebProperties.class)
+@ConfigAnonymous // 匿名即可访问，具体的权限控制由各访问策略决定
 public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity>
         implements FssReadUrlResolver {
 
@@ -55,18 +56,8 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
      */
     @GetMapping("/upload-limit/{type}")
     @ResponseBody
-    public FssUploadLimit getUploadLimit(T type) {
+    public FssUploadLimit getUploadLimit(@PathVariable("type") T type) {
         return this.service.getUploadLimit(type, getUserIdentity());
-    }
-
-    // 跨域上传支持
-    @RequestMapping(value = "/upload/{type}", method = RequestMethod.OPTIONS)
-    public String upload(@PathVariable("type") T type, HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
-        response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
-        response.setHeader("Access-Control-Max-Age", "30");
-        return null;
     }
 
     @PostMapping("/upload/{type}")
@@ -110,11 +101,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                 results.add(result);
             }
         }
-        // 跨域上传支持
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
-        response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
         return results;
     }
 
@@ -160,7 +146,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
      * @return 资源读取元信息集
      */
     @GetMapping("/read-metadatas")
-    @ConfigAnonymous // 默认匿名可获取，用户读取权限控制由各方针决定
     @ResponseBody
     public FssReadMetadata[] getReadMetadatas(@RequestParam("storageUrls") String[] storageUrls) {
         FssReadMetadata[] metadatas = new FssReadMetadata[storageUrls.length];
@@ -176,7 +161,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     }
 
     @GetMapping("/dl/**")
-    @ConfigAnonymous // 默认匿名可下载，用户读取权限控制由各策略决定
     public String download(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String url = getBucketAndPathFragmentUrl(request);
