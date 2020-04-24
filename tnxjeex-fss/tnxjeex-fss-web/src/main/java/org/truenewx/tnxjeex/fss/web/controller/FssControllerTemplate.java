@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
@@ -41,8 +40,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @Autowired(required = false)
     private FssServiceTemplate<T, I> service;
-    @Autowired
-    private CookieSerializer cookieSerializer;
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -97,11 +94,6 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                 LogUtil.error(getClass(), e);
             }
         });
-        // TODO 抽取到过滤器中
-        List<String> sessionIds = this.cookieSerializer.readCookieValues(request);
-        if (sessionIds.size() > 0) {
-            this.cookieSerializer.writeCookieValue(new CookieSerializer.CookieValue(request, response, sessionIds.get(0)));
-        }
         return results;
     }
 
