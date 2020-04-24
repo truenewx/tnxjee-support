@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.LogUtil;
@@ -24,7 +26,7 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
-import org.truenewx.tnxjeex.fss.web.model.FssUploadResult;
+import org.truenewx.tnxjeex.fss.web.model.FssUploadedFile;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
 import com.aliyun.oss.internal.Mimetypes;
@@ -55,18 +57,21 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @PostMapping("/upload/{type}")
     @ResponseBody
-    public List<FssUploadResult> upload(@PathVariable("type") T type,
-            MultipartHttpServletRequest request, HttpServletResponse response) {
-        return upload(type, null, request, response);
+    public List<FssUploadedFile> upload(@PathVariable("type") T type,
+            MultipartHttpServletRequest request) {
+        return upload(type, null, request);
     }
 
     @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
-    public List<FssUploadResult> upload(@PathVariable("type") T type,
-            @PathVariable("resource") String resource, MultipartHttpServletRequest request,
-            HttpServletResponse response) {
-        List<FssUploadResult> results = new ArrayList<>();
-        request.getFileMap().values().forEach(file -> {
+    public List<FssUploadedFile> upload(@PathVariable("type") T type,
+            @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
+        List<FssUploadedFile> results = new ArrayList<>();
+        String[] fileIds = request.getParameterValues("fileIds");
+        Collection<MultipartFile> files = request.getFileMap().values();
+        int index = 0;
+        for (MultipartFile file : files) {
+            String fileId = fileIds[index++];
             try {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
@@ -76,10 +81,10 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                 String storageUrl = this.service.write(type, resource, userIdentity, filename, in);
                 in.close();
 
-                FssUploadResult result;
-                boolean noReadUrl = Boolean.parseBoolean(request.getParameter("noReadUrl"));
-                if (noReadUrl) { // 指定不需要返回读取地址，则不需要生成读取地址
-                    result = new FssUploadResult(filename, storageUrl, null, null);
+                FssUploadedFile result;
+                boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
+                if (onlyStorage) { // 只需要存储地址
+                    result = new FssUploadedFile(fileId, null, storageUrl, null, null);
                 } else {
                     String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
                     readUrl = getFullReadUrl(readUrl);
@@ -87,13 +92,13 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                     String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl,
                             true);
                     thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new FssUploadResult(filename, storageUrl, readUrl, thumbnailReadUrl);
+                    result = new FssUploadedFile(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
                 }
                 results.add(result);
             } catch (IOException e) {
                 LogUtil.error(getClass(), e);
             }
-        });
+        }
         return results;
     }
 

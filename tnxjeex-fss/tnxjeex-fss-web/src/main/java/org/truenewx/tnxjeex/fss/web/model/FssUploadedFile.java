@@ -1,27 +1,33 @@
 package org.truenewx.tnxjeex.fss.web.model;
 
 /**
- * 上传结果
+ * 已上传的文件
  *
  * @author jianglei
  */
-public class FssUploadResult {
+public class FssUploadedFile {
 
-    private String filename;
+    private String id;
+    private String name;
     private String storageUrl;
     private String readUrl;
     private String thumbnailReadUrl;
 
-    public FssUploadResult(String filename, String storageUrl, String readUrl,
+    public FssUploadedFile(String id, String name, String storageUrl, String readUrl,
             String thumbnailReadUrl) {
-        this.filename = filename;
+        this.id = id;
+        this.name = name;
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;
         this.thumbnailReadUrl = thumbnailReadUrl;
     }
 
-    public String getFilename() {
-        return this.filename;
+    public String getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public String getStorageUrl() {
