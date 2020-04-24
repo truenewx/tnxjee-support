@@ -213,7 +213,11 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
                 .filter(s -> s.getBucket().equals(bucket) && s.isReadable(userIdentity, path)).findFirst()
                 .orElseThrow(() -> {
                     // 如果没有找到匹配的访问策略，则说明没有读权限
-                    String url = Strings.SLASH + bucket + path;
+                    String url = Strings.SLASH + bucket;
+                    if (!path.startsWith(Strings.SLASH)) {
+                        url += Strings.SLASH;
+                    }
+                    url += path;
                     return new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, url);
                 });
     }

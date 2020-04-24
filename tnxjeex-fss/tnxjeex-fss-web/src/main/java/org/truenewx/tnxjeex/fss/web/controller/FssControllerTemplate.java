@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.web.bind.annotation.ResponseStream;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.util.WebUtil;
@@ -161,6 +162,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     }
 
     @GetMapping("/dl/**")
+    @ResponseStream
     public String download(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String url = getBucketAndPathFragmentUrl(request);
