@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -167,16 +168,16 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
         String bucket = url.substring(0, index);
         String path = url.substring(index + 1);
 
-        long modifiedSince = request.getDateHeader("If-Modified-Since");
-        I user = getUserIdentity();
-        long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);
-        response.setDateHeader("Last-Modified", modifiedTime);
+        long modifiedSince = request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE);
+        I userIdentity = getUserIdentity();
+        long modifiedTime = this.service.getLastModifiedTime(userIdentity, bucket, path);
+        response.setDateHeader(HttpHeaders.LAST_MODIFIED, modifiedTime);
         response.setContentType(Mimetypes.getInstance().getMimetype(path));
         if (modifiedSince == modifiedTime) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED); // 如果相等则返回表示未修改的状态码
         } else {
             ServletOutputStream out = response.getOutputStream();
-            this.service.read(user, bucket, path, out);
+            this.service.read(userIdentity, bucket, path, out);
             out.close();
         }
         return null;
