@@ -70,7 +70,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
             @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
         List<FssUploadedFile> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
-        Collection<MultipartFile> files = request.getFileMap().values();
+        Collection<MultipartFile> files = request.getFiles("files");
         int index = 0;
         for (MultipartFile file : files) {
             String fileId = fileIds[index++];

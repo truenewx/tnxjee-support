@@ -1,17 +1,12 @@
 package org.truenewx.tnxjeex.fss.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.io.AttachInputStream;
 import org.truenewx.tnxjee.core.io.AttachOutputStream;
-import org.truenewx.tnxjee.core.util.IOUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjeex.fss.service.model.FssStorageMetadata;
 
@@ -42,7 +37,7 @@ public class FssLocalAccessor implements FssAccessor {
         // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
         File tempFile = createTempFile(bucket, path);
         OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename);
-        IOUtil.writeAll(in, out);
+        IOUtils.copy(in, out);
         out.close();
 
         // 然后删除原文件，修改临时文件名为原文件名
@@ -131,7 +126,7 @@ public class FssLocalAccessor implements FssAccessor {
         File file = getStorageFile(bucket, path);
         if (file.exists()) { // 如果文件不存在，则需要从远程服务器读取内容，并缓存到本地文件
             InputStream in = new AttachInputStream(new FileInputStream(file));
-            IOUtil.writeAll(in, out);
+            IOUtils.copy(in, out);
             in.close();
             return true;
         }

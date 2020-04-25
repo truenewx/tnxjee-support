@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.truenewx.tnxjee.core.util.IOUtil;
+import org.apache.commons.io.IOUtils;
 import org.truenewx.tnxjeex.fss.service.FssProviderAccessor;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssStorageMetadata;
@@ -66,11 +66,9 @@ public class AliyunFssAccessor implements FssProviderAccessor {
     public boolean read(String bucket, String path, OutputStream out) throws IOException {
         try {
             InputStream in = this.account.getOssClient().getObject(bucket, path).getObjectContent();
-            IOUtil.writeAll(in, out);
+            IOUtils.copy(in, out);
             in.close();
             return true;
-        } catch (IOException e) {
-            throw e;
         } catch (ClientException e) {
             return false;
         }

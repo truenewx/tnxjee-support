@@ -105,7 +105,6 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
         }
         FssProviderAccessor providerAccessor = this.providerAccessors.get(provider);
         if (providerAccessor != null) {
-            in.reset(); // 读取输入流之前先重置，以重新读取
             providerAccessor.write(bucket, path, filename, in);
         }
         if (strategy.isPublicReadable()) {
