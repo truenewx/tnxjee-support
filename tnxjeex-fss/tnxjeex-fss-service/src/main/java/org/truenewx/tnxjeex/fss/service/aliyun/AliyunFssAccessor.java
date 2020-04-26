@@ -6,7 +6,6 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.truenewx.tnxjeex.fss.service.FssProviderAccessor;
-import org.truenewx.tnxjeex.fss.service.model.FssFileStorageMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
 import com.aliyun.oss.ClientException;
@@ -36,19 +35,6 @@ public class AliyunFssAccessor implements FssProviderAccessor {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.getUserMetadata().put("filename", filename);
         this.account.getOssClient().putObject(bucket, path, in, objectMetadata);
-    }
-
-    @Override
-    public FssFileStorageMeta getStorageMeta(String bucket, String path) {
-        try {
-            ObjectMetadata objectMetadata = this.account.getOssClient().getObjectMetadata(bucket,
-                    path);
-            String filename = objectMetadata.getUserMetadata().get("filename");
-            return new FssFileStorageMeta(filename, objectMetadata.getContentLength(),
-                    objectMetadata.getLastModified().getTime());
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     @Override

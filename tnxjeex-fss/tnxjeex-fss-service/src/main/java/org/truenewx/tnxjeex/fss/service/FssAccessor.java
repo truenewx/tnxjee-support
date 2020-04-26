@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.truenewx.tnxjeex.fss.service.model.FssFileStorageMeta;
-
 /**
  * 非结构化数据访问器
  *
@@ -32,15 +30,6 @@ public interface FssAccessor {
      * @return 最后修改时间毫秒数，指定文件不存在时返回0
      */
     long getLastModifiedTime(String bucket, String path);
-
-    /**
-     * 获取指定文件的存储元信息
-     *
-     * @param bucket 存储桶名
-     * @param path   存储路径
-     * @return 文件元信息
-     */
-    FssFileStorageMeta getStorageMeta(String bucket, String path);
 
     boolean read(String bucket, String path, OutputStream out) throws IOException;
 

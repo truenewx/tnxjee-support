@@ -7,7 +7,6 @@ import java.io.OutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjeex.fss.service.FssLocalAccessor;
 import org.truenewx.tnxjeex.fss.service.FssProviderAccessor;
-import org.truenewx.tnxjeex.fss.service.model.FssFileStorageMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
 /**
@@ -34,11 +33,6 @@ public class OwnFssAccessor implements FssProviderAccessor {
     public void write(String bucket, String path, String filename, InputStream in)
             throws IOException {
         this.localAccessor.write(bucket, path, filename, in);
-    }
-
-    @Override
-    public FssFileStorageMeta getStorageMeta(String bucket, String path) {
-        return this.localAccessor.getStorageMeta(bucket, path);
     }
 
     @Override

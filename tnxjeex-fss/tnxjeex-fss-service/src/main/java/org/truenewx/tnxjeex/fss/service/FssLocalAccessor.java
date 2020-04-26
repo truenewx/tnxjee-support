@@ -1,6 +1,11 @@
 package org.truenewx.tnxjeex.fss.service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
@@ -9,7 +14,6 @@ import org.truenewx.tnxjee.core.io.AttachInputStream;
 import org.truenewx.tnxjee.core.io.AttachOutputStream;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
-import org.truenewx.tnxjeex.fss.service.model.FssFileStorageMeta;
 
 /**
  * 文件存储本地访问器
@@ -94,23 +98,6 @@ public class FssLocalAccessor implements FssAccessor {
             path = path.substring(0, path.length() - 1);
         }
         return path;
-    }
-
-    @Override
-    public FssFileStorageMeta getStorageMeta(String bucket, String path) {
-        try {
-            File file = getStorageFile(bucket, path);
-            if (file.exists()) {
-                AttachInputStream in = new AttachInputStream(new FileInputStream(file));
-                String filename = in.readAttachement();
-                int size = in.available(); // 读取完附加信息后，输入流剩余的长度即为资源大小
-                in.close();
-                return new FssFileStorageMeta(filename, size, file.lastModified());
-            }
-        } catch (Exception e) {
-            LogUtil.error(getClass(), e);
-        }
-        return null;
     }
 
     @Override
