@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.Service;
-import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
+import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
 /**
@@ -58,7 +58,7 @@ public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity> e
      * @param storageUrl   资源的存储路径
      * @return 指定资源的读取元信息
      */
-    FssReadMetadata getReadMetadata(I userIdentity, String storageUrl);
+    FssFileMeta getMeta(I userIdentity, String storageUrl);
 
     /**
      * 获取指定资源的最后修改时间

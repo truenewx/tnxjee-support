@@ -26,9 +26,9 @@ import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
-import org.truenewx.tnxjeex.fss.service.model.FssReadMetadata;
+import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
-import org.truenewx.tnxjeex.fss.web.model.FssUploadedFile;
+import org.truenewx.tnxjeex.fss.web.model.FssUploadedFileMeta;
 import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
 import com.aliyun.oss.internal.Mimetypes;
@@ -59,16 +59,16 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @PostMapping("/upload/{type}")
     @ResponseBody
-    public List<FssUploadedFile> upload(@PathVariable("type") T type,
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
             MultipartHttpServletRequest request) {
         return upload(type, null, request);
     }
 
     @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
-    public List<FssUploadedFile> upload(@PathVariable("type") T type,
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
             @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
-        List<FssUploadedFile> results = new ArrayList<>();
+        List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
         Collection<MultipartFile> files = request.getFiles("files");
         int index = 0;
@@ -83,10 +83,10 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                 String storageUrl = this.service.write(type, resource, userIdentity, filename, in);
                 in.close();
 
-                FssUploadedFile result;
+                FssUploadedFileMeta result;
                 boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
                 if (onlyStorage) { // 只需要存储地址
-                    result = new FssUploadedFile(fileId, null, storageUrl, null, null);
+                    result = new FssUploadedFileMeta(fileId, null, storageUrl, null, null);
                 } else {
                     String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
                     readUrl = getFullReadUrl(readUrl);
@@ -94,7 +94,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
                     String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl,
                             true);
                     thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new FssUploadedFile(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
+                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
                 }
                 results.add(result);
             } catch (IOException e) {
@@ -141,24 +141,24 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     }
 
     /**
-     * 当前用户获取指定内部存储URL集对应的资源读取元信息集<br/>
+     * 当前用户获取指定存储URL集对应的文件元数据集
      *
-     * @param storageUrls 内部存储URL集
-     * @return 资源读取元信息集
+     * @param storageUrls 存储URL集
+     * @return 文件元数据集
      */
-    @GetMapping("/read-metadatas")
+    @GetMapping("/metas")
     @ResponseBody
-    public FssReadMetadata[] getReadMetadatas(@RequestParam("storageUrls") String[] storageUrls) {
-        FssReadMetadata[] metadatas = new FssReadMetadata[storageUrls.length];
+    public FssFileMeta[] metas(@RequestParam("storageUrls") String[] storageUrls) {
+        FssFileMeta[] metas = new FssFileMeta[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
-            metadatas[i] = this.service.getReadMetadata(getUserIdentity(), storageUrls[i]);
-            if (metadatas[i] != null) {
-                String readUrl = metadatas[i].getReadUrl();
-                readUrl = getFullReadUrl(readUrl);
-                metadatas[i].setReadUrl(readUrl);
+            FssFileMeta meta = this.service.getMeta(getUserIdentity(), storageUrls[i]);
+            if (meta != null) {
+                meta.setReadUrl(getFullReadUrl(meta.getReadUrl()));
+                meta.setThumbnailReadUrl(getFullReadUrl(meta.getThumbnailReadUrl()));
+                metas[i] = meta;
             }
         }
-        return metadatas;
+        return metas;
     }
 
     @GetMapping("/dl/**")

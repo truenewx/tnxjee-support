@@ -7,8 +7,8 @@ import java.io.OutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjeex.fss.service.FssLocalAccessor;
 import org.truenewx.tnxjeex.fss.service.FssProviderAccessor;
+import org.truenewx.tnxjeex.fss.service.model.FssFileStorageMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
-import org.truenewx.tnxjeex.fss.service.model.FssStorageMetadata;
 
 /**
  * 文件存储自有访问器
@@ -37,8 +37,13 @@ public class OwnFssAccessor implements FssProviderAccessor {
     }
 
     @Override
-    public FssStorageMetadata getStorageMetadata(String bucket, String path) {
-        return this.localAccessor.getStorageMetadata(bucket, path);
+    public FssFileStorageMeta getStorageMeta(String bucket, String path) {
+        return this.localAccessor.getStorageMeta(bucket, path);
+    }
+
+    @Override
+    public String getFilename(String bucket, String path) {
+        return this.localAccessor.getFilename(bucket, path);
     }
 
     @Override

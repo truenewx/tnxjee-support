@@ -1,29 +1,22 @@
-package org.truenewx.tnxjeex.fss.web.model;
+package org.truenewx.tnxjeex.fss.service.model;
 
 /**
- * 已上传的文件
+ * 文件存储服务的文件元数据
  *
  * @author jianglei
  */
-public class FssUploadedFile {
+public class FssFileMeta {
 
-    private String id;
     private String name;
     private String storageUrl;
     private String readUrl;
     private String thumbnailReadUrl;
 
-    public FssUploadedFile(String id, String name, String storageUrl, String readUrl,
-            String thumbnailReadUrl) {
-        this.id = id;
+    public FssFileMeta(String name, String storageUrl, String readUrl, String thumbnailReadUrl) {
         this.name = name;
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;
         this.thumbnailReadUrl = thumbnailReadUrl;
-    }
-
-    public String getId() {
-        return this.id;
     }
 
     public String getName() {
@@ -34,8 +27,16 @@ public class FssUploadedFile {
         return this.storageUrl;
     }
 
+    public void setReadUrl(String readUrl) {
+        this.readUrl = readUrl;
+    }
+
     public String getReadUrl() {
         return this.readUrl;
+    }
+
+    public void setThumbnailReadUrl(String thumbnailReadUrl) {
+        this.thumbnailReadUrl = thumbnailReadUrl;
     }
 
     public String getThumbnailReadUrl() {

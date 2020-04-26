@@ -19,7 +19,10 @@ import org.truenewx.tnxjee.core.util.ArrayUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjeex.fss.service.model.*;
+import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
+import org.truenewx.tnxjeex.fss.service.model.FssProvider;
+import org.truenewx.tnxjeex.fss.service.model.FssStorageUrl;
+import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
 /**
  * 文件存储服务模版实现
@@ -222,25 +225,23 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
     }
 
     @Override
-    public FssReadMetadata getReadMetadata(I userIdentity, String storageUrl) {
+    public FssFileMeta getMeta(I userIdentity, String storageUrl) {
         FssStorageUrl url = new FssStorageUrl(storageUrl);
         String readUrl = getReadUrl(userIdentity, url, false);
         if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
             // 先尝试从本地获取
-            FssStorageMetadata storageMetadata = this.localAccessor
-                    .getStorageMetadata(url.getBucket(), url.getPath());
-            if (storageMetadata == null) {
+            String filename = this.localAccessor.getFilename(url.getBucket(), url.getPath());
+            if (filename == null) {
                 // 本地无法获取才尝试从服务提供商处获取
                 FssProvider provider = url.getProvider();
                 FssProviderAccessor providerAccessor = this.providerAccessors.get(provider);
                 if (providerAccessor != null) {
-                    storageMetadata = providerAccessor.getStorageMetadata(url.getBucket(),
-                            url.getPath());
+                    filename = providerAccessor.getFilename(url.getBucket(), url.getPath());
                 }
             }
-            if (storageMetadata != null) {
+            if (filename != null) {
                 String thumbnailReadUrl = getReadUrl(userIdentity, url, true);
-                return new FssReadMetadata(readUrl, thumbnailReadUrl, storageMetadata);
+                return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
             }
         }
         return null;
