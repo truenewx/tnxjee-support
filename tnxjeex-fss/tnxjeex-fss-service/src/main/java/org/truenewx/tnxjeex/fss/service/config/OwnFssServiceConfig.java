@@ -11,13 +11,18 @@ import org.truenewx.tnxjeex.fss.service.own.OwnFssAuthorizer;
  * 自有文件存储服务配置
  */
 @Configuration
-@EnableConfigurationProperties(FssAccessorProperties.class)
+@EnableConfigurationProperties(FssLocalAccessorProperties.class)
 public class OwnFssServiceConfig {
 
     @Bean
-    public FssLocalAccessor fssLocalAccessor(FssAccessorProperties fssAccessorProperties) {
-        String root = fssAccessorProperties.getLocalRoot();
-        return new FssLocalAccessor(root);
+    public FssLocalAccessor fssLocalAccessor(
+            FssLocalAccessorProperties fssLocalAccessorProperties) {
+        String root = fssLocalAccessorProperties.getRoot();
+        return new FssLocalAccessor(root, getLocalAccessorSalt());
+    }
+
+    protected Byte getLocalAccessorSalt() {
+        return null;
     }
 
     @Bean

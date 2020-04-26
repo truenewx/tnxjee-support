@@ -1,11 +1,6 @@
 package org.truenewx.tnxjeex.fss.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
@@ -23,8 +18,9 @@ import org.truenewx.tnxjee.core.util.StringUtil;
 public class FssLocalAccessor implements FssAccessor {
 
     private File root;
+    private Byte salt;
 
-    public FssLocalAccessor(String root) {
+    public FssLocalAccessor(String root, Byte salt) {
         File file = new File(root);
         if (!file.exists()) { // 目录不存在则创建
             file.mkdirs();
@@ -34,6 +30,7 @@ public class FssLocalAccessor implements FssAccessor {
         Assert.isTrue(file.canRead() && file.canWrite(), "root can not read or write");
 
         this.root = file;
+        this.salt = salt;
     }
 
     @Override
@@ -41,7 +38,7 @@ public class FssLocalAccessor implements FssAccessor {
             throws IOException {
         // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
         File tempFile = createTempFile(bucket, path);
-        OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename);
+        OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename, this.salt);
         IOUtils.copy(in, out);
         out.close();
 
@@ -105,8 +102,8 @@ public class FssLocalAccessor implements FssAccessor {
         try {
             File file = getStorageFile(bucket, path);
             if (file.exists()) {
-                AttachInputStream in = new AttachInputStream(new FileInputStream(file));
-                String filename = in.readAttachement();
+                AttachInputStream in = new AttachInputStream(new FileInputStream(file), this.salt);
+                String filename = in.readAttachment();
                 in.close();
                 return filename;
             }
@@ -129,7 +126,7 @@ public class FssLocalAccessor implements FssAccessor {
     public boolean read(String bucket, String path, OutputStream out) throws IOException {
         File file = getStorageFile(bucket, path);
         if (file.exists()) { // 如果文件不存在，则需要从远程服务器读取内容，并缓存到本地文件
-            InputStream in = new AttachInputStream(new FileInputStream(file));
+            InputStream in = new AttachInputStream(new FileInputStream(file), this.salt);
             IOUtils.copy(in, out);
             in.close();
             return true;
