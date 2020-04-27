@@ -19,7 +19,7 @@ public class FssUploadLimit {
     private String[] mimeTypes;
     private boolean imageable;
     private Boolean croppable;
-    private DimensionSize[] thumbnailSizes;
+    private DimensionSize[] sizes;
 
     public FssUploadLimit(int number, long capacity, boolean extensionsRejected,
             String... extensions) {
@@ -69,14 +69,14 @@ public class FssUploadLimit {
         return this.croppable;
     }
 
-    public DimensionSize[] getThumbnailSizes() {
-        return this.thumbnailSizes;
+    public DimensionSize[] getSizes() {
+        return this.sizes;
     }
 
-    public void enableImage(boolean croppable, DimensionSize... thumbnailSizes) {
+    public void enableImage(boolean croppable, DimensionSize... sizes) {
         this.imageable = true;
         this.croppable = croppable;
-        this.thumbnailSizes = thumbnailSizes;
+        this.sizes = sizes;
     }
 
 }
