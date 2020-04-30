@@ -11,6 +11,7 @@
     <artifactId>tnxjeex-cas</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>tnxjeex-cas-api</module>
         <module>tnxjeex-cas-server</module>
     </modules>
 </project>

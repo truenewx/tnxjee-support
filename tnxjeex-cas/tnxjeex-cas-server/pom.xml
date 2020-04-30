@@ -11,8 +11,13 @@
     <artifactId>tnxjeex-cas-server</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.truenewx.tnxjee</groupId>
-            <artifactId>tnxjee-web-view</artifactId>
+            <groupId>org.truenewx.tnxjeex.cas</groupId>
+            <artifactId>tnxjeex-cas-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apereo.cas</groupId>
+            <artifactId>cas-server-core-tickets-api</artifactId>
+            <version>6.0.8.1</version>
         </dependency>
     </dependencies>
 </project>
