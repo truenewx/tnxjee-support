@@ -33,6 +33,6 @@ public interface FssAuthorizer {
      * @param path         资源路径
      * @return 资源读取URL
      */
-    String getReadUrl(UserIdentity userIdentity, String bucket, String path);
+    String getReadUrl(UserIdentity<?> userIdentity, String bucket, String path);
 
 }

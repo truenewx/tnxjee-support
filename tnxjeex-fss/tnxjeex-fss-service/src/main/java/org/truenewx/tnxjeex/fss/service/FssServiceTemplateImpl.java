@@ -29,7 +29,7 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
  *
  * @author jianglei
  */
-public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity>
+public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>>
         implements FssServiceTemplate<T, I>, ContextInitializedBean {
 
     private final Map<T, FssAccessStrategy<T, I>> strategies = new HashMap<>();

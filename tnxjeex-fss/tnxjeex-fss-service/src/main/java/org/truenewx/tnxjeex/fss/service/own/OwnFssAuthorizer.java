@@ -23,7 +23,7 @@ public class OwnFssAuthorizer implements FssAuthorizer {
     }
 
     @Override
-    public String getReadUrl(UserIdentity userIdentity, String bucket, String path) {
+    public String getReadUrl(UserIdentity<?> userIdentity, String bucket, String path) {
         // 形如：/${bucket}/${path}，本地地址交由Controller完成上下文根路径的拼装
         return Strings.SLASH + bucket + Strings.SLASH + path;
     }

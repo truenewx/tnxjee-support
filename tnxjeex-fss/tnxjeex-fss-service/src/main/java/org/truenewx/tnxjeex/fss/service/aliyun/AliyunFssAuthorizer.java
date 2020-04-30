@@ -70,7 +70,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
     }
 
     @Override
-    public String getReadUrl(UserIdentity userIdentity, String bucket, String path) {
+    public String getReadUrl(UserIdentity<?> userIdentity, String bucket, String path) {
         // 拆分请求参数，确保路径不带参数
         int index = path.indexOf(Strings.QUESTION);
         String parameterString = Strings.EMPTY;

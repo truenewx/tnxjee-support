@@ -16,7 +16,7 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
  * @param <I> 用户标识类型
  * @author jianglei
  */
-public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity> extends Service {
+public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity<?>> extends Service {
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件

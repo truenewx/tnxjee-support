@@ -39,7 +39,7 @@ import com.aliyun.oss.internal.Mimetypes;
  * @author jianglei
  */
 @ConfigAnonymous // 匿名即可访问，具体的权限控制由各访问策略决定
-public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity>
+public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity<?>>
         implements FssReadUrlResolver {
 
     @Autowired(required = false)
