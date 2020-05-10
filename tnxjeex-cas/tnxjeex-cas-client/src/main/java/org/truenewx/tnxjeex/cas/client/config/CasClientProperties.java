@@ -9,7 +9,7 @@ import org.truenewx.tnxjee.core.Strings;
  *
  * @author jianglei
  */
-@ConfigurationProperties("tnxjee.web.cas")
+@ConfigurationProperties("tnxjeex.cas")
 public class CasClientProperties extends ServiceProperties {
 
     private String serverUrlPrefix;
