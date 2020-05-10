@@ -39,7 +39,12 @@
             </dependency>
             <dependency>
                 <groupId>org.truenewx.tnxjeex.cas</groupId>
-                <artifactId>tnxjeex-cas-api</artifactId>
+                <artifactId>tnxjeex-cas-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.cas</groupId>
+                <artifactId>tnxjeex-cas-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

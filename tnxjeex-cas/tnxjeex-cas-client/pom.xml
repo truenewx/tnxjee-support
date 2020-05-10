@@ -8,11 +8,15 @@
         <version>2.1.0</version>
     </parent>
     <groupId>org.truenewx.tnxjeex.cas</groupId>
-    <artifactId>tnxjeex-cas-server</artifactId>
+    <artifactId>tnxjeex-cas-client</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.jasig.cas.client</groupId>
-            <artifactId>cas-client-core</artifactId>
+            <groupId>org.truenewx.tnxjee</groupId>
+            <artifactId>tnxjee-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-cas</artifactId>
         </dependency>
     </dependencies>
 </project>
