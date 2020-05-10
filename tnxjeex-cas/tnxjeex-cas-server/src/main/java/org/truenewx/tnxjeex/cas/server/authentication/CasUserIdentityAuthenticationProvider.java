@@ -9,6 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
+import org.truenewx.tnxjeex.cas.server.service.CasServerExceptionCodes;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 
 /**
@@ -38,6 +39,9 @@ public class CasUserIdentityAuthenticationProvider implements AuthenticationProv
             try {
                 String userType = this.serviceManager.resolveUserType(service);
                 UserIdentity<?> userIdentity = this.loginValidator.validateLogin(userType, username, password);
+                if (userIdentity == null) {
+                    throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_USER_TYPE, userType);
+                }
                 return new CasUserIdentityAuthenticationToken(service, userIdentity);
             } catch (BusinessException e) {
                 throw new BadCredentialsException(e.getLocalizedMessage(), e);

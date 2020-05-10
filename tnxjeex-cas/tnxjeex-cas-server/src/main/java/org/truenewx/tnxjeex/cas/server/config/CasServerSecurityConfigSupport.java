@@ -1,11 +1,10 @@
 package org.truenewx.tnxjeex.cas.server.config;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.truenewx.tnxjee.web.view.security.config.WebViewSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
 
-@Configuration
-public class CasServerConfig {
+public class CasServerSecurityConfigSupport extends WebViewSecurityConfigurerSupport {
 
     @Bean
     public CasAuthenticationSuccessHandler authenticationSuccessHandler() {
