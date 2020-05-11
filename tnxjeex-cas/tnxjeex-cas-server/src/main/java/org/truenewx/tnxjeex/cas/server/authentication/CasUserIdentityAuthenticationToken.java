@@ -10,7 +10,7 @@ public class CasUserIdentityAuthenticationToken extends UserIdentityAuthenticati
 
     private static final long serialVersionUID = -2997803056699252908L;
 
-    private String service;
+    private final String service;
 
     public CasUserIdentityAuthenticationToken(String service, UserIdentity<?> userIdentity) {
         super(userIdentity);

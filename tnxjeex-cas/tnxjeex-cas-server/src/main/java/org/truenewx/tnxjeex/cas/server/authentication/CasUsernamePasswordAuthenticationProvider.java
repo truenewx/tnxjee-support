@@ -13,10 +13,10 @@ import org.truenewx.tnxjeex.cas.server.service.CasServerExceptionCodes;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 
 /**
- * CAS用户标识授权提供者
+ * CAS用户名密码授权提供者
  */
 @Component
-public class CasUserIdentityAuthenticationProvider implements AuthenticationProvider {
+public class CasUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
     @Autowired
     private CasServiceManager serviceManager;
     @Autowired

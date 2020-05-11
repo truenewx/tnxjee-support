@@ -9,12 +9,12 @@ import org.truenewx.tnxjee.web.security.config.SecurityLoginConfigurerSupport;
 import org.truenewx.tnxjee.web.security.web.authentication.BusinessExceptionAuthenticationFailureHandler;
 
 /**
- * CAS登录安全配置器
+ * CAS用户名密码登录配置器
  */
 @Component
 // 指定AuthenticationProvider实现类
-public class CasLoginSecurityConfigurer
-        extends SecurityLoginConfigurerSupport<CasUserIdentityAuthenticationProvider> {
+public class CasUsernamePasswordLoginConfigurer
+        extends SecurityLoginConfigurerSupport<CasUsernamePasswordAuthenticationProvider> {
 
     @Autowired
     private CasServiceAuthenticationDetailsSource authenticationDetailsSource;

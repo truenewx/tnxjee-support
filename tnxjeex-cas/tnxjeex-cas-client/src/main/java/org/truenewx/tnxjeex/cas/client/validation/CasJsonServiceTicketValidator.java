@@ -1,5 +1,6 @@
 package org.truenewx.tnxjeex.cas.client.validation;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jasig.cas.client.validation.AbstractCasProtocolUrlBasedTicketValidator;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
@@ -18,7 +19,10 @@ public class CasJsonServiceTicketValidator extends AbstractCasProtocolUrlBasedTi
 
     @Override
     protected Assertion parseResponseFromServer(String response) throws TicketValidationException {
-        SimpleAssertion assertion = JsonUtil.json2Bean(response, SimpleAssertion.class);
+        SimpleAssertion assertion = null;
+        if (StringUtils.isNotBlank(response)) {
+            assertion = JsonUtil.json2Bean(response, SimpleAssertion.class);
+        }
         if (assertion == null) {
             throw new TicketValidationException("The service ticket is invalid");
         }

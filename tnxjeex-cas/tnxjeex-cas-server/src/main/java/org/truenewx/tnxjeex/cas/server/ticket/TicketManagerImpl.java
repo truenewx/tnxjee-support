@@ -42,11 +42,10 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     @Override
     public String getServiceTicket(HttpServletRequest request, String service) {
         String sessionId = request.getSession().getId();
-        Map.Entry<String, ServiceTicket> entry = this.serviceTickets.entrySet().stream()
-                .filter(e -> e.getKey().equals(sessionId)).findAny().orElse(null);
-        ServiceTicket ticket = entry == null ? null : entry.getValue();
+        ServiceTicket ticket = this.serviceTickets.get(sessionId);
         Date now = new Date();
-        if (ticket == null || ticket.getExpiredTime().before(now)) { // 不存在或已过期，则创建新的
+        if (ticket == null || !ticket.getService().equals(service)
+                || ticket.getExpiredTime().before(now)) { // 不存在/非同一个服务/已过期，则创建新的
             String text = sessionId + Strings.MINUS + service + Strings.MINUS + now.getTime();
             String ticketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(text);
             UserIdentity<?> userIdentity = SecurityUtil.getAuthorizedUserIdentity();
