@@ -18,12 +18,14 @@ public class CasJsonServiceTicketValidator extends AbstractCasProtocolUrlBasedTi
 
     @Override
     protected Assertion parseResponseFromServer(String response) throws TicketValidationException {
-        try {
-            return JsonUtil.json2Bean(response, SimpleAssertion.class);
-        } catch (Exception e) {
-            e.printStackTrace();
+        SimpleAssertion assertion = JsonUtil.json2Bean(response, SimpleAssertion.class);
+        if (assertion == null) {
+            throw new TicketValidationException("The service ticket is invalid");
         }
-        return null;
+        if (!assertion.isValid()) {
+            throw new TicketValidationException("The service ticket is expired");
+        }
+        return assertion;
     }
 
 }
