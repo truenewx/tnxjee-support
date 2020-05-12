@@ -116,8 +116,8 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         List<String> ticketIds = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
         ticketIds.forEach(ticketId -> {
             LogUtil.info(getClass(),
-                    "The service ticket({}) has been deleted because session destroyed.",
-                    ticketId);
+                    "The service ticket({}) has been deleted because session({}) destroyed.",
+                    ticketId, sessionId);
         });
     }
 

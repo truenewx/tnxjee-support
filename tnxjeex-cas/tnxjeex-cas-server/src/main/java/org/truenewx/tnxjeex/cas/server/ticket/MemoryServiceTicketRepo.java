@@ -42,13 +42,12 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     @Override
     public List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
         List<String> ids = new ArrayList<>();
-        this.tickets.values().stream()
-                .filter(ticket -> ticket.getTicketGrantingTicket().equals(ticketGrantingTicket))
-                .forEach(ticket -> {
-                    String id = ticket.getId();
-                    this.tickets.remove(id);
-                    ids.add(id);
-                });
+        this.tickets.values().forEach(ticket -> {
+            if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket)) {
+                ids.add(ticket.getId());
+            }
+        });
+        ids.forEach(this.tickets::remove);
         return ids;
     }
 
