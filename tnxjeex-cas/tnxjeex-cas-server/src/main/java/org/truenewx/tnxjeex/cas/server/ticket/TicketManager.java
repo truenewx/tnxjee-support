@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jasig.cas.client.validation.Assertion;
 
@@ -13,7 +14,9 @@ public interface TicketManager {
 
     String SERVICE_TICKET_PREFIX = "ST-";
 
-    String getTicketGrantingTicket(HttpServletRequest request);
+    void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response);
+
+    boolean validateTicketGrantingTicket(HttpServletRequest request);
 
     String getServiceTicket(HttpServletRequest request, String service);
 

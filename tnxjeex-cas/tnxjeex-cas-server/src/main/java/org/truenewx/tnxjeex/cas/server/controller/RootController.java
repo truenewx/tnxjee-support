@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,7 +27,12 @@ public class RootController {
     private TicketManager ticketManager;
 
     @GetMapping("/login")
-    public ModelAndView toLoginForm(@RequestParam("service") String service) {
+    public ModelAndView toLoginForm(@RequestParam("service") String service,
+            HttpServletRequest request) {
+        if (this.ticketManager.validateTicketGrantingTicket(request)) {
+            String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
+            return new ModelAndView("redirect:" + targetUrl);
+        }
         String userType = this.serviceManager.resolveUserType(service);
         ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
         mav.addObject("service", service);

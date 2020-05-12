@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.authentication.AttributePrincipalImpl;
 import org.jasig.cas.client.validation.Assertion;
@@ -21,6 +23,7 @@ import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.web.security.util.SecurityUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 
 /**
  * 票据管理器实现
@@ -33,9 +36,18 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     private Map<String, ServiceTicket> serviceTickets = new HashMap<>();
 
     @Override
-    public String getTicketGrantingTicket(HttpServletRequest request) {
+    public void createTicketGrantingTicket(HttpServletRequest request,
+            HttpServletResponse response) {
         String sessionId = request.getSession().getId();
-        return TICKET_GRANTING_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(sessionId);
+        String ticketGrantingTicket = TICKET_GRANTING_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(sessionId);
+        int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
+        WebUtil.addCookie(request, response, "CASTGC", ticketGrantingTicket, maxAge);
+    }
+
+    @Override
+    public boolean validateTicketGrantingTicket(HttpServletRequest request) {
+        String ticketGrantingTicket = WebUtil.getCookieValue(request, "CASTGC");
+        return StringUtils.isNotBlank(ticketGrantingTicket);
     }
 
     // 用户从浏览器登录CAS服务器成功后调用，以获取目标服务的票据

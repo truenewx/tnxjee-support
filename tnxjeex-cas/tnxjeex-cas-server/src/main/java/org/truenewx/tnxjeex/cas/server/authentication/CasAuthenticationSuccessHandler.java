@@ -7,11 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.web.view.util.WebViewUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
@@ -22,8 +19,6 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
-    private ServerProperties serverProperties;
-    @Autowired
     private CasServiceManager serviceManager;
     @Autowired
     private TicketManager ticketManager;
@@ -31,19 +26,10 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
-        String ticketGrantingTicket = this.ticketManager.getTicketGrantingTicket(request);
-        int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebUtil.addCookie(request, response, "CASTGC", ticketGrantingTicket, maxAge);
+        this.ticketManager.createTicketGrantingTicket(request, response);
         CasUserIdentityAuthenticationToken token = (CasUserIdentityAuthenticationToken) authentication;
         String service = token.getService();
-        String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(service);
-        int index = targetUrl.indexOf(Strings.QUESTION);
-        if (index < 0) {
-            targetUrl += Strings.QUESTION;
-        } else {
-            targetUrl += Strings.AND;
-        }
-        targetUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service);
+        String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
         WebViewUtil.redirect(request, response, targetUrl);
     }
 

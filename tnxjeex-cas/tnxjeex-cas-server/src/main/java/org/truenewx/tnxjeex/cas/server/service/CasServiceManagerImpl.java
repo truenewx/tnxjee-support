@@ -1,10 +1,14 @@
 package org.truenewx.tnxjeex.cas.server.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.cas.server.config.CasServerProperties;
+import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
 /**
  * 服务管理器实现
@@ -17,6 +21,8 @@ public class CasServiceManagerImpl implements CasServiceManager {
 
     @Autowired(required = false)
     private CasServerProperties serverProperties;
+    @Autowired
+    private TicketManager ticketManager;
 
     @Override
     public String resolveUserType(String service) {
@@ -32,8 +38,16 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public String getAuthenticatedTargetUrl(String service) {
-        return getProperties(service).getTargetUrl();
+    public String getAuthenticatedTargetUrl(HttpServletRequest request, String service) {
+        String targetUrl = getProperties(service).getTargetUrl();
+        int index = targetUrl.indexOf(Strings.QUESTION);
+        if (index < 0) {
+            targetUrl += Strings.QUESTION;
+        } else {
+            targetUrl += Strings.AND;
+        }
+        targetUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service);
+        return targetUrl;
     }
 
 }
