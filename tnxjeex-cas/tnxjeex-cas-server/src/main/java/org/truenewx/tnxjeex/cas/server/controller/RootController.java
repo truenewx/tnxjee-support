@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -28,10 +30,14 @@ public class RootController {
 
     @GetMapping("/login")
     public ModelAndView toLoginForm(@RequestParam("service") String service,
-            HttpServletRequest request) {
+            HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
+        }
+        if (WebUtil.isAjaxRequest(request)) { // AJAX请求未登录时直接返回401错误
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return new ModelAndView();
         }
         String userType = this.serviceManager.resolveUserType(service);
         ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
