@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
+import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.truenewx.tnxjee.web.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.cas.client.validation.CasJsonServiceTicketValidator;
 
 @Configuration
@@ -25,6 +27,12 @@ public class CasClientConfig {
     @Bean
     public CasAuthenticationProvider authenticationProvider(
             AuthenticationUserDetailsService<CasAssertionAuthenticationToken> authenticationUserDetailsService) {
+        SecurityUtil.DETAIL_FUNCTION = authentication -> {
+            if (authentication instanceof CasAuthenticationToken) {
+                return ((CasAuthenticationToken) authentication).getUserDetails();
+            }
+            return authentication.getDetails();
+        };
         CasAuthenticationProvider provider = new CasAuthenticationProvider();
         provider.setAuthenticationUserDetailsService(authenticationUserDetailsService);
         provider.setTicketValidator(ticketValidator());
