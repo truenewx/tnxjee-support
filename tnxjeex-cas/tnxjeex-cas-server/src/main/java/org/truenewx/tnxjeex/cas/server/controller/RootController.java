@@ -1,7 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -31,16 +30,15 @@ public class RootController {
 
     @GetMapping("/login/form")
     public ModelAndView loginForm(@RequestParam("service") String service,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
+            HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
-        } else {
-            String userType = this.serviceManager.resolveUserType(service);
-            ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
-            mav.addObject("service", service);
-            return mav;
         }
+        String userType = this.serviceManager.resolveUserType(service);
+        ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
+        mav.addObject("service", service);
+        return mav;
     }
 
     @GetMapping("/login/ajax")
@@ -49,7 +47,7 @@ public class RootController {
             HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
-            response.setHeader("redirect", targetUrl);
+            response.setHeader(WebConstants.HEADER_REDIRECT, targetUrl);
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
