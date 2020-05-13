@@ -11,4 +11,13 @@ public class CasServerSecurityConfigSupport extends WebViewSecurityConfigurerSup
         return new CasAuthenticationSuccessHandler();
     }
 
+    @Override
+    protected String getLoginFormUrl() {
+        return "/login/form";
+    }
+
+    @Override
+    protected String getLoginAjaxUrl() {
+        return "/login/ajax";
+    }
 }
