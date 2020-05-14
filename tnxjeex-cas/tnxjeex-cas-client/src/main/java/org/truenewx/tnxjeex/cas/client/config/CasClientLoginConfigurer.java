@@ -28,6 +28,7 @@ public class CasClientLoginConfigurer
         CasClientAuthenticationFilter filter = new CasClientAuthenticationFilter();
         filter.setRedirectStrategy(this.redirectStrategy);
         filter.setSuccessTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
+        filter.setDefaultFailureUrl("/error/business");
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class)); // 固定必须
         http.addFilterAt(filter, CasAuthenticationFilter.class);
     }

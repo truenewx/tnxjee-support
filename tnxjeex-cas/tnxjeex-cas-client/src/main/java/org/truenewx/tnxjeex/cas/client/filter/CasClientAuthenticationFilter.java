@@ -6,6 +6,7 @@ import org.springframework.security.web.authentication.AbstractAuthenticationTar
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.truenewx.tnxjee.core.util.BeanUtil;
 
 /**
  * CAS客户端鉴权过滤器
@@ -29,6 +30,16 @@ public class CasClientAuthenticationFilter extends CasAuthenticationFilter {
         AuthenticationSuccessHandler successHandler = getSuccessHandler();
         if (successHandler instanceof AbstractAuthenticationTargetUrlRequestHandler) {
             ((AbstractAuthenticationTargetUrlRequestHandler) successHandler).setTargetUrlParameter(targetUrlParameter);
+        }
+    }
+
+    public void setDefaultFailureUrl(String defaultFailureUrl) {
+        AuthenticationFailureHandler failureHandler = getFailureHandler();
+        if (!(failureHandler instanceof SimpleUrlAuthenticationFailureHandler)) {
+            failureHandler = BeanUtil.getFieldValue(failureHandler, AuthenticationFailureHandler.class);
+        }
+        if (failureHandler instanceof SimpleUrlAuthenticationFailureHandler) {
+            ((SimpleUrlAuthenticationFailureHandler) failureHandler).setDefaultFailureUrl(defaultFailureUrl);
         }
     }
 
