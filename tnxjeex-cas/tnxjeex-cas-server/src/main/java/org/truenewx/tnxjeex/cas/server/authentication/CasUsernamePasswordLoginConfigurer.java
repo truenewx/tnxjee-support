@@ -6,7 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.web.security.config.SecurityLoginConfigurerSupport;
-import org.truenewx.tnxjee.web.security.web.authentication.BusinessExceptionAuthenticationFailureHandler;
+import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 
 /**
  * CAS用户名密码登录配置器
@@ -21,7 +21,7 @@ public class CasUsernamePasswordLoginConfigurer
     @Autowired
     private CasAuthenticationSuccessHandler authenticationSuccessHandler;
     @Autowired
-    private BusinessExceptionAuthenticationFailureHandler authenticationFailureHandler;
+    private ResolvableExceptionAuthenticationFailureHandler authenticationFailureHandler;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {

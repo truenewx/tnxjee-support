@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.cas.client.filter;
 
+import java.util.function.Consumer;
+
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
@@ -15,32 +17,38 @@ public class CasClientAuthenticationFilter extends CasAuthenticationFilter {
 
     public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
         if (redirectStrategy != null) {
-            AuthenticationSuccessHandler successHandler = getSuccessHandler();
-            if (successHandler instanceof AbstractAuthenticationTargetUrlRequestHandler) {
-                ((AbstractAuthenticationTargetUrlRequestHandler) successHandler).setRedirectStrategy(redirectStrategy);
-            }
-            AuthenticationFailureHandler failureHandler = getFailureHandler();
-            if (failureHandler instanceof SimpleUrlAuthenticationFailureHandler) {
-                ((SimpleUrlAuthenticationFailureHandler) failureHandler).setRedirectStrategy(redirectStrategy);
-            }
+            acceptSuccessHandler(handler -> handler.setRedirectStrategy(redirectStrategy));
+            acceptFailureHandler(handler -> handler.setRedirectStrategy(redirectStrategy));
         }
     }
 
-    public void setSuccessTargetUrlParameter(String targetUrlParameter) {
+    private void acceptSuccessHandler(
+            Consumer<AbstractAuthenticationTargetUrlRequestHandler> consumer) {
         AuthenticationSuccessHandler successHandler = getSuccessHandler();
         if (successHandler instanceof AbstractAuthenticationTargetUrlRequestHandler) {
-            ((AbstractAuthenticationTargetUrlRequestHandler) successHandler).setTargetUrlParameter(targetUrlParameter);
+            consumer.accept((AbstractAuthenticationTargetUrlRequestHandler) successHandler);
         }
     }
 
-    public void setDefaultFailureUrl(String defaultFailureUrl) {
+    private void acceptFailureHandler(Consumer<SimpleUrlAuthenticationFailureHandler> consumer) {
         AuthenticationFailureHandler failureHandler = getFailureHandler();
         if (!(failureHandler instanceof SimpleUrlAuthenticationFailureHandler)) {
             failureHandler = BeanUtil.getFieldValue(failureHandler, AuthenticationFailureHandler.class);
         }
         if (failureHandler instanceof SimpleUrlAuthenticationFailureHandler) {
-            ((SimpleUrlAuthenticationFailureHandler) failureHandler).setDefaultFailureUrl(defaultFailureUrl);
+            consumer.accept((SimpleUrlAuthenticationFailureHandler) failureHandler);
         }
+    }
+
+    public void setSuccessTargetUrlParameter(String targetUrlParameter) {
+        acceptSuccessHandler(handler -> handler.setTargetUrlParameter(targetUrlParameter));
+    }
+
+    public void setDefaultFailureUrl(String defaultFailureUrl, boolean useForward) {
+        acceptFailureHandler(handler -> {
+            handler.setDefaultFailureUrl(defaultFailureUrl);
+            handler.setUseForward(useForward);
+        });
     }
 
 }

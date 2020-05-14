@@ -9,6 +9,7 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.web.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.web.security.config.SecurityLoginConfigurerSupport;
+import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.client.filter.CasClientAuthenticationFilter;
 
 /**
@@ -22,13 +23,15 @@ public class CasClientLoginConfigurer
     private ApiMetaProperties apiMetaProperties;
     @Autowired
     private RedirectStrategy redirectStrategy;
+    @Autowired
+    private ResolvableExceptionAuthenticationFailureHandler authenticationFailureHandler;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
         CasClientAuthenticationFilter filter = new CasClientAuthenticationFilter();
         filter.setRedirectStrategy(this.redirectStrategy);
         filter.setSuccessTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
-        filter.setDefaultFailureUrl("/error/business");
+        filter.setAuthenticationFailureHandler(this.authenticationFailureHandler);
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class)); // 固定必须
         http.addFilterAt(filter, CasAuthenticationFilter.class);
     }
