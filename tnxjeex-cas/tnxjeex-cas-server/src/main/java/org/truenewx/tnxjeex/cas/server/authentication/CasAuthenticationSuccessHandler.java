@@ -30,6 +30,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
         CasUserIdentityAuthenticationToken token = (CasUserIdentityAuthenticationToken) authentication;
         String service = token.getService();
         String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
+        // 此处一定是表单提交鉴权成功，无需AjaxRedirectStrategy
         WebViewUtil.redirect(request, response, targetUrl);
     }
 
