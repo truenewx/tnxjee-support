@@ -58,8 +58,7 @@ public class SimpleAssertion implements Assertion {
         return this.principal;
     }
 
-    public void setPrincipal(
-            SimpleAttributePrincipal principal) {
+    public void setPrincipal(SimpleAttributePrincipal principal) {
         this.principal = principal;
     }
 
