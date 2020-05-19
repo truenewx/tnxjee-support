@@ -24,6 +24,7 @@ import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.web.bind.annotation.ResponseStream;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
@@ -38,7 +39,6 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-@ConfigAnonymous // 匿名即可访问，具体的权限控制由各访问策略决定
 public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity<?>>
         implements FssReadUrlResolver {
 
@@ -53,12 +53,14 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
      */
     @GetMapping("/upload-limit/{type}")
     @ResponseBody
+    @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public FssUploadLimit getUploadLimit(@PathVariable("type") T type) {
         return this.service.getUploadLimit(type, getUserIdentity());
     }
 
     @PostMapping("/upload/{type}")
     @ResponseBody
+    @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
             MultipartHttpServletRequest request) {
         return upload(type, null, request);
@@ -66,6 +68,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
+    @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
             @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
         List<FssUploadedFileMeta> results = new ArrayList<>();
@@ -148,6 +151,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
      */
     @GetMapping("/metas")
     @ResponseBody
+    @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
     public FssFileMeta[] metas(@RequestParam("storageUrls") String[] storageUrls) {
         FssFileMeta[] metas = new FssFileMeta[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
@@ -163,6 +167,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
 
     @GetMapping("/dl/**")
     @ResponseStream
+    @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
     public String download(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String url = getBucketAndPathFragmentUrl(request);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
@@ -34,12 +35,16 @@ public class RootController {
 
     @GetMapping("/login/form")
     public ModelAndView loginForm(@RequestParam("service") String service,
-            HttpServletRequest request) {
+            HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
         }
         String userType = this.serviceManager.resolveUserType(service);
+        if (StringUtils.isBlank(userType)) { // 未指定用户类型的服务，只能在用户已登录后进行自动登录，否则报401
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
+        }
         ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
         mav.addObject("service", service);
         return mav;
@@ -52,7 +57,7 @@ public class RootController {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
-        } else {
+        } else { // AJAX登录只能进行自动登录，否则报401
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;
