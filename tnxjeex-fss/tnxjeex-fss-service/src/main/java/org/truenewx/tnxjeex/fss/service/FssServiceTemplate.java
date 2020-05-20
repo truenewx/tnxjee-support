@@ -12,11 +12,10 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 /**
  * 文件存储服务模版
  *
- * @param <T> 授权类型
  * @param <I> 用户标识类型
  * @author jianglei
  */
-public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity<?>> extends Service {
+public interface FssServiceTemplate<I extends UserIdentity<?>> extends Service {
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -25,7 +24,7 @@ public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity<?>
      * @param userIdentity 用户标识
      * @return 指定用户上传指定业务类型的文件上传限制条件
      */
-    FssUploadLimit getUploadLimit(T type, I userIdentity);
+    FssUploadLimit getUploadLimit(String type, I userIdentity);
 
     /**
      * 指定用户在业务授权类型下写文件
@@ -38,7 +37,7 @@ public interface FssServiceTemplate<T extends Enum<T>, I extends UserIdentity<?>
      * @return 写好的文件的内部存储URL
      * @throws IOException 如果写的过程中出现错误
      */
-    String write(T type, String resource, I userIdentity, String filename, InputStream in)
+    String write(String type, String resource, I userIdentity, String filename, InputStream in)
             throws IOException;
 
     /**

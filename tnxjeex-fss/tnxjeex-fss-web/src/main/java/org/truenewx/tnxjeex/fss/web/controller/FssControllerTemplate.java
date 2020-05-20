@@ -25,6 +25,7 @@ import org.truenewx.tnxjee.web.bind.annotation.ResponseStream;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAuthority;
+import org.truenewx.tnxjee.web.security.util.SecurityUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
@@ -39,11 +40,11 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIdentity<?>>
+public abstract class FssControllerTemplate<I extends UserIdentity<?>>
         implements FssReadUrlResolver {
 
     @Autowired(required = false)
-    private FssServiceTemplate<T, I> service;
+    private FssServiceTemplate<I> service;
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -54,14 +55,14 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     @GetMapping("/upload-limit/{type}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public FssUploadLimit getUploadLimit(@PathVariable("type") T type) {
+    public FssUploadLimit getUploadLimit(@PathVariable("type") String type) {
         return this.service.getUploadLimit(type, getUserIdentity());
     }
 
     @PostMapping("/upload/{type}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
             MultipartHttpServletRequest request) {
         return upload(type, null, request);
     }
@@ -69,7 +70,7 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
     @PostMapping("/upload/{type}/{resource}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") T type,
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
             @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
@@ -203,6 +204,8 @@ public abstract class FssControllerTemplate<T extends Enum<T>, I extends UserIde
         return url.substring(index + 4); // 通配符部分
     }
 
-    protected abstract I getUserIdentity();
+    protected I getUserIdentity() {
+        return SecurityUtil.getAuthorizedUserIdentity();
+    }
 
 }

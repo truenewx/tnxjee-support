@@ -11,9 +11,9 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
  *
  * @author jianglei
  */
-public interface FssAccessStrategy<T extends Enum<T>, I extends UserIdentity<?>> {
+public interface FssAccessStrategy<I extends UserIdentity<?>> {
 
-    T getType();
+    String getType();
 
     FssProvider getProvider();
 

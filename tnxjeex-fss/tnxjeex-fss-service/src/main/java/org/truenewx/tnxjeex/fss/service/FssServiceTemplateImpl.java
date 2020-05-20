@@ -29,10 +29,10 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
  *
  * @author jianglei
  */
-public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>>
-        implements FssServiceTemplate<T, I>, ContextInitializedBean {
+public class FssServiceTemplateImpl<I extends UserIdentity<?>>
+        implements FssServiceTemplate<I>, ContextInitializedBean {
 
-    private final Map<T, FssAccessStrategy<T, I>> strategies = new HashMap<>();
+    private final Map<String, FssAccessStrategy<I>> strategies = new HashMap<>();
     private final Map<FssProvider, FssAuthorizer> authorizers = new HashMap<>();
     private final Map<FssProvider, FssProviderAccessor> providerAccessors = new HashMap<>();
     private FssLocalAccessor localAccessor;
@@ -46,7 +46,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
     @Override
     public void afterInitialized(ApplicationContext context) throws Exception {
         Map<String, FssAccessStrategy> strategies = context.getBeansOfType(FssAccessStrategy.class);
-        for (FssAccessStrategy<T, I> strategy : strategies.values()) {
+        for (FssAccessStrategy<I> strategy : strategies.values()) {
             this.strategies.put(strategy.getType(), strategy);
         }
 
@@ -62,23 +62,23 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
     }
 
     @Override
-    public FssUploadLimit getUploadLimit(T type, I userIdentity) {
+    public FssUploadLimit getUploadLimit(String type, I userIdentity) {
         return getStrategy(type).getUploadLimit(userIdentity);
     }
 
-    private FssAccessStrategy<T, I> getStrategy(T type) {
-        FssAccessStrategy<T, I> strategy = this.strategies.get(type);
+    private FssAccessStrategy<I> getStrategy(String type) {
+        FssAccessStrategy<I> strategy = this.strategies.get(type);
         if (strategy == null) {
-            throw new BusinessException(FssExceptionCodes.NO_ACCESS_STRATEGY_FOR_TYPE,
-                    type.name());
+            throw new BusinessException(FssExceptionCodes.NO_ACCESS_STRATEGY_FOR_TYPE, type);
         }
         return strategy;
     }
 
     @Override
-    public String write(T type, String resource, I userIdentity, String filename, InputStream in)
+    public String write(String type, String resource, I userIdentity, String filename,
+            InputStream in)
             throws IOException {
-        FssAccessStrategy<T, I> strategy = getStrategy(type);
+        FssAccessStrategy<I> strategy = getStrategy(type);
         String extension = validateExtension(strategy, userIdentity, filename);
         FssProvider provider = strategy.getProvider();
         // 用BufferedInputStream装载以确保输入流可以标记和重置位置
@@ -117,7 +117,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
         return getStorageUrl(provider, bucket, path);
     }
 
-    private String validateExtension(FssAccessStrategy<T, I> strategy, I user, String filename) {
+    private String validateExtension(FssAccessStrategy<I> strategy, I user, String filename) {
         String extension = FilenameUtils.getExtension(filename);
         FssUploadLimit uploadLimit = strategy.getUploadLimit(user);
         String[] extensions = uploadLimit.getExtensions();
@@ -170,7 +170,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
         if (url.isValid()) {
             String bucket = url.getBucket();
             String path = standardizePath(url.getPath());
-            FssAccessStrategy<T, I> strategy = validateUserRead(userIdentity, bucket, path);
+            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path);
             // 如果访问策略要求读取地址为本地地址，则使用自有提供商
             FssProvider provider = strategy.isReadLocally() ? FssProvider.OWN
                     : url.getProvider(); // 使用内部协议确定的提供商而不是访问策略下现有的提供商，以免访问策略的历史提供商有变化
@@ -183,7 +183,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
         return null;
     }
 
-    private String appendThumbnailParameters(FssAccessStrategy<T, I> strategy, String path) {
+    private String appendThumbnailParameters(FssAccessStrategy<I> strategy, String path) {
         if (strategy != null) {
             Map<String, String> thumbnailParameters = strategy.getThumbnailParameters();
             if (thumbnailParameters != null && thumbnailParameters.size() > 0) {
@@ -208,7 +208,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
         return path;
     }
 
-    private FssAccessStrategy<T, I> validateUserRead(I userIdentity, String bucket, String path) {
+    private FssAccessStrategy<I> validateUserRead(I userIdentity, String bucket, String path) {
         // 存储桶相同，且用户对指定路径具有读权限，则匹配
         // 这要求访问策略具有唯一的存储桶，或者与其它访问策略的存储桶相同时，下级存放路径不同
         return this.strategies.values().stream()
@@ -250,7 +250,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
     @Override
     public long getLastModifiedTime(I userIdentity, String bucket, String path) {
         path = standardizePath(path);
-        FssAccessStrategy<T, I> strategy = validateUserRead(userIdentity, bucket, path);
+        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path);
         long lastModifiedTime = this.localAccessor.getLastModifiedTime(bucket, path);
         if (lastModifiedTime <= 0) {
             FssProviderAccessor providerAccessor = this.providerAccessors
@@ -266,7 +266,7 @@ public class FssServiceTemplateImpl<T extends Enum<T>, I extends UserIdentity<?>
     public void read(I userIdentity, String bucket, String path, OutputStream out)
             throws IOException {
         path = standardizePath(path);
-        FssAccessStrategy<T, I> strategy = validateUserRead(userIdentity, bucket, path); // 校验读取权限
+        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path); // 校验读取权限
         if (!this.localAccessor.read(bucket, path, out)) {
             FssProviderAccessor providerAccessor = this.providerAccessors
                     .get(strategy.getProvider());
