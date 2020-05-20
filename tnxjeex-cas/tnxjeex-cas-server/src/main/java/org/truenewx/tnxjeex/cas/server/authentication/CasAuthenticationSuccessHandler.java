@@ -27,7 +27,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
         this.ticketManager.createTicketGrantingTicket(request, response);
-        CasUserIdentityAuthenticationToken token = (CasUserIdentityAuthenticationToken) authentication;
+        CasUserSpecificDetailsAuthenticationToken token = (CasUserSpecificDetailsAuthenticationToken) authentication;
         String service = token.getService();
         String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
         // 此处一定是表单提交鉴权成功，无需AjaxRedirectStrategy

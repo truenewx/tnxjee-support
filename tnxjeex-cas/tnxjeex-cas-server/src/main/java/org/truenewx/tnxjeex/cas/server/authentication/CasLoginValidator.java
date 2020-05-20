@@ -1,12 +1,12 @@
 package org.truenewx.tnxjeex.cas.server.authentication;
 
-import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 
 /**
  * CAS登录校验器
  */
 public interface CasLoginValidator {
 
-    UserIdentity<?> validateLogin(String userType, String username, String password);
+    UserSpecificDetails<?> validateLogin(String userType, String username, String password);
 
 }

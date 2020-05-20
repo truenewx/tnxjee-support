@@ -1,8 +1,9 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.LogUtil;
-import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.web.security.util.SecurityUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
 
@@ -76,13 +77,12 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         if (ticket == null) { // 不存在则创建新的
             String text = sessionId + Strings.MINUS + service + Strings.MINUS + now.getTime();
             String ticketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(text);
-            UserIdentity<?> userIdentity = SecurityUtil.getAuthorizedUserIdentity();
             long timeout = this.serverProperties.getServlet().getSession().getTimeout().toMillis();
             Date expiredTime = new Date(now.getTime() + timeout);
             ticket = new ServiceTicket(ticketId);
             ticket.setTicketGrantingTicket(ticketGrantingTicket);
             ticket.setService(service);
-            ticket.setUserIdentity(userIdentity);
+            ticket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
             ticket.setCreateTime(now);
             ticket.setExpiredTime(expiredTime);
             this.serviceTicketRepo.save(ticket);
@@ -97,10 +97,14 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         if (ticket == null || !ticket.getService().equals(service)) {
             return null;
         }
-        String userIdentity = ticket.getUserIdentity().toString();
-        AttributePrincipal principal = new AttributePrincipalImpl(userIdentity);
+        UserSpecificDetails<?> userDetails = ticket.getUserDetails();
+        AttributePrincipal principal = new AttributePrincipalImpl(userDetails.getIdentity().toString());
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("username", userDetails.getUsername());
+        attributes.put("caption", userDetails.getCaption());
+        attributes.put("authorities", userDetails.getAuthorities());
         return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(),
-                ticket.getCreateTime(), Collections.emptyMap());
+                ticket.getCreateTime(), attributes);
     }
 
     @Override

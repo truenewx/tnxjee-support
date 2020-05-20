@@ -3,7 +3,7 @@ package org.truenewx.tnxjeex.cas.server.ticket;
 import java.util.Date;
 
 import org.truenewx.tnxjee.model.entity.unity.AbstractUnity;
-import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 
 /**
  * 服务票据
@@ -11,7 +11,7 @@ import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 public class ServiceTicket extends AbstractUnity<String> {
 
     private String ticketGrantingTicket;
-    private UserIdentity<?> userIdentity;
+    private UserSpecificDetails<?> userDetails;
     private String service;
     private Date createTime;
     private Date expiredTime;
@@ -31,12 +31,12 @@ public class ServiceTicket extends AbstractUnity<String> {
         this.ticketGrantingTicket = ticketGrantingTicket;
     }
 
-    public UserIdentity<?> getUserIdentity() {
-        return this.userIdentity;
+    public UserSpecificDetails<?> getUserDetails() {
+        return this.userDetails;
     }
 
-    public void setUserIdentity(UserIdentity<?> userIdentity) {
-        this.userIdentity = userIdentity;
+    public void setUserDetails(UserSpecificDetails<?> userDetails) {
+        this.userDetails = userDetails;
     }
 
     public String getService() {
