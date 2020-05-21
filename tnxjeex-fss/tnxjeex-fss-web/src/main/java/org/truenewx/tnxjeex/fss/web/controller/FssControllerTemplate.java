@@ -128,7 +128,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
                 readUrl = contextPath + readUrl;
             }
             // 加上主机地址
-            String host = WebUtil.getHost(SpringWebContext.getRequest());
+            String host = WebUtil.getHost(SpringWebContext.getRequest(), true);
             readUrl = "//" + host + readUrl;
         }
         return readUrl;
