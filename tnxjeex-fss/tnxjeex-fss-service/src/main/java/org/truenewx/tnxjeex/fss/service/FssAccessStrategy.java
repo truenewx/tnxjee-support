@@ -2,6 +2,7 @@ package org.truenewx.tnxjeex.fss.service;
 
 import java.util.Map;
 
+import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
@@ -13,28 +14,14 @@ import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
  */
 public interface FssAccessStrategy<I extends UserIdentity<?>> {
 
+    /**
+     * 获取业务类型，要求在同一个系统中唯一
+     *
+     * @return 业务类型
+     */
     String getType();
 
     FssProvider getProvider();
-
-    /**
-     * 指定是否需要本地存储，默认为true
-     *
-     * @return 是否本地存储
-     */
-    default boolean isStoreLocally() {
-        return true;
-    }
-
-    /**
-     * 指定读取地址是否为本地地址，当需要由策略严格控制读取权限时应该返回true<br>
-     * 默认返回false，此时读取地址由提供商提供
-     *
-     * @return 读取地址是否为本地地址
-     */
-    default boolean isReadLocally() {
-        return false;
-    }
 
     /**
      * 获取在当前策略下，指定用户上传文件的限制条件
@@ -43,13 +30,6 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
      * @return 指定用户上传文件的限制条件
      */
     FssUploadLimit getUploadLimit(I userIdentity);
-
-    /**
-     * 获取存储桶名，存储桶名要求全系统唯一，或者与其它策略的存储桶相同时，下级存放路径不同
-     *
-     * @return 存储桶名
-     */
-    String getBucket();
 
     /**
      * 是否将上传文件的MD5码作为文件名
@@ -61,22 +41,50 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
     }
 
     /**
-     * 获取指定资源的存储路径（含扩展名）
+     * 获取存储路径上下文根，要求在同一个系统中唯一
      *
-     * @param token        业务标识
-     * @param userIdentity 当前登录用户
-     * @param filename     原始文件名，含扩展名
-     * @return 存储路径，已预见的业务场景中不会出现无写权限时，直接返回null表示没有写权限
+     * @return 存储路径上下文根
      */
-    String getPath(String token, I userIdentity, String filename);
+    default String getContextPath() {
+        return Strings.SLASH + getType();
+    }
 
+    /**
+     * 获取指定资源的相对于上下文根的存储路径（含扩展名）
+     *
+     * @param modelIdentity 业务模型标识
+     * @param userIdentity  用户标识
+     * @param filename      原始文件名，含扩展名
+     * @return 相对于上下文根的存储路径，返回null表示没有写权限
+     */
+    String getRelativePath(String modelIdentity, I userIdentity, String filename);
+
+    /**
+     * @return 是否公开匿名可读
+     */
     default boolean isPublicReadable() {
         return false;
     }
 
-    boolean isReadable(I userIdentity, String path);
+    /**
+     * 判断指定用户对指定相对路径是否可读
+     *
+     * @param userIdentity 用户标识
+     * @param relativePath 相对路径
+     * @return 指定用户对指定相对路径是否可读
+     */
+    default boolean isReadable(I userIdentity, String relativePath) {
+        return isPublicReadable();
+    }
 
-    boolean isWritable(I userIdentity, String path);
+    /**
+     * 判断指定用户对指定相对路径是否可写
+     *
+     * @param userIdentity 用户标识
+     * @param relativePath 相对路径
+     * @return 指定用户对指定相对路径是否可写
+     */
+    boolean isWritable(I userIdentity, String relativePath);
 
     /**
      * 获取缩略图读取参数集，仅在文件为图片时有效，返回空时表示不支持缩略图

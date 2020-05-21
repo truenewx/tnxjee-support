@@ -2,8 +2,6 @@ package org.truenewx.tnxjeex.fss.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,11 +65,12 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
         return upload(type, null, request);
     }
 
-    @PostMapping("/upload/{type}/{resource}")
+    @PostMapping("/upload/{type}/{modelIdentity}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
-            @PathVariable("resource") String resource, MultipartHttpServletRequest request) {
+            @PathVariable("modelIdentity") String modelIdentity,
+            MultipartHttpServletRequest request) {
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
         Collection<MultipartFile> files = request.getFiles("files");
@@ -84,7 +83,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
 
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 I userIdentity = getUserIdentity();
-                String storageUrl = this.service.write(type, resource, userIdentity, filename, in);
+                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
                 in.close();
 
                 FssUploadedFileMeta result;
@@ -166,42 +165,24 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
         return metas;
     }
 
-    @GetMapping("/dl/**")
+    @GetMapping("/dl/{path}")
     @ResponseStream
     @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
-    public String download(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        String url = getBucketAndPathFragmentUrl(request);
-        int index = url.indexOf(Strings.SLASH);
-        String bucket = url.substring(0, index);
-        String path = url.substring(index + 1);
-
+    public String download(@PathVariable("path") String path, HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         long modifiedSince = request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE);
         I userIdentity = getUserIdentity();
-        long modifiedTime = this.service.getLastModifiedTime(userIdentity, bucket, path);
+        long modifiedTime = this.service.getLastModifiedTime(userIdentity, path);
         response.setDateHeader(HttpHeaders.LAST_MODIFIED, modifiedTime);
         response.setContentType(Mimetypes.getInstance().getMimetype(path));
         if (modifiedSince == modifiedTime) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED); // 如果相等则返回表示未修改的状态码
         } else {
             ServletOutputStream out = response.getOutputStream();
-            this.service.read(userIdentity, bucket, path, out);
+            this.service.read(userIdentity, path, out);
             out.close();
         }
         return null;
-    }
-
-    /**
-     * 获取存储桶和路径所在的URL片段，子类可覆写实现自定义的路径格式
-     *
-     * @param request HTTP请求
-     * @return 存储桶和路径所在的URL片段
-     */
-    protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {
-        String url = WebUtil.getRelativeRequestUrl(request);
-        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
-        int index = url.indexOf("/dl/");
-        return url.substring(index + 4); // 通配符部分
     }
 
     protected I getUserIdentity() {

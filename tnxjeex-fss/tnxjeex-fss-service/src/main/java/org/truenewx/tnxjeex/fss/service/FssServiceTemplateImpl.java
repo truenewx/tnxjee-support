@@ -10,8 +10,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
@@ -34,13 +34,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
 
     private final Map<String, FssAccessStrategy<I>> strategies = new HashMap<>();
     private final Map<FssProvider, FssAuthorizer> authorizers = new HashMap<>();
-    private final Map<FssProvider, FssProviderAccessor> providerAccessors = new HashMap<>();
-    private FssLocalAccessor localAccessor;
-
-    @Autowired
-    public void setLocalAccessor(FssLocalAccessor localAccessor) {
-        this.localAccessor = localAccessor;
-    }
+    private final Map<FssProvider, FssAccessor> accessors = new HashMap<>();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
@@ -55,9 +49,9 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
             this.authorizers.put(authorizer.getProvider(), authorizer);
         }
 
-        Map<String, FssProviderAccessor> accessors = context.getBeansOfType(FssProviderAccessor.class);
-        for (FssProviderAccessor accessor : accessors.values()) {
-            this.providerAccessors.put(accessor.getProvider(), accessor);
+        Map<String, FssAccessor> accessors = context.getBeansOfType(FssAccessor.class);
+        for (FssAccessor accessor : accessors.values()) {
+            this.accessors.put(accessor.getProvider(), accessor);
         }
     }
 
@@ -75,9 +69,8 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     }
 
     @Override
-    public String write(String type, String resource, I userIdentity, String filename,
-            InputStream in)
-            throws IOException {
+    public String write(String type, String modelIdentity, I userIdentity, String filename,
+            InputStream in) throws IOException {
         FssAccessStrategy<I> strategy = getStrategy(type);
         String extension = validateExtension(strategy, userIdentity, filename);
         FssProvider provider = strategy.getProvider();
@@ -88,9 +81,9 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         if (strategy.isMd5AsFilename()) {
             String md5Code = EncryptUtil.encryptByMd5(in);
             in.reset();
-            path = strategy.getPath(resource, userIdentity, md5Code + extension);
+            path = strategy.getRelativePath(modelIdentity, userIdentity, md5Code + extension);
         } else {
-            path = strategy.getPath(resource, userIdentity, filename);
+            path = strategy.getRelativePath(modelIdentity, userIdentity, filename);
         }
         if (path == null) {
             throw new BusinessException(FssExceptionCodes.NO_WRITE_AUTHORITY);
@@ -100,21 +93,16 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
             throw new BusinessException(FssExceptionCodes.NO_WRITE_AUTHORITY);
         }
 
-        String bucket = strategy.getBucket();
-        // 如果访问策略指定需要本地存储，则进行本地存储；
-        // 但如果此时服务提供商是自有，则为了避免重复存储，跳过本地存储
-        if (strategy.isStoreLocally() && provider != FssProvider.OWN) {
-            this.localAccessor.write(bucket, path, filename, in);
+        FssAccessor accessor = this.accessors.get(provider);
+        if (accessor != null) {
+            accessor.write(in, path, filename);
         }
-        FssProviderAccessor providerAccessor = this.providerAccessors.get(provider);
-        if (providerAccessor != null) {
-            providerAccessor.write(bucket, path, filename, in);
-        }
+        String contextPath = strategy.getContextPath();
         if (strategy.isPublicReadable()) {
             FssAuthorizer authorizer = this.authorizers.get(provider);
-            authorizer.authorizePublicRead(bucket, path);
+            authorizer.authorizePublicRead(contextPath, path);
         }
-        return getStorageUrl(provider, bucket, path);
+        return getStorageUrl(provider, contextPath, path);
     }
 
     private String validateExtension(FssAccessStrategy<I> strategy, I user, String filename) {
@@ -140,20 +128,20 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         return extension;
     }
 
-    protected String getStorageUrl(FssProvider provider, String bucket, String path) {
-        return new FssStorageUrl(provider, bucket, path).toString();
+    protected String getStorageUrl(FssProvider provider, String contextPath, String relativePath) {
+        return new FssStorageUrl(provider, contextPath, relativePath).toString();
     }
 
     /**
-     * 使路径格式标准化，不以斜杠开头，也不以斜杠结尾<br/>
+     * 使路径格式标准化，以斜杠开头，不以斜杠结尾<br/>
      * 所有存储服务提供商均接收该标准的路径，如服务提供商对路径的要求与此不同，则服务提供商的实现类中再做转换
      *
      * @param path 标准化前的路径
      * @return 标准化后的路径
      */
     private String standardizePath(String path) {
-        if (path.startsWith(Strings.SLASH)) { // 不能以斜杠开头
-            return path.substring(1);
+        if (!path.startsWith(Strings.SLASH)) { // 以斜杠开头
+            path = Strings.SLASH + path;
         }
         if (path.endsWith(Strings.SLASH)) { // 不能以斜杠结尾
             path = path.substring(0, path.length() - 1);
@@ -163,22 +151,22 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
 
     @Override
     public String getReadUrl(I userIdentity, String storageUrl, boolean thumbnail) {
-        return getReadUrl(userIdentity, new FssStorageUrl(storageUrl), thumbnail);
+        FssStorageUrl url = buildStorageUrl(userIdentity, storageUrl);
+        return getReadUrl(userIdentity, url, thumbnail);
     }
 
     private String getReadUrl(I userIdentity, FssStorageUrl url, boolean thumbnail) {
         if (url.isValid()) {
-            String bucket = url.getBucket();
-            String path = standardizePath(url.getPath());
-            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path);
-            // 如果访问策略要求读取地址为本地地址，则使用自有提供商
-            FssProvider provider = strategy.isReadLocally() ? FssProvider.OWN
-                    : url.getProvider(); // 使用内部协议确定的提供商而不是访问策略下现有的提供商，以免访问策略的历史提供商有变化
+            String contextPath = standardizePath(url.getContextPath());
+            String path = contextPath + standardizePath(url.getRelativePath());
+            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, path);
+            // 使用内部协议确定的提供商而不是访问策略下现有的提供商，以免访问策略的历史提供商有变化
+            FssProvider provider = url.getProvider();
             FssAuthorizer authorizer = this.authorizers.get(provider);
             if (thumbnail) {
                 path = appendThumbnailParameters(strategy, path);
             }
-            return authorizer.getReadUrl(userIdentity, bucket, path);
+            return authorizer.getReadUrl(userIdentity, contextPath, path);
         }
         return null;
     }
@@ -208,71 +196,70 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         return path;
     }
 
-    private FssAccessStrategy<I> validateUserRead(I userIdentity, String bucket, String path) {
-        // 存储桶相同，且用户对指定路径具有读权限，则匹配
-        // 这要求访问策略具有唯一的存储桶，或者与其它访问策略的存储桶相同时，下级存放路径不同
+    private FssAccessStrategy<I> validateUserRead(I userIdentity, String path) {
+        // 根据上下文根路径判断所属访问策略，这要求所有的访问策略拥有各自唯一的上下文根路径
         return this.strategies.values().stream()
-                .filter(s -> s.getBucket().equals(bucket) && s.isReadable(userIdentity, path)).findFirst()
+                .filter(s -> path.startsWith(s.getContextPath()) && s.isReadable(userIdentity, path)).findFirst()
                 .orElseThrow(() -> {
                     // 如果没有找到匹配的访问策略，则说明没有读权限
-                    String url = Strings.SLASH + bucket;
-                    if (!path.startsWith(Strings.SLASH)) {
-                        url += Strings.SLASH;
-                    }
-                    url += path;
-                    return new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, url);
+                    return new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, path);
                 });
     }
 
-    @Override
-    public FssFileMeta getMeta(I userIdentity, String storageUrl) {
-        FssStorageUrl url = new FssStorageUrl(storageUrl);
-        String readUrl = getReadUrl(userIdentity, url, false);
-        if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
-            // 先尝试从本地获取
-            String filename = this.localAccessor.getFilename(url.getBucket(), url.getPath());
-            if (filename == null) {
-                // 本地无法获取才尝试从服务提供商处获取
-                FssProvider provider = url.getProvider();
-                FssProviderAccessor providerAccessor = this.providerAccessors.get(provider);
-                if (providerAccessor != null) {
-                    filename = providerAccessor.getFilename(url.getBucket(), url.getPath());
+    private FssStorageUrl buildStorageUrl(I userIdentity, String storageUrl) {
+        int index = storageUrl.indexOf("://");
+        if (index > 0) {
+            String protocol = storageUrl.substring(0, index);
+            FssProvider provider = EnumUtils.getEnum(FssProvider.class, protocol.toUpperCase());
+            if (provider != null) {
+                String path = storageUrl.substring(index + 3);
+                FssAccessStrategy<I> strategy = validateUserRead(userIdentity, path);
+                if (strategy != null) {
+                    String contextPath = strategy.getContextPath();
+                    String relativePath = path.substring(contextPath.length());
+                    return new FssStorageUrl(provider, contextPath, relativePath);
                 }
-            }
-            if (filename != null) {
-                String thumbnailReadUrl = getReadUrl(userIdentity, url, true);
-                return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
             }
         }
         return null;
     }
 
     @Override
-    public long getLastModifiedTime(I userIdentity, String bucket, String path) {
-        path = standardizePath(path);
-        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path);
-        long lastModifiedTime = this.localAccessor.getLastModifiedTime(bucket, path);
-        if (lastModifiedTime <= 0) {
-            FssProviderAccessor providerAccessor = this.providerAccessors
-                    .get(strategy.getProvider());
-            if (providerAccessor != null) {
-                lastModifiedTime = providerAccessor.getLastModifiedTime(bucket, path);
+    public FssFileMeta getMeta(I userIdentity, String storageUrl) {
+        FssStorageUrl url = buildStorageUrl(userIdentity, storageUrl);
+        if (url != null) {
+            FssAccessor accessor = this.accessors.get(url.getProvider());
+            if (accessor != null) {
+                String filename = accessor.getFilename(url.getPath());
+                if (filename != null) {
+                    String thumbnailReadUrl = getReadUrl(userIdentity, url, true);
+                    String readUrl = getReadUrl(userIdentity, url, false);
+                    return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
+                }
             }
         }
-        return lastModifiedTime;
+        return null;
     }
 
     @Override
-    public void read(I userIdentity, String bucket, String path, OutputStream out)
+    public Long getLastModifiedTime(I userIdentity, String path) {
+        path = standardizePath(path);
+        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, path);
+        FssAccessor accessor = this.accessors.get(strategy.getProvider());
+        if (accessor != null) {
+            return accessor.getLastModifiedTime(path);
+        }
+        return null;
+    }
+
+    @Override
+    public void read(I userIdentity, String path, OutputStream out)
             throws IOException {
         path = standardizePath(path);
-        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, bucket, path); // 校验读取权限
-        if (!this.localAccessor.read(bucket, path, out)) {
-            FssProviderAccessor providerAccessor = this.providerAccessors
-                    .get(strategy.getProvider());
-            if (providerAccessor != null) {
-                providerAccessor.read(bucket, path, out);
-            }
+        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, path); // 校验读取权限
+        FssAccessor accessor = this.accessors.get(strategy.getProvider());
+        if (accessor != null) {
+            accessor.read(path, out);
         }
     }
 

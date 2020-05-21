@@ -2,7 +2,6 @@ package org.truenewx.tnxjeex.fss.service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.truenewx.tnxjeex.fss.service.FssLocalAccessor;
 import org.truenewx.tnxjeex.fss.service.own.OwnFssAccessor;
 import org.truenewx.tnxjeex.fss.service.own.OwnFssAuthorizer;
 
@@ -13,10 +12,8 @@ import org.truenewx.tnxjeex.fss.service.own.OwnFssAuthorizer;
 public class OwnFssServiceConfig {
 
     @Bean
-    public FssLocalAccessor fssLocalAccessor(
-            FssLocalAccessorProperties fssLocalAccessorProperties) {
-        String root = fssLocalAccessorProperties.getRoot();
-        return new FssLocalAccessor(root, getLocalAccessorSalt());
+    public OwnFssAccessor ownFssAccessor(FssLocalAccessorProperties properties) {
+        return new OwnFssAccessor(properties.getRoot(), getLocalAccessorSalt());
     }
 
     protected Byte getLocalAccessorSalt() {
@@ -24,14 +21,8 @@ public class OwnFssServiceConfig {
     }
 
     @Bean
-    public OwnFssAccessor ownFssAccessor(FssLocalAccessor localAccessor) {
-        OwnFssAccessor accessor = new OwnFssAccessor();
-        accessor.setLocalAccessor(localAccessor);
-        return accessor;
-    }
-
-    @Bean
     public OwnFssAuthorizer ownFssAuthorizer() {
         return new OwnFssAuthorizer();
     }
+
 }
