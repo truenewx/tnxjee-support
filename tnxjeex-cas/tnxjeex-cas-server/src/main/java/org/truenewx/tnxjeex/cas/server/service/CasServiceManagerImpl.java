@@ -3,7 +3,6 @@ package org.truenewx.tnxjeex.cas.server.service;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.service.exception.BusinessException;
@@ -16,10 +15,9 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
  * @author jianglei
  */
 @Component
-@EnableConfigurationProperties(CasServerProperties.class)
 public class CasServiceManagerImpl implements CasServiceManager {
 
-    @Autowired(required = false)
+    @Autowired
     private CasServerProperties serverProperties;
     @Autowired
     private TicketManager ticketManager;

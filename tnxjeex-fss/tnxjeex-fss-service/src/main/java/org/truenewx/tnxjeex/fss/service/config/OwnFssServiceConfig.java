@@ -1,6 +1,5 @@
 package org.truenewx.tnxjeex.fss.service.config;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.truenewx.tnxjeex.fss.service.FssLocalAccessor;
@@ -11,7 +10,6 @@ import org.truenewx.tnxjeex.fss.service.own.OwnFssAuthorizer;
  * 自有文件存储服务配置
  */
 @Configuration
-@EnableConfigurationProperties(FssLocalAccessorProperties.class)
 public class OwnFssServiceConfig {
 
     @Bean

@@ -3,6 +3,7 @@ package org.truenewx.tnxjeex.cas.client.config;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.cas.ServiceProperties;
 import org.truenewx.tnxjee.core.Strings;
@@ -12,6 +13,7 @@ import org.truenewx.tnxjee.core.Strings;
  *
  * @author jianglei
  */
+@Configuration
 @ConfigurationProperties("tnxjeex.cas")
 public class CasClientProperties extends ServiceProperties {
 

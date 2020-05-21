@@ -8,18 +8,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.web.api.meta.model.ApiMetaProperties;
-import org.truenewx.tnxjee.web.security.config.SecurityLoginConfigurerSupport;
+import org.truenewx.tnxjee.web.security.config.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.client.filter.CasClientAuthenticationFilter;
 
 /**
- * CAS客户端登录配置器
+ * CAS客户端登录安全配置器
  */
 @Component
-public class CasClientLoginConfigurer
-        extends SecurityLoginConfigurerSupport<CasAuthenticationProvider> {
+public class CasClientLoginSecurityConfigurer
+        extends LoginSecurityConfigurerSupport<CasAuthenticationProvider> {
 
-    @Autowired(required = false)
+    @Autowired
     private ApiMetaProperties apiMetaProperties;
     @Autowired
     private RedirectStrategy redirectStrategy;

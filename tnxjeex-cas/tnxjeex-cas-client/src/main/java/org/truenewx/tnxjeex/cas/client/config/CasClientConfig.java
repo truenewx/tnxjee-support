@@ -2,7 +2,6 @@ package org.truenewx.tnxjeex.cas.client.config;
 
 import org.jasig.cas.client.validation.TicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
@@ -12,7 +11,6 @@ import org.truenewx.tnxjeex.cas.client.userdetails.DefaultCasAssertionUserDetail
 import org.truenewx.tnxjeex.cas.client.validation.CasJsonServiceTicketValidator;
 
 @Configuration
-@EnableConfigurationProperties(CasClientProperties.class)
 public class CasClientConfig {
 
     static {

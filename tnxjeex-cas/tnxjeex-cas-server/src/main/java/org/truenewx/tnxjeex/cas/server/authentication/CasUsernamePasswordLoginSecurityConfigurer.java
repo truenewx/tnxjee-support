@@ -5,7 +5,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-import org.truenewx.tnxjee.web.security.config.SecurityLoginConfigurerSupport;
+import org.truenewx.tnxjee.web.security.config.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 
 /**
@@ -13,8 +13,8 @@ import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAu
  */
 @Component
 // 指定AuthenticationProvider实现类
-public class CasUsernamePasswordLoginConfigurer
-        extends SecurityLoginConfigurerSupport<CasUsernamePasswordAuthenticationProvider> {
+public class CasUsernamePasswordLoginSecurityConfigurer
+        extends LoginSecurityConfigurerSupport<CasUsernamePasswordAuthenticationProvider> {
 
     @Autowired
     private CasServiceAuthenticationDetailsSource authenticationDetailsSource;

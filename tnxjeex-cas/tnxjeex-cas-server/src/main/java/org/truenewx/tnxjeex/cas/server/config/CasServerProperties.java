@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.truenewx.tnxjeex.cas.server.service.CasService;
 
 /**
@@ -11,6 +12,7 @@ import org.truenewx.tnxjeex.cas.server.service.CasService;
  *
  * @author jianglei
  */
+@Configuration
 @ConfigurationProperties("tnxjeex.cas")
 public class CasServerProperties {
 
