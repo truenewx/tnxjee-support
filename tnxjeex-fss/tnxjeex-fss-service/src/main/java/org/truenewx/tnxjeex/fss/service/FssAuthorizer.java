@@ -19,20 +19,17 @@ public interface FssAuthorizer {
 
     /**
      * 授权指定资源为公开可读
-     *
-     * @param bucket 存储桶名称
      * @param path   资源路径
      */
-    void authorizePublicRead(String bucket, String path);
+    void authorizePublicRead(String path);
 
     /**
      * 获取指定资源读取URL
      *
      * @param userIdentity 用户标识
-     * @param bucket       存储桶名称
      * @param path         资源路径
      * @return 资源读取URL
      */
-    String getReadUrl(UserIdentity<?> userIdentity, String bucket, String path);
+    String getReadUrl(UserIdentity<?> userIdentity, String path);
 
 }

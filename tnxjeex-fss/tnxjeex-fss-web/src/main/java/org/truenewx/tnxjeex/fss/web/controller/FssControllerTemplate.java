@@ -2,6 +2,8 @@ package org.truenewx.tnxjeex.fss.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -165,16 +167,17 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
         return metas;
     }
 
-    @GetMapping("/dl/{path}")
+    @GetMapping("/dl/**")
     @ResponseStream
     @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
-    public String download(@PathVariable("path") String path, HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        long modifiedSince = request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE);
+    public String download(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         I userIdentity = getUserIdentity();
+        String path = getDownloadPath(request);
         long modifiedTime = this.service.getLastModifiedTime(userIdentity, path);
         response.setDateHeader(HttpHeaders.LAST_MODIFIED, modifiedTime);
         response.setContentType(Mimetypes.getInstance().getMimetype(path));
+        long modifiedSince = request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE);
         if (modifiedSince == modifiedTime) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED); // 如果相等则返回表示未修改的状态码
         } else {
@@ -183,6 +186,14 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
             out.close();
         }
         return null;
+    }
+
+    protected String getDownloadPath(HttpServletRequest request) {
+        String url = WebUtil.getRelativeRequestUrl(request);
+        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        String downloadUrlPrefix = getDownloadUrlPrefix();
+        int index = url.indexOf(downloadUrlPrefix + Strings.SLASH);
+        return url.substring(index + downloadUrlPrefix.length()); // 通配符部分
     }
 
     protected I getUserIdentity() {

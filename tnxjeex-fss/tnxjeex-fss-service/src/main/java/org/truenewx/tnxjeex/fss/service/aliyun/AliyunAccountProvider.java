@@ -18,6 +18,7 @@ public class AliyunAccountProvider implements AliyunAccount {
     private String accountId;
     private String ossRegion;
     private String ossEndpoint;
+    private String ossBucket;
     private String ramRegion = "cn-hangzhou";
     private String adminAccessKeyId;
     private String adminAccessKeySecret;
@@ -41,6 +42,18 @@ public class AliyunAccountProvider implements AliyunAccount {
         } else {
             this.ossEndpoint = null;
         }
+    }
+
+    @Override
+    public String getOssBucket() {
+        return this.ossBucket;
+    }
+
+    /**
+     * @param ossBucket OSS存储桶名称
+     */
+    public void setOssBucket(String ossBucket) {
+        this.ossBucket = ossBucket;
     }
 
     /**

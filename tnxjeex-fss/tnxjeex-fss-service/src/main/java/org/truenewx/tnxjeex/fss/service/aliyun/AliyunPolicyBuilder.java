@@ -27,25 +27,26 @@ public class AliyunPolicyBuilder {
         this.account = account;
     }
 
-    public String buildName(String prefix, String bucket, String path) {
-        return prefix + bucket + Strings.MINUS + EncryptUtil.encryptByMd5(path); // 加密路径以确保无特殊字符
+    public String buildName(String prefix, String path) {
+        return prefix + this.account.getOssBucket() + Strings.MINUS
+                + EncryptUtil.encryptByMd5(path); // 加密路径以确保无特殊字符
     }
 
-    public String buildReadDocument(String bucket, String path) {
-        return buildDocument(bucket, path, READ_OBJECT_ACTION_NAMES);
+    public String buildReadDocument(String path) {
+        return buildDocument(path, READ_OBJECT_ACTION_NAMES);
     }
 
     public String buildWriteDocument(String bucket, String path) {
-        return buildDocument(bucket, path, WRITE_OBJECT_ACTION_NAMES);
+        return buildDocument(path, WRITE_OBJECT_ACTION_NAMES);
     }
 
-    public String buildDocument(String bucket, String path, String[] actionNames) {
-        Map<String, Object> policy = buildPolicyMap(bucket, path, actionNames);
+    public String buildDocument(String path, String[] actionNames) {
+        Map<String, Object> policy = buildPolicyMap(path, actionNames);
         String document = JsonUtil.toJson(policy);
         return document;
     }
 
-    private Map<String, Object> buildPolicyMap(String bucket, String path, String[] actionNames) {
+    private Map<String, Object> buildPolicyMap(String path, String[] actionNames) {
         Map<String, Object> policy = new HashMap<>();
         policy.put("Version", "1");
 
@@ -63,7 +64,7 @@ public class AliyunPolicyBuilder {
 
         List<String> resources = new ArrayList<>();
         statement.put("Resource", resources);
-        resources.add(buildResource(bucket, path));
+        resources.add(buildResource(path));
 
         statement.put("Effect", "Allow");
 
@@ -74,9 +75,9 @@ public class AliyunPolicyBuilder {
         return "oss:" + actionName;
     }
 
-    private String buildResource(String bucket, String path) {
-        String resource = "acs:oss:*:" + this.account.getAccountId() + Strings.COLON + bucket
-                + Strings.SLASH + path;
+    private String buildResource(String path) {
+        String resource = "acs:oss:*:" + this.account.getAccountId() + Strings.COLON
+                + this.account.getOssBucket() + Strings.SLASH + path;
         if (resource.endsWith(Strings.SLASH)) { // 为目录授权则追加*
             resource += Strings.ASTERISK;
         }

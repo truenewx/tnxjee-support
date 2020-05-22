@@ -16,6 +16,8 @@ public interface AliyunAccount {
 
     String getOssEndpoint();
 
+    String getOssBucket();
+
     OSS getOssClient();
 
     IAcsClient getAcsClient();

@@ -1,6 +1,11 @@
 package org.truenewx.tnxjeex.fss.service.own;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
@@ -8,6 +13,7 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.io.AttachInputStream;
 import org.truenewx.tnxjee.core.io.AttachOutputStream;
 import org.truenewx.tnxjee.core.util.LogUtil;
+import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjeex.fss.service.FssAccessor;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
@@ -41,11 +47,11 @@ public class OwnFssAccessor implements FssAccessor {
     }
 
     @Override
-    public void write(InputStream in, String path, String filename)
-            throws IOException {
+    public void write(InputStream in, String path, String filename) throws IOException {
         // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
         File tempFile = createTempFile(path);
-        OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename, this.salt);
+        OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename,
+                this.salt);
         IOUtils.copy(in, out);
         out.close();
 
@@ -59,7 +65,8 @@ public class OwnFssAccessor implements FssAccessor {
 
     private File createTempFile(String path) throws IOException {
         // 形如：${正式文件名}_${32位UUID}.temp;
-        String relativePath = standardize(path) + Strings.UNDERLINE + StringUtil.uuid32() + Strings.DOT + "temp";
+        String relativePath = NetUtil.standardizeUrl(path) + Strings.UNDERLINE + StringUtil.uuid32()
+                + Strings.DOT + "temp";
         File file = new File(this.root, relativePath);
         ensureDirs(file);
         file.createNewFile(); // 创建新文件以写入内容
@@ -86,20 +93,9 @@ public class OwnFssAccessor implements FssAccessor {
     }
 
     private File getStorageFile(String path) {
-        File file = new File(this.root, standardize(path));
+        File file = new File(this.root, NetUtil.standardizeUrl(path));
         ensureDirs(file);
         return file;
-    }
-
-    private String standardize(String path) {
-        // 必须以斜杠开头，不能以斜杠结尾
-        if (!path.startsWith(Strings.SLASH)) {
-            path = Strings.SLASH + path;
-        }
-        if (path.endsWith(Strings.SLASH)) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path;
     }
 
     @Override
