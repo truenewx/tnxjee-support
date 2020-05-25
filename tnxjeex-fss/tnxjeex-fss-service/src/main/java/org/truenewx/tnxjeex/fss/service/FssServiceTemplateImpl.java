@@ -188,15 +188,19 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
 
     @Override
     public FssFileMeta getMeta(I userIdentity, String storageUrl) {
-        FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(storageUrl);
-        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
-        FssAccessor accessor = this.accessors.get(strategy.getProvider());
-        String path = strategy.getContextPath() + spa.getRelativePath();
-        String filename = accessor.getFilename(path);
-        if (filename != null) {
-            String thumbnailReadUrl = getReadUrl(userIdentity, spa, true);
-            String readUrl = getReadUrl(userIdentity, spa, false);
-            return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
+        if (StringUtils.isNotBlank(storageUrl)) {
+            FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(storageUrl);
+            if (spa != null) {
+                FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
+                FssAccessor accessor = this.accessors.get(strategy.getProvider());
+                String path = strategy.getContextPath() + spa.getRelativePath();
+                String filename = accessor.getFilename(path);
+                if (filename != null) {
+                    String thumbnailReadUrl = getReadUrl(userIdentity, spa, true);
+                    String readUrl = getReadUrl(userIdentity, spa, false);
+                    return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
+                }
+            }
         }
         return null;
     }

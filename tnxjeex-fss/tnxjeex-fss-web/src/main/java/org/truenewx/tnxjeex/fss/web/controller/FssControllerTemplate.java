@@ -157,11 +157,13 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
     public FssFileMeta[] metas(@RequestParam("storageUrls") String[] storageUrls) {
         FssFileMeta[] metas = new FssFileMeta[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
-            FssFileMeta meta = this.service.getMeta(getUserIdentity(), storageUrls[i]);
-            if (meta != null) {
-                meta.setReadUrl(getFullReadUrl(meta.getReadUrl()));
-                meta.setThumbnailReadUrl(getFullReadUrl(meta.getThumbnailReadUrl()));
-                metas[i] = meta;
+            if (StringUtils.isNotBlank(storageUrls[i])) {
+                FssFileMeta meta = this.service.getMeta(getUserIdentity(), storageUrls[i]);
+                if (meta != null) {
+                    meta.setReadUrl(getFullReadUrl(meta.getReadUrl()));
+                    meta.setThumbnailReadUrl(getFullReadUrl(meta.getThumbnailReadUrl()));
+                    metas[i] = meta;
+                }
             }
         }
         return metas;
