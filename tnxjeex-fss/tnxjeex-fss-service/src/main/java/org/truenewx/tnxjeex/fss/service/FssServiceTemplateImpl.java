@@ -95,8 +95,8 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         String path = contextPath + relativePath;
         FssAccessor accessor = this.accessors.get(provider);
         accessor.write(in, path, filename);
-        // 写好文件之后，如果访问策略是公开匿名可读，则还需要进行相应授权
-        if (strategy.isPublicReadable()) {
+        // 写好文件之后，如果访问策略是公开匿名可读，则还需要进行相应授权，不过本地自有提供商无需进行授权
+        if (strategy.isPublicReadable() && provider != FssProvider.OWN) {
             FssAuthorizer authorizer = this.authorizers.get(provider);
             authorizer.authorizePublicRead(path);
         }
@@ -135,8 +135,11 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     private String getReadUrl(I userIdentity, FssStoragePathAnalysis spa, boolean thumbnail) {
         if (spa != null && spa.isValid()) {
             FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
-            if (strategy != null) {
-                FssProvider provider = strategy.getProvider();
+            FssProvider provider = strategy.getProvider();
+            if (provider == FssProvider.OWN) {
+                // 本地自有提供商的读取URL与存储URL保持一致，以便于读取时判断所属访问策略
+                return spa.toString();
+            } else {
                 FssAuthorizer authorizer = this.authorizers.get(provider);
                 String path = strategy.getContextPath() + spa.getRelativePath();
                 if (thumbnail) {

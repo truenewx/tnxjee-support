@@ -81,7 +81,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
         try {
             if (isPublicRead(path)) {
                 // 以双斜杠开头，表示采用当前上下文的相同协议
-                StringBuffer url = new StringBuffer("//").append(getReadHost())
+                StringBuilder url = new StringBuilder("//").append(getReadHost())
                         .append(Strings.SLASH).append(path);
                 if (parameterString.length() > 0) {
                     url.append(Strings.QUESTION).append(parameterString);
