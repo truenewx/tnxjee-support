@@ -17,18 +17,19 @@ import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.AssertionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
+import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.web.security.util.SecurityUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
 
 /**
  * 票据管理器实现
  */
-@Component
+@Service
 public class TicketManagerImpl implements TicketManager, HttpSessionListener {
 
     private static final String COOKIE_TGT = "CASTGC";
@@ -63,18 +64,31 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
                 && ticketGrantingTicket.equals(getTicketGrantingTicket(sessionId));
     }
 
-    // 用户从浏览器登录CAS服务器成功后调用，以获取目标服务的票据
     @Override
-    public String getServiceTicket(HttpServletRequest request, String service) {
+    public Map<String, String> deleteServiceTickets(HttpServletRequest request) {
+        Map<String, String> mapping = new HashMap<>();
+        String sessionId = request.getSession().getId();
+        String ticketGrantingTicket = getTicketGrantingTicket(sessionId);
+        List<ServiceTicket> tickets = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
+        tickets.forEach(ticket -> {
+            mapping.put(ticket.getService(), ticket.getId());
+        });
+        return mapping;
+    }
+
+    // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
+    @Override
+    @WriteTransactional
+    public String getServiceTicket(HttpServletRequest request, String service, boolean create) {
         String sessionId = request.getSession().getId();
         String ticketGrantingTicket = getTicketGrantingTicket(sessionId);
         ServiceTicket ticket = this.serviceTicketRepo.findByTicketGrantingTicketAndService(ticketGrantingTicket, service);
-        Date now = new Date();
-        if (ticket != null && ticket.getExpiredTime().before(now)) { // 已过期的先删除，再视为null
+        if (ticket != null && ticket.getExpiredTime().before(new Date())) { // 已过期的先删除，再视为null
             this.serviceTicketRepo.deleteById(ticket.getId());
             ticket = null;
         }
-        if (ticket == null) { // 不存在则创建新的
+        if (ticket == null && create) { // 不存在且需要创建则创建新的
+            Date now = new Date();
             String text = sessionId + Strings.MINUS + service + Strings.MINUS + now.getTime();
             String ticketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(text);
             long timeout = this.serverProperties.getServlet().getSession().getTimeout().toMillis();
@@ -87,7 +101,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
             ticket.setExpiredTime(expiredTime);
             this.serviceTicketRepo.save(ticket);
         }
-        return ticket.getId();
+        return ticket == null ? null : ticket.getId();
     }
 
     // 用户访问业务服务，由业务服务校验票据有效性时调用
@@ -117,11 +131,11 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent event) {
         String sessionId = event.getSession().getId();
         String ticketGrantingTicket = getTicketGrantingTicket(sessionId);
-        List<String> ticketIds = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
-        ticketIds.forEach(ticketId -> {
+        List<ServiceTicket> tickets = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
+        tickets.forEach(ticket -> {
             LogUtil.info(getClass(),
                     "The service ticket({}) has been deleted because session({}) destroyed.",
-                    ticketId, sessionId);
+                    ticket.getId(), sessionId);
         });
     }
 

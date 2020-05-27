@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.cas.server.service.CasServerExceptionCodes;
-import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
+import org.truenewx.tnxjeex.cas.server.service.CasServiceResolver;
 
 /**
  * CAS用户名密码授权提供者
@@ -18,7 +18,7 @@ import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 @Component
 public class CasUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
     @Autowired
-    private CasServiceManager serviceManager;
+    private CasServiceResolver serviceManager;
     @Autowired
     private CasLoginValidator loginValidator;
 

@@ -4,7 +4,10 @@ import org.springframework.context.annotation.Bean;
 import org.truenewx.tnxjee.web.view.security.config.WebViewSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
 
-public class CasServerSecurityConfigSupport extends WebViewSecurityConfigurerSupport {
+/**
+ * CAS服务端安全配置器支持
+ */
+public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigurerSupport {
 
     @Bean
     public CasAuthenticationSuccessHandler authenticationSuccessHandler() {
@@ -20,4 +23,5 @@ public class CasServerSecurityConfigSupport extends WebViewSecurityConfigurerSup
     protected String getLoginAjaxUrl() {
         return "/login/ajax";
     }
+
 }

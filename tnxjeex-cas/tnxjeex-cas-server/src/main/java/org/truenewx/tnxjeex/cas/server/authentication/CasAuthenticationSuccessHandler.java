@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.truenewx.tnxjee.web.view.util.WebViewUtil;
-import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
+import org.truenewx.tnxjeex.cas.server.service.CasServiceResolver;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
 /**
@@ -19,7 +19,7 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
-    private CasServiceManager serviceManager;
+    private CasServiceResolver serviceManager;
     @Autowired
     private TicketManager ticketManager;
 
@@ -29,7 +29,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
         this.ticketManager.createTicketGrantingTicket(request, response);
         CasUserSpecificDetailsAuthenticationToken token = (CasUserSpecificDetailsAuthenticationToken) authentication;
         String service = token.getService();
-        String targetUrl = this.serviceManager.getAuthenticatedTargetUrl(request, service);
+        String targetUrl = this.serviceManager.resolveLoginUrl(request, service);
         // 此处一定是表单提交鉴权成功，无需AjaxRedirectStrategy
         WebViewUtil.redirect(request, response, targetUrl);
     }

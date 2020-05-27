@@ -10,22 +10,22 @@ import java.util.Map;
  */
 public class MemoryServiceTicketRepo implements ServiceTicketRepo {
 
-    private final Map<String, ServiceTicket> tickets = new Hashtable<>();
+    private final Map<String, ServiceTicket> ticketMapping = new Hashtable<>();
 
     @Override
     public void save(ServiceTicket ticket) {
-        this.tickets.put(ticket.getId(), ticket);
+        this.ticketMapping.put(ticket.getId(), ticket);
     }
 
     @Override
     public ServiceTicket findById(String id) {
-        return this.tickets.get(id);
+        return this.ticketMapping.get(id);
     }
 
     @Override
     public ServiceTicket findByTicketGrantingTicketAndService(String ticketGrantingTicket,
             String service) {
-        for (ServiceTicket ticket : this.tickets.values()) {
+        for (ServiceTicket ticket : this.ticketMapping.values()) {
             if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket)
                     && ticket.getService().equals(service)) {
                 return ticket;
@@ -36,19 +36,21 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
 
     @Override
     public void deleteById(String id) {
-        this.tickets.remove(id);
+        this.ticketMapping.remove(id);
     }
 
     @Override
-    public List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
-        List<String> ids = new ArrayList<>();
-        this.tickets.values().forEach(ticket -> {
+    public List<ServiceTicket> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
+        List<ServiceTicket> tickets = new ArrayList<>();
+        this.ticketMapping.values().forEach(ticket -> {
             if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket)) {
-                ids.add(ticket.getId());
+                tickets.add(ticket);
             }
         });
-        ids.forEach(this.tickets::remove);
-        return ids;
+        tickets.forEach(ticket -> {
+            this.ticketMapping.remove(ticket.getId());
+        });
+        return tickets;
     }
 
 }
