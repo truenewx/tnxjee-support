@@ -1,8 +1,10 @@
 package org.truenewx.tnxjeex.cas.server.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.truenewx.tnxjee.web.view.security.config.WebViewSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
+import org.truenewx.tnxjeex.cas.server.authentication.logout.CasServerLogoutSuccessHandler;
 
 /**
  * CAS服务端安全配置器支持
@@ -12,6 +14,14 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
     @Bean
     public CasAuthenticationSuccessHandler authenticationSuccessHandler() {
         return new CasAuthenticationSuccessHandler();
+    }
+
+    @Bean
+    @Override
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        CasServerLogoutSuccessHandler handler = new CasServerLogoutSuccessHandler();
+        handler.setDefaultTargetUrl(getLogoutSuccessUrl());
+        return handler;
     }
 
     @Override

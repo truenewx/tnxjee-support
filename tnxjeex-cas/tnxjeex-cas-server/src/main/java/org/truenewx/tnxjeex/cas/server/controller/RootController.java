@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -69,6 +71,13 @@ public class RootController {
     public Assertion serviceValidate(@RequestParam("service") String service,
             @RequestParam("ticket") String ticket) {
         return this.ticketManager.validateServiceTicket(service, ticket);
+    }
+
+    @PostMapping("/deleteServiceTickets")
+    @ConfigAnonymous
+    @ResponseBody
+    public Map<String, String> deleteServiceTickets(HttpServletRequest request) {
+        return this.ticketManager.deleteServiceTickets(request);
     }
 
 }

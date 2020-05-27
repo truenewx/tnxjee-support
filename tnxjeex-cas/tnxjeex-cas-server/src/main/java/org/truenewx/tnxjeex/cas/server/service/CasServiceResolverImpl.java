@@ -1,8 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,32 +38,14 @@ public class CasServiceResolverImpl implements CasServiceResolver {
     @Override
     public String resolveLoginUrl(HttpServletRequest request, String service) {
         String loginUrl = getProperties(service).getFullLoginUrl();
-        loginUrl = prepareParameter(loginUrl);
-        loginUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service, true);
+        int index = loginUrl.indexOf(Strings.QUESTION);
+        if (index < 0) {
+            loginUrl += Strings.QUESTION;
+        } else {
+            loginUrl += Strings.AND;
+        }
+        loginUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service);
         return loginUrl;
     }
 
-    private String prepareParameter(String url) {
-        int index = url.indexOf(Strings.QUESTION);
-        if (index < 0) {
-            url += Strings.QUESTION;
-        } else {
-            url += Strings.AND;
-        }
-        return url;
-    }
-
-    @Override
-    public List<String> resolveLogoutUrls(HttpServletRequest request, String excludedService) {
-        List<String> urls = new ArrayList<>();
-        this.ticketManager.deleteServiceTickets(request).forEach((service, serviceTicket) -> {
-            if (!service.equals(excludedService)) {
-                String logoutUrl = getProperties(service).getFullLogoutUrl();
-                logoutUrl = prepareParameter(logoutUrl);
-                logoutUrl += "ticket=" + serviceTicket;
-                urls.add(logoutUrl);
-            }
-        });
-        return urls;
-    }
 }

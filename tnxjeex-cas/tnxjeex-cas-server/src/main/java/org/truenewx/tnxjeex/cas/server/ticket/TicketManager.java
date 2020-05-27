@@ -23,7 +23,7 @@ public interface TicketManager extends Service {
 
     Map<String, String> deleteServiceTickets(HttpServletRequest request);
 
-    String getServiceTicket(HttpServletRequest request, String service, boolean create);
+    String getServiceTicket(HttpServletRequest request, String service);
 
     Assertion validateServiceTicket(String service, String ticketId);
 
