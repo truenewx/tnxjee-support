@@ -15,12 +15,13 @@ import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.authentication.AttributePrincipalImpl;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.AssertionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
-import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.web.security.util.SecurityUtil;
@@ -32,7 +33,7 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 @Service
 public class TicketManagerImpl implements TicketManager, HttpSessionListener {
 
-    private static final String COOKIE_TGT = "CASTGC";
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ServerProperties serverProperties;
@@ -49,7 +50,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         String sessionId = request.getSession().getId();
         String ticketGrantingTicket = createTicketGrantingTicket(sessionId);
         int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebUtil.addCookie(request, response, COOKIE_TGT, ticketGrantingTicket, maxAge);
+        WebUtil.addCookie(request, response, TicketManager.COOKIE_TGT, ticketGrantingTicket, maxAge);
     }
 
     private String createTicketGrantingTicket(String sessionId) {
@@ -57,7 +58,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     }
 
     private String getTicketGrantingTicket(HttpServletRequest request, boolean create) {
-        String ticket = WebUtil.getCookieValue(request, COOKIE_TGT);
+        String ticket = WebUtil.getCookieValue(request, TicketManager.COOKIE_TGT);
         if (ticket == null && create) {
             ticket = createTicketGrantingTicket(request.getSession().getId());
         }
@@ -70,19 +71,6 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         String sessionId = request.getSession().getId();
         return StringUtils.isNotBlank(ticketGrantingTicket)
                 && ticketGrantingTicket.equals(createTicketGrantingTicket(sessionId));
-    }
-
-    @Override
-    public Map<String, String> deleteServiceTickets(HttpServletRequest request) {
-        Map<String, String> mapping = new HashMap<>();
-        String ticketGrantingTicket = getTicketGrantingTicket(request, false);
-        if (ticketGrantingTicket != null) {
-            List<ServiceTicket> tickets = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
-            tickets.forEach(ticket -> {
-                mapping.put(ticket.getService(), ticket.getId());
-            });
-        }
-        return mapping;
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
@@ -132,18 +120,17 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     @Override
     public void sessionCreated(HttpSessionEvent event) {
         String sessionId = event.getSession().getId();
-        LogUtil.info(getClass(), "The session({}) has been created.", sessionId);
+        this.logger.info("The session({}) has been created.", sessionId);
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
         String sessionId = event.getSession().getId();
         String ticketGrantingTicket = createTicketGrantingTicket(sessionId);
-        List<ServiceTicket> tickets = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
-        tickets.forEach(ticket -> {
-            LogUtil.info(getClass(),
-                    "The service ticket({}) has been deleted because session({}) destroyed.",
-                    ticket.getId(), sessionId);
+        List<String> ticketIds = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
+        ticketIds.forEach(ticketId -> {
+            this.logger.info("The service ticketId({}) has been deleted because session({}) destroyed.",
+                    ticketId, sessionId);
         });
     }
 

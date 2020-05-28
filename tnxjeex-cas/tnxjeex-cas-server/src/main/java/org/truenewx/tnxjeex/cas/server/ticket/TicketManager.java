@@ -1,7 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,15 +11,13 @@ import org.truenewx.tnxjee.service.Service;
  */
 public interface TicketManager extends Service {
 
+    String COOKIE_TGT = "CASTGC";
     String TICKET_GRANTING_TICKET_PREFIX = "TGT-";
-
     String SERVICE_TICKET_PREFIX = "ST-";
 
     void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response);
 
     boolean validateTicketGrantingTicket(HttpServletRequest request);
-
-    Map<String, String> deleteServiceTickets(HttpServletRequest request);
 
     String getServiceTicket(HttpServletRequest request, String service);
 

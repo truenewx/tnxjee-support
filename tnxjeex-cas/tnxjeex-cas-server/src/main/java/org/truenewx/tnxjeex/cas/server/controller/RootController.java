@@ -12,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjeex.cas.server.service.CasServiceResolver;
+import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
 /**
@@ -29,7 +28,7 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class RootController {
 
     @Autowired
-    private CasServiceResolver serviceManager;
+    private CasServiceManager serviceManager;
     @Autowired
     private TicketManager ticketManager;
     @Autowired
@@ -39,10 +38,10 @@ public class RootController {
     public ModelAndView loginForm(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
-            String targetUrl = this.serviceManager.resolveLoginUrl(request, service);
+            String targetUrl = this.serviceManager.getLoginUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
         }
-        String userType = this.serviceManager.resolveUserType(service);
+        String userType = this.serviceManager.getUserType(service);
         if (StringUtils.isBlank(userType)) { // 未指定用户类型的服务，只能在用户已登录后进行自动登录，否则报401
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
@@ -57,7 +56,7 @@ public class RootController {
     public String loginAjax(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
-            String targetUrl = this.serviceManager.resolveLoginUrl(request, service);
+            String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
         } else { // AJAX登录只能进行自动登录，否则报401
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -73,11 +72,11 @@ public class RootController {
         return this.ticketManager.validateServiceTicket(service, ticket);
     }
 
-    @PostMapping("/deleteServiceTickets")
+    @GetMapping("/serviceLogoutUrls")
     @ConfigAnonymous
     @ResponseBody
-    public Map<String, String> deleteServiceTickets(HttpServletRequest request) {
-        return this.ticketManager.deleteServiceTickets(request);
+    public Map<String, String> serviceLogoutUrls(@RequestParam("service") String service) {
+        return this.serviceManager.getLogoutUrls(service);
     }
 
 }

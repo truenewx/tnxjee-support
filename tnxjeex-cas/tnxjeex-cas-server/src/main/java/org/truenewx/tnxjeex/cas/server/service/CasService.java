@@ -12,7 +12,7 @@ public class CasService {
     private String userType;
     private String host;
     private String loginUrl = "/login/cas";
-    private String logoutUrl = "/logout/cas";
+    private String logoutUrl = "/logout";
 
     public String getUserType() {
         return this.userType;

@@ -40,17 +40,15 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     }
 
     @Override
-    public List<ServiceTicket> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
-        List<ServiceTicket> tickets = new ArrayList<>();
+    public List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
+        List<String> ids = new ArrayList<>();
         this.ticketMapping.values().forEach(ticket -> {
             if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket)) {
-                tickets.add(ticket);
+                ids.add(ticket.getId());
             }
         });
-        tickets.forEach(ticket -> {
-            this.ticketMapping.remove(ticket.getId());
-        });
-        return tickets;
+        ids.forEach(this.ticketMapping::remove);
+        return ids;
     }
 
 }

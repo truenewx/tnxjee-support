@@ -15,6 +15,9 @@ public interface ServiceTicketRepo {
 
     void deleteById(String id);
 
-    List<ServiceTicket> deleteByTicketGrantingTicket(String ticketGrantingTicket);
+    /**
+     * @return 被删除的服务票据id集合
+     */
+    List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket);
 
 }
