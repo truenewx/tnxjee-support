@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.fss.service.model;
 
+import org.truenewx.tnxjee.core.util.EncryptUtil;
+
 /**
  * 文件存储服务的文件元数据
  *
@@ -17,6 +19,10 @@ public class FssFileMeta {
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;
         this.thumbnailReadUrl = thumbnailReadUrl;
+    }
+
+    public String getId() {
+        return EncryptUtil.encryptByMd5(this.storageUrl);
     }
 
     public String getName() {
