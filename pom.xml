@@ -12,21 +12,10 @@
     <modules>
         <module>tnxjeex-cas</module>
         <module>tnxjeex-fss</module>
-        <module>tnxjeex-log</module>
         <module>tnxjeex-seata</module>
     </modules>
     <dependencyManagement>
         <dependencies><!-- ${project.version}是实际子工程的版本号，此处不能采用 -->
-            <dependency>
-                <groupId>org.truenewx.tnxjeex.log</groupId>
-                <artifactId>tnxjeex-log-model</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.truenewx.tnxjeex.log</groupId>
-                <artifactId>tnxjeex-log-service</artifactId>
-                <version>2.1.0</version>
-            </dependency>
             <dependency>
                 <groupId>org.truenewx.tnxjeex.fss</groupId>
                 <artifactId>tnxjeex-fss-service</artifactId>
