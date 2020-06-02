@@ -48,6 +48,7 @@ public class RootController {
         }
         ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
         mav.addObject("service", service);
+        mav.addObject("serviceHost", this.serviceManager.getHost(service));
         return mav;
     }
 

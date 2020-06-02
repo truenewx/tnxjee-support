@@ -31,6 +31,11 @@ public class CasServiceManagerImpl implements CasServiceManager {
         return getProperties(service).getUserType();
     }
 
+    @Override
+    public String getHost(String service) {
+        return getProperties(service).getHost();
+    }
+
     private CasService getProperties(String service) {
         CasService casService = this.serverProperties.getServices().get(service);
         if (casService == null) {

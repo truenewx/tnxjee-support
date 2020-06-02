@@ -13,6 +13,8 @@ public interface CasServiceManager {
 
     String getUserType(String service);
 
+    String getHost(String service);
+
     String getLoginUrl(HttpServletRequest request, String service);
 
     Map<String, String> getLogoutUrls(String service);
