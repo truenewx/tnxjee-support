@@ -1,6 +1,8 @@
 package org.truenewx.tnxjeex.cas.server.authentication;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.web.view.util.WebViewUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
@@ -30,6 +34,8 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
         CasUserSpecificDetailsAuthenticationToken token = (CasUserSpecificDetailsAuthenticationToken) authentication;
         String service = token.getService();
         String targetUrl = this.serviceManager.getLoginUrl(request, service);
+        Map<String, Object> parameters = WebUtil.getRequestParameterMap(request, "username", "password", "service");
+        targetUrl = NetUtil.mergeParams(targetUrl, parameters, StandardCharsets.UTF_8.name());
         // 此处一定是表单提交鉴权成功，无需AjaxRedirectStrategy
         WebViewUtil.redirect(request, response, targetUrl);
     }

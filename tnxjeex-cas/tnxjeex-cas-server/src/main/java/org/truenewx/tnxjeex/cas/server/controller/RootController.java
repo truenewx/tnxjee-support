@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
+import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * 根控制器
@@ -47,8 +49,8 @@ public class RootController {
             return null;
         }
         ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
-        mav.addObject("service", service);
-        mav.addObject("serviceHost", this.serviceManager.getHost(service));
+        Map<String, Object> parameters = WebUtil.getRequestParameterMap(request);
+        mav.addObject("parameters", parameters);
         return mav;
     }
 
@@ -60,6 +62,10 @@ public class RootController {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
         } else { // AJAX登录只能进行自动登录，否则报401
+            String url = request.getRequestURL().toString();
+            url = url.replaceFirst("/login/ajax", "/login/form");
+            url += "?service=" + service;
+            response.setHeader(CasServerConstants.HEADER_LOGIN_FORM_URL, url);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;
