@@ -34,7 +34,6 @@ public class CasUsernamePasswordLoginSecurityConfigurer
         filter.setAuthenticationSuccessHandler(this.authenticationSuccessHandler); // 指定登录成功时的处理器
         this.authenticationFailureHandler.setTargetUrlFunction(request -> {
             String service = request.getParameter("service");
-            request.setAttribute("service", service);
             String userType = this.serviceManager.getUserType(service);
             return "/login/" + userType.toLowerCase();
         });

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
@@ -48,10 +47,7 @@ public class RootController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
-        ModelAndView mav = new ModelAndView("/login/" + userType.toLowerCase());
-        Map<String, Object> parameters = WebUtil.getRequestParameterMap(request);
-        mav.addObject("parameters", parameters);
-        return mav;
+        return new ModelAndView("/login/" + userType.toLowerCase());
     }
 
     @GetMapping("/login/ajax")
