@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
@@ -54,6 +55,10 @@ public class RootController {
     @ResponseBody
     public String loginAjax(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
+        if (originalRequest != null) {
+            response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+        }
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
