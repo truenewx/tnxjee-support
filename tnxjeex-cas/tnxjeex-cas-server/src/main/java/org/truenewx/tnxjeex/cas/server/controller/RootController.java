@@ -19,7 +19,6 @@ import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * 根控制器
@@ -66,7 +65,7 @@ public class RootController {
             String url = request.getRequestURL().toString();
             url = url.replaceFirst("/login/ajax", "/login/form");
             url += "?service=" + service;
-            response.setHeader(CasServerConstants.HEADER_LOGIN_FORM_URL, url);
+            response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;
