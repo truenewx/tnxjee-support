@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
+import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * 根控制器
@@ -54,9 +54,9 @@ public class RootController {
     @ResponseBody
     public String loginAjax(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
+        String originalRequest = request.getHeader(CasServerConstants.HEADER_ORIGINAL_REQUEST);
         if (originalRequest != null) {
-            response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+            response.setHeader(CasServerConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
         }
         if (this.ticketManager.validateTicketGrantingTicket(request)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
@@ -65,7 +65,7 @@ public class RootController {
             String url = request.getRequestURL().toString();
             url = url.replaceFirst("/login/ajax", "/login/form");
             url += "?service=" + service;
-            response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
+            response.setHeader(CasServerConstants.HEADER_LOGIN_URL, url);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;
