@@ -3,6 +3,8 @@ package org.truenewx.tnxjeex.cas.server.authentication.logout;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.truenewx.tnxjee.core.util.NetUtil;
 
@@ -15,6 +17,12 @@ public class CasServerLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
 
     public void setServiceParameter(String serviceParameter) {
         this.serviceParameter = serviceParameter;
+    }
+
+    @Override
+    @Autowired // 覆写以自动注入
+    public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
+        super.setRedirectStrategy(redirectStrategy);
     }
 
     @Override

@@ -21,4 +21,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerSupport {
         return this.casClientProperties.getLoginAjaxUrl();
     }
 
+    @Override
+    protected String getLogoutSuccessUrl() {
+        return this.casClientProperties.getLogoutUrl();
+    }
 }
