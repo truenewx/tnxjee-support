@@ -1,5 +1,6 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -10,6 +11,8 @@ public interface ServiceTicketRepo {
     void save(ServiceTicket ticket);
 
     ServiceTicket findById(String id);
+
+    Collection<ServiceTicket> findByTicketGrantingTicket(String ticketGrantingTicket);
 
     ServiceTicket findByTicketGrantingTicketAndService(String ticketGrantingTicket, String service);
 

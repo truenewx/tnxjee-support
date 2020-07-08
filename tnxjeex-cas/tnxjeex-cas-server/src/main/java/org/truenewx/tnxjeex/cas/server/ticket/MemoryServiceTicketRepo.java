@@ -1,9 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 内存中的服务票据仓库
@@ -20,6 +18,13 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     @Override
     public ServiceTicket findById(String id) {
         return this.ticketMapping.get(id);
+    }
+
+    @Override
+    public Collection<ServiceTicket> findByTicketGrantingTicket(String ticketGrantingTicket) {
+        return this.ticketMapping.values().stream().filter(ticket -> {
+            return ticket.getTicketGrantingTicket().equals(ticketGrantingTicket);
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -42,12 +47,11 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     @Override
     public List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket) {
         List<String> ids = new ArrayList<>();
-        this.ticketMapping.values().forEach(ticket -> {
-            if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket)) {
-                ids.add(ticket.getId());
-            }
+        findByTicketGrantingTicket(ticketGrantingTicket).forEach(ticket -> {
+            String ticketId = ticket.getId();
+            this.ticketMapping.remove(ticketId);
+            ids.add(ticketId);
         });
-        ids.forEach(this.ticketMapping::remove);
         return ids;
     }
 
