@@ -38,7 +38,7 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
 
     @Override
     protected String[] getLogoutClearCookies() {
-        return ArrayUtils.add(super.getLogoutClearCookies(), TicketManager.COOKIE_TGT);
+        return ArrayUtils.add(super.getLogoutClearCookies(), TicketManager.TGT_NAME);
     }
 
 }

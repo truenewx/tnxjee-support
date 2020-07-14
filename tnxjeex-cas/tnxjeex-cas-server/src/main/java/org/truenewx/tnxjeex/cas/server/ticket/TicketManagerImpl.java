@@ -5,10 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jasig.cas.client.authentication.AttributePrincipal;
@@ -48,19 +45,23 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     public void createTicketGrantingTicket(HttpServletRequest request,
             HttpServletResponse response) {
         String sessionId = request.getSession().getId();
-        String ticketGrantingTicket = createTicketGrantingTicket(sessionId);
+        String ticketGrantingTicket = generateTicketGrantingTicket(sessionId);
         int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebUtil.addCookie(request, response, TicketManager.COOKIE_TGT, ticketGrantingTicket, maxAge);
+        WebUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
     }
 
-    private String createTicketGrantingTicket(String sessionId) {
+    private String generateTicketGrantingTicket(String sessionId) {
         return TICKET_GRANTING_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(sessionId);
     }
 
-    private String getTicketGrantingTicket(HttpServletRequest request, boolean create) {
-        String ticket = WebUtil.getCookieValue(request, TicketManager.COOKIE_TGT);
-        if (ticket == null && create) {
-            ticket = createTicketGrantingTicket(request.getSession().getId());
+    private String getTicketGrantingTicket(HttpServletRequest request, boolean generatable) {
+        String ticket = WebUtil.getCookieValue(request, TGT_NAME);
+        HttpSession session = request.getSession();
+        if (ticket == null && generatable) {
+            ticket = generateTicketGrantingTicket(session.getId());
+        }
+        if (ticket != null) { // 写入session，以便于删除处理
+            session.setAttribute(TGT_NAME, ticket);
         }
         return ticket;
     }
@@ -70,7 +71,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         String ticketGrantingTicket = getTicketGrantingTicket(request, false);
         String sessionId = request.getSession().getId();
         return StringUtils.isNotBlank(ticketGrantingTicket)
-                && ticketGrantingTicket.equals(createTicketGrantingTicket(sessionId));
+                && ticketGrantingTicket.equals(generateTicketGrantingTicket(sessionId));
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
@@ -125,13 +126,17 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
 
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
-        String sessionId = event.getSession().getId();
-        String ticketGrantingTicket = createTicketGrantingTicket(sessionId);
-        List<String> ticketIds = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
-        ticketIds.forEach(ticketId -> {
-            this.logger.info("The service ticketId({}) has been deleted because session({}) destroyed.",
-                    ticketId, sessionId);
-        });
+        // 此时sessionId已变化，根据sessionId获取TGT将无法与原始TGT匹配，只能从session中获取TGT属性进行处理
+        HttpSession session = event.getSession();
+        String ticketGrantingTicket = (String) session.getAttribute(TGT_NAME);
+        if (ticketGrantingTicket != null) {
+            session.removeAttribute(TGT_NAME);
+            List<String> serviceTicketIds = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
+            serviceTicketIds.forEach(ticketId -> {
+                this.logger.info("The service ticketId({}) has been deleted because session destroyed.",
+                        ticketId);
+            });
+        }
     }
 
 }

@@ -11,7 +11,7 @@ import org.truenewx.tnxjee.service.Service;
  */
 public interface TicketManager extends Service {
 
-    String COOKIE_TGT = "CASTGC";
+    String TGT_NAME = "CASTGC";
     String TICKET_GRANTING_TICKET_PREFIX = "TGT-";
     String SERVICE_TICKET_PREFIX = "ST-";
 
