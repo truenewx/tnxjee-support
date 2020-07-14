@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,10 +19,11 @@ public interface TicketManager extends Service {
 
     void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response);
 
-    boolean validateTicketGrantingTicket(HttpServletRequest request);
+    boolean validateTicketGrantingTicket(HttpServletRequest request, String service);
 
     String getServiceTicket(HttpServletRequest request, String service);
 
-    Assertion validateServiceTicket(String service, String ticketId);
+    Collection<ServiceTicket> findServiceTickets(HttpServletRequest request);
 
+    Assertion validateServiceTicket(String service, String ticketId);
 }

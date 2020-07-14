@@ -1,7 +1,6 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * 服务票据仓库
@@ -21,6 +20,6 @@ public interface ServiceTicketRepo {
     /**
      * @return 被删除的服务票据id集合
      */
-    List<String> deleteByTicketGrantingTicket(String ticketGrantingTicket);
+    Collection<ServiceTicket> deleteByTicketGrantingTicket(String ticketGrantingTicket);
 
 }

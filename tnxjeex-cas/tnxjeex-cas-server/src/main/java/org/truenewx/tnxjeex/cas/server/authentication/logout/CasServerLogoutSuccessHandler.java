@@ -7,17 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * CAS服务端登出成功处理器
  */
 public class CasServerLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
-
-    private String serviceParameter = "service";
-
-    public void setServiceParameter(String serviceParameter) {
-        this.serviceParameter = serviceParameter;
-    }
 
     @Override
     @Autowired // 覆写以自动注入
@@ -28,8 +23,8 @@ public class CasServerLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
         String targetUrl = super.determineTargetUrl(request, response);
-        String service = request.getParameter(this.serviceParameter);
-        targetUrl = NetUtil.mergeParam(targetUrl, this.serviceParameter, service);
+        String service = request.getParameter(CasServerConstants.PARAMETER_SERVICE);
+        targetUrl = NetUtil.mergeParam(targetUrl, CasServerConstants.PARAMETER_SERVICE, service);
         return targetUrl;
     }
 

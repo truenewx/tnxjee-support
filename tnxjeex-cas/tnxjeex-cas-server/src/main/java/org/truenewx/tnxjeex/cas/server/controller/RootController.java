@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
@@ -38,7 +41,7 @@ public class RootController {
     @GetMapping("/login/form")
     public ModelAndView loginForm(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) {
-        if (this.ticketManager.validateTicketGrantingTicket(request)) {
+        if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
         }
@@ -58,7 +61,7 @@ public class RootController {
         if (originalRequest != null) {
             response.setHeader(CasServerConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
         }
-        if (this.ticketManager.validateTicketGrantingTicket(request)) {
+        if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
         } else { // AJAX登录只能进行自动登录，否则报401
@@ -82,8 +85,13 @@ public class RootController {
     @GetMapping("/serviceLogoutUrls")
     @ConfigAnonymous
     @ResponseBody
-    public Map<String, String> serviceLogoutUrls(@RequestParam("service") String service) {
-        return this.serviceManager.getLogoutUrls(service);
+    public Map<String, String> serviceLogoutUrls(HttpServletRequest request) {
+        String serviceString = WebUtil.getCookieValue(request, CasServerConstants.COOKIE_LOGOUT_SERVICES);
+        if (StringUtils.isNotBlank(serviceString)) {
+            String[] services = serviceString.split(Strings.COMMA);
+            return this.serviceManager.getLogoutUrls(services);
+        }
+        return Collections.emptyMap();
     }
 
 }

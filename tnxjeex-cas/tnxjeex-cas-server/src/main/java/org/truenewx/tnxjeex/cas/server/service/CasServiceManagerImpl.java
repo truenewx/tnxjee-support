@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
@@ -58,18 +57,14 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public Map<String, String> getLogoutUrls(String service) {
+    public Map<String, String> getLogoutUrls(String[] services) {
         Map<String, String> logoutUrls = new HashMap<>();
         Map<String, CasService> serviceMap = this.serverProperties.getServices();
-        CasService currentServiceObj = serviceMap.get(service);
-        if (currentServiceObj != null) {
-            String userType = currentServiceObj.getUserType();
-            serviceMap.forEach((serviceName, serviceObj) -> {
-                if (StringUtils.isBlank(userType) || StringUtils.isBlank(serviceObj.getUserType())
-                        || userType.equals(serviceObj.getUserType())) {
-                    logoutUrls.put(serviceName, serviceObj.getFullLogoutUrl());
-                }
-            });
+        for (String service : services) {
+            CasService serviceObj = serviceMap.get(service);
+            if (serviceObj != null) {
+                logoutUrls.put(service, serviceObj.getFullLogoutUrl());
+            }
         }
         return logoutUrls;
     }
