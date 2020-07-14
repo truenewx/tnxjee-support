@@ -1,6 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.config;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,7 +9,6 @@ import org.truenewx.tnxjee.web.view.security.config.WebViewSecurityConfigurerSup
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
 import org.truenewx.tnxjeex.cas.server.authentication.logout.CasServerLogoutSuccessHandler;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketLogoutHandler;
-import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
 /**
  * CAS服务端安全配置器支持
@@ -46,11 +44,6 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
     @Override
     protected String getLoginAjaxUrl() {
         return "/login/ajax";
-    }
-
-    @Override
-    protected String[] getLogoutClearCookies() {
-        return ArrayUtils.add(super.getLogoutClearCookies(), TicketManager.TGT_NAME);
     }
 
 }
