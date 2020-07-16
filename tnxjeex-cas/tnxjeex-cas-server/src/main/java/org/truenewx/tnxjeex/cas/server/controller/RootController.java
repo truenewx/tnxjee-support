@@ -65,10 +65,13 @@ public class RootController {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
         } else { // AJAX登录只能进行自动登录，否则报401
-            String url = request.getRequestURL().toString();
-            url = url.replaceFirst("/login/ajax", "/login/form");
-            url += "?service=" + service;
-            response.setHeader(CasServerConstants.HEADER_LOGIN_URL, url);
+            String userType = this.serviceManager.getUserType(service);
+            if (StringUtils.isNotBlank(userType)) { // 指定了用户类型的服务，才能取得对应的登录表单地址
+                String url = request.getRequestURL().toString();
+                url = url.replaceFirst("/login/ajax", "/login/form");
+                url += "?service=" + service;
+                response.setHeader(CasServerConstants.HEADER_LOGIN_URL, url);
+            }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;
