@@ -1,7 +1,7 @@
 package org.truenewx.tnxjeex.fss.service.model;
 
 import org.springframework.util.Assert;
-import org.truenewx.tnxjee.model.spec.DimensionSize;
+import org.truenewx.tnxjee.model.spec.FlatSize;
 
 import com.aliyun.oss.internal.Mimetypes;
 
@@ -19,7 +19,7 @@ public class FssUploadLimit {
     private String[] mimeTypes;
     private boolean imageable;
     private Boolean croppable;
-    private DimensionSize[] sizes;
+    private FlatSize[] sizes;
 
     public FssUploadLimit(int number, long capacity, boolean extensionsRejected,
             String... extensions) {
@@ -71,11 +71,11 @@ public class FssUploadLimit {
         return this.croppable;
     }
 
-    public DimensionSize[] getSizes() {
+    public FlatSize[] getSizes() {
         return this.sizes;
     }
 
-    public void enableImage(boolean croppable, DimensionSize... sizes) {
+    public void enableImage(boolean croppable, FlatSize... sizes) {
         this.imageable = true;
         this.croppable = croppable;
         this.sizes = sizes;
