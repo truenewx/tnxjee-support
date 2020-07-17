@@ -54,7 +54,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
      */
     @GetMapping("/upload-limit/{type}")
     @ResponseBody
-    @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
+    @ConfigAnonymous // 匿名用户即可读取上传限制
     public FssUploadLimit getUploadLimit(@PathVariable("type") String type) {
         return this.service.getUploadLimit(type, getUserIdentity());
     }

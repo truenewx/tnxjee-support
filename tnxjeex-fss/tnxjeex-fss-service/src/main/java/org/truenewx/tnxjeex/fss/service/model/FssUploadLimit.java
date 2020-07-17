@@ -29,11 +29,13 @@ public class FssUploadLimit {
         this.capacity = capacity;
         this.extensionsRejected = extensionsRejected;
         this.extensions = extensions;
-        this.mimeTypes = new String[extensions.length];
-        Mimetypes mimetypes = Mimetypes.getInstance();
-        for (int i = 0; i < extensions.length; i++) {
-            String extension = "temp." + extensions[i];
-            this.mimeTypes[i] = mimetypes.getMimetype(extension);
+        if (!this.extensionsRejected) {
+            this.mimeTypes = new String[extensions.length];
+            Mimetypes mimetypes = Mimetypes.getInstance();
+            for (int i = 0; i < extensions.length; i++) {
+                String extension = "temp." + extensions[i];
+                this.mimeTypes[i] = mimetypes.getMimetype(extension);
+            }
         }
     }
 
