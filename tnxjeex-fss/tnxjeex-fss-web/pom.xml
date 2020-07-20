@@ -16,6 +16,10 @@
         </dependency>
         <dependency>
             <groupId>org.truenewx.tnxjeex.fss</groupId>
+            <artifactId>tnxjeex-fss-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.truenewx.tnxjeex.fss</groupId>
             <artifactId>tnxjeex-fss-service</artifactId>
         </dependency>
         <dependency>

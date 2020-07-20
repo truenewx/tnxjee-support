@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.truenewx.tnxjee.core.util.SpringUtil;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.util.SpringWebUtil;
-import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
+import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 
 /**
  * 格式化日期输出标签
@@ -50,7 +50,7 @@ public class FssReadUrlTag extends SimpleTagSupport {
         FssReadUrlResolver readUrlResolver = getReadUrlResolver();
         if (readUrlResolver != null) {
             try {
-                String readUrl = readUrlResolver.getReadUrl(this.value, this.thumbnail);
+                String readUrl = readUrlResolver.resolveReadUrl(this.value, this.thumbnail);
                 if (readUrl != null) {
                     JspWriter out = getJspContext().getOut();
                     out.print(readUrl);

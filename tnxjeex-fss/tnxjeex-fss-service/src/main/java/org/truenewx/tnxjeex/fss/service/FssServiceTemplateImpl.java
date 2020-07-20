@@ -19,7 +19,7 @@ import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
+import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssStoragePathAnalysis;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;

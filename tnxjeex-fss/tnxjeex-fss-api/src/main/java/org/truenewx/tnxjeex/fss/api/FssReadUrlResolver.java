@@ -1,7 +1,10 @@
-package org.truenewx.tnxjeex.fss.web.resolver;
+package org.truenewx.tnxjeex.fss.api;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 非结构化存储的资源读取地址解决器
+ * 文件存储服务的资源读取地址解决器
  *
  * @author jianglei
  */
@@ -18,6 +21,8 @@ public interface FssReadUrlResolver {
      * @param thumbnail  是否缩略图
      * @return 外部读取地址
      */
-    String getReadUrl(String storageUrl, boolean thumbnail);
+    @GetMapping("/read-url")
+    String resolveReadUrl(@RequestParam("storageUrl") String storageUrl,
+            @RequestParam("thumbnail") boolean thumbnail);
 
 }

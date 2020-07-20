@@ -1,6 +1,6 @@
 package org.truenewx.tnxjeex.fss.web.model;
 
-import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
+import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 
 /**
  * 已上传的文件元数据

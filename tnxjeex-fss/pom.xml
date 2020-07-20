@@ -11,6 +11,8 @@
     <artifactId>tnxjeex-fss</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>tnxjeex-fss-api</module>
+        <module>tnxjeex-fss-model</module>
         <module>tnxjeex-fss-service</module>
         <module>tnxjeex-fss-web</module>
     </modules>

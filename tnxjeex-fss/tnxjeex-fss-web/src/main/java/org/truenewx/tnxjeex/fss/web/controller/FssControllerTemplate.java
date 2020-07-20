@@ -15,7 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
@@ -27,11 +30,12 @@ import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.web.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.web.security.util.SecurityUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
+import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
+import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
-import org.truenewx.tnxjeex.fss.service.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 import org.truenewx.tnxjeex.fss.web.model.FssUploadedFileMeta;
-import org.truenewx.tnxjeex.fss.web.resolver.FssReadUrlResolver;
 
 import com.aliyun.oss.internal.Mimetypes;
 
@@ -40,8 +44,8 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>>
-        implements FssReadUrlResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements
+        FssReadUrlResolver, FssMetaResolver {
 
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
@@ -110,7 +114,9 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
     }
 
     @Override
-    public String getReadUrl(String storageUrl, boolean thumbnail) {
+    @ResponseBody
+    @ConfigAnonymous // 匿名用户即可获取，具体权限由访问策略决定
+    public String resolveReadUrl(String storageUrl, boolean thumbnail) {
         if (StringUtils.isNotBlank(storageUrl)) {
             String readUrl = this.service.getReadUrl(getUserIdentity(), storageUrl, thumbnail);
             return getFullReadUrl(readUrl);
@@ -151,10 +157,10 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
      * @param storageUrls 存储URL集
      * @return 文件元数据集
      */
-    @GetMapping("/metas")
+    @Override
     @ResponseBody
-    @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
-    public FssFileMeta[] metas(@RequestParam("storageUrls") String[] storageUrls) {
+    @ConfigAnonymous // 匿名用户即可获取，具体权限由访问策略决定
+    public FssFileMeta[] resolveMetas(String[] storageUrls) {
         FssFileMeta[] metas = new FssFileMeta[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
             if (StringUtils.isNotBlank(storageUrls[i])) {

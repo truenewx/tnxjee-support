@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.fss.service.model;
+package org.truenewx.tnxjeex.fss.model;
 
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 
