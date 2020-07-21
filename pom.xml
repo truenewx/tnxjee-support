@@ -13,6 +13,7 @@
         <module>tnxjeex-cas</module>
         <module>tnxjeex-fss</module>
         <module>tnxjeex-seata</module>
+        <module>tnxjeex-standard</module>
     </modules>
     <dependencyManagement>
         <dependencies><!-- ${project.version}是实际子工程的版本号，此处不能采用 -->
