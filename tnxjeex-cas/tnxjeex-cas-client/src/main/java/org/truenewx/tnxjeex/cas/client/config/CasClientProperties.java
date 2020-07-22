@@ -30,7 +30,7 @@ public class CasClientProperties extends ServiceProperties {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         if (StringUtils.isBlank(getService())) {
             setService(this.environment.getProperty("spring.application.name"));
         }
