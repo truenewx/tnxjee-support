@@ -2,12 +2,14 @@ package org.truenewx.tnxjeex.fss.api;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.truenewx.tnxjee.core.api.RpcApi;
 
 /**
  * 文件存储服务的资源读取地址解决器
  *
  * @author jianglei
  */
+@RpcApi
 public interface FssReadUrlResolver {
 
     /**
