@@ -8,8 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.config.WebAppConfiguration;
+import org.truenewx.tnxjee.core.config.WebCommonProperties;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjeex.cas.server.config.CasServerProperties;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
 /**
@@ -21,31 +22,31 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class CasServiceManagerImpl implements CasServiceManager {
 
     @Autowired
-    private CasServerProperties serverProperties;
+    private WebCommonProperties microServiceProperties;
     @Autowired
     private TicketManager ticketManager;
 
     @Override
     public String getUserType(String service) {
-        return getProperties(service).getUserType();
+        return obtainServiceConfiguration(service).getUserType();
     }
 
     @Override
     public String getHost(String service) {
-        return getProperties(service).getHost();
+        return obtainServiceConfiguration(service).getHost();
     }
 
-    private CasService getProperties(String service) {
-        CasService casService = this.serverProperties.getServices().get(service);
-        if (casService == null) {
+    private WebAppConfiguration obtainServiceConfiguration(String service) {
+        WebAppConfiguration msc = this.microServiceProperties.getApps().get(service);
+        if (msc == null) {
             throw new BusinessException(CasServerExceptionCodes.INVALID_SERVICE);
         }
-        return casService;
+        return msc;
     }
 
     @Override
     public String getLoginUrl(HttpServletRequest request, String service) {
-        String loginUrl = getProperties(service).getFullLoginUrl();
+        String loginUrl = obtainServiceConfiguration(service).getLoginUrl();
         int index = loginUrl.indexOf(Strings.QUESTION);
         if (index < 0) {
             loginUrl += Strings.QUESTION;
@@ -59,11 +60,11 @@ public class CasServiceManagerImpl implements CasServiceManager {
     @Override
     public Map<String, String> getLogoutUrls(String[] services) {
         Map<String, String> logoutUrls = new HashMap<>();
-        Map<String, CasService> serviceMap = this.serverProperties.getServices();
+        Map<String, WebAppConfiguration> serviceConfigurations = this.microServiceProperties.getApps();
         for (String service : services) {
-            CasService serviceObj = serviceMap.get(service);
-            if (serviceObj != null) {
-                logoutUrls.put(service, serviceObj.getFullLogoutUrl());
+            WebAppConfiguration serviceConfiguration = serviceConfigurations.get(service);
+            if (serviceConfiguration != null) {
+                logoutUrls.put(service, serviceConfiguration.getLogoutUrl());
             }
         }
         return logoutUrls;
