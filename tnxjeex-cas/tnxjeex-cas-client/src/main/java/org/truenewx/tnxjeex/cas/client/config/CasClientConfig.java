@@ -27,7 +27,7 @@ public class CasClientConfig {
 
     @Bean
     public TicketValidator ticketValidator() {
-        return new CasJsonServiceTicketValidator(this.properties.getServerUrlPrefix());
+        return new CasJsonServiceTicketValidator(this.properties.getServerUrl());
     }
 
     @Bean

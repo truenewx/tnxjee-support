@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.core.config.WebAppConfiguration;
-import org.truenewx.tnxjee.core.config.WebCommonProperties;
+import org.truenewx.tnxjee.core.config.AppConfiguration;
+import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -22,7 +22,7 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class CasServiceManagerImpl implements CasServiceManager {
 
     @Autowired
-    private WebCommonProperties microServiceProperties;
+    private CommonProperties microServiceProperties;
     @Autowired
     private TicketManager ticketManager;
 
@@ -36,8 +36,8 @@ public class CasServiceManagerImpl implements CasServiceManager {
         return obtainServiceConfiguration(service).getHost();
     }
 
-    private WebAppConfiguration obtainServiceConfiguration(String service) {
-        WebAppConfiguration msc = this.microServiceProperties.getApps().get(service);
+    private AppConfiguration obtainServiceConfiguration(String service) {
+        AppConfiguration msc = this.microServiceProperties.getApps().get(service);
         if (msc == null) {
             throw new BusinessException(CasServerExceptionCodes.INVALID_SERVICE);
         }
@@ -60,9 +60,9 @@ public class CasServiceManagerImpl implements CasServiceManager {
     @Override
     public Map<String, String> getLogoutUrls(String[] services) {
         Map<String, String> logoutUrls = new HashMap<>();
-        Map<String, WebAppConfiguration> serviceConfigurations = this.microServiceProperties.getApps();
+        Map<String, AppConfiguration> serviceConfigurations = this.microServiceProperties.getApps();
         for (String service : services) {
-            WebAppConfiguration serviceConfiguration = serviceConfigurations.get(service);
+            AppConfiguration serviceConfiguration = serviceConfigurations.get(service);
             if (serviceConfiguration != null) {
                 logoutUrls.put(service, serviceConfiguration.getLogoutUrl());
             }
