@@ -1,35 +1,29 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
- * 根控制器
- *
- * @author jianglei
+ * 登录控制器
  */
 @Controller
-public class RootController {
+@RequestMapping("/login")
+public class LoginController {
 
     @Autowired
     private CasServiceManager serviceManager;
@@ -38,7 +32,7 @@ public class RootController {
     @Autowired
     private RedirectStrategy redirectStrategy;
 
-    @GetMapping("/login/form")
+    @GetMapping("/form")
     public ModelAndView loginForm(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
@@ -53,7 +47,7 @@ public class RootController {
         return new ModelAndView("/login/" + userType.toLowerCase());
     }
 
-    @GetMapping("/login/ajax")
+    @GetMapping("/ajax")
     @ResponseBody
     public String loginAjax(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -77,24 +71,5 @@ public class RootController {
         return null;
     }
 
-    @GetMapping("/serviceValidate")
-    @ConfigAnonymous
-    @ResponseBody
-    public Assertion serviceValidate(@RequestParam("service") String service,
-            @RequestParam("ticket") String ticket) {
-        return this.ticketManager.validateServiceTicket(service, ticket);
-    }
-
-    @GetMapping("/serviceLogoutUrls")
-    @ConfigAnonymous
-    @ResponseBody
-    public Map<String, String> serviceLogoutUrls(HttpServletRequest request) {
-        String serviceString = WebUtil.getCookieValue(request, CasServerConstants.COOKIE_LOGOUT_SERVICES);
-        if (StringUtils.isNotBlank(serviceString)) {
-            String[] services = serviceString.split(Strings.COMMA);
-            return this.serviceManager.getLogoutUrls(services);
-        }
-        return Collections.emptyMap();
-    }
 
 }
