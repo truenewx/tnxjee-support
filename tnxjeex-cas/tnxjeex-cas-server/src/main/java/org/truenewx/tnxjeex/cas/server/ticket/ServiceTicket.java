@@ -2,14 +2,15 @@ package org.truenewx.tnxjeex.cas.server.ticket;
 
 import java.util.Date;
 
-import org.truenewx.tnxjee.model.entity.unity.AbstractUnity;
+import org.truenewx.tnxjee.model.entity.unity.Unity;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 
 /**
  * 服务票据
  */
-public class ServiceTicket extends AbstractUnity<String> {
+public class ServiceTicket implements Unity<String> {
 
+    private String id;
     private String ticketGrantingTicket;
     private UserSpecificDetails<?> userDetails;
     private String service;
@@ -21,6 +22,15 @@ public class ServiceTicket extends AbstractUnity<String> {
 
     public ServiceTicket(String id) {
         setId(id);
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
     }
 
     public String getTicketGrantingTicket() {
