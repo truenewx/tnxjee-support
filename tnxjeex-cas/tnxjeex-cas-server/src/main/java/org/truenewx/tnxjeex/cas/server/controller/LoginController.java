@@ -1,10 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
@@ -14,9 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 登录控制器
@@ -33,8 +32,8 @@ public class LoginController {
     private RedirectStrategy redirectStrategy;
 
     @GetMapping("/form")
-    public ModelAndView loginForm(@RequestParam("service") String service,
-            HttpServletRequest request, HttpServletResponse response) {
+    public ModelAndView form(@RequestParam("service") String service,
+                             HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
@@ -49,11 +48,11 @@ public class LoginController {
 
     @GetMapping("/ajax")
     @ResponseBody
-    public String loginAjax(@RequestParam("service") String service,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String originalRequest = request.getHeader(CasServerConstants.HEADER_ORIGINAL_REQUEST);
+    public String ajax(@RequestParam("service") String service,
+                       HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
         if (originalRequest != null) {
-            response.setHeader(CasServerConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+            response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
         }
         if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
@@ -64,7 +63,7 @@ public class LoginController {
                 String url = request.getRequestURL().toString();
                 url = url.replaceFirst("/login/ajax", "/login/form");
                 url += "?service=" + service;
-                response.setHeader(CasServerConstants.HEADER_LOGIN_URL, url);
+                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
             }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
