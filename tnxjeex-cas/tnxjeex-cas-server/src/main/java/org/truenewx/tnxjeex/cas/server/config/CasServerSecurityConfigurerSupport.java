@@ -37,12 +37,12 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
     }
 
     @Override
-    protected String getLoginFormUrl() {
+    public String getLoginFormUrl() {
         return "/login/form";
     }
 
     @Override
-    protected String getLoginAjaxUrl() {
+    public String getLoginAjaxUrl() {
         return "/login/ajax";
     }
 
