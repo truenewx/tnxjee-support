@@ -7,6 +7,7 @@ import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
  */
 public interface CasLoginValidator {
 
-    UserSpecificDetails<?> validateLogin(String userType, String username, String password);
+    UserSpecificDetails<?> validateLogin(String userType, String scope, String username,
+            String password);
 
 }

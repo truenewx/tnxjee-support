@@ -12,7 +12,8 @@ public class CasServiceAuthenticationDetailsSource implements
     @Override
     public CasServiceAuthenticationDetails buildDetails(HttpServletRequest context) {
         String service = context.getParameter("service");
-        return new CasServiceAuthenticationDetails(service);
+        String scope = context.getParameter("scope");
+        return new CasServiceAuthenticationDetails(service, scope);
     }
 
 }

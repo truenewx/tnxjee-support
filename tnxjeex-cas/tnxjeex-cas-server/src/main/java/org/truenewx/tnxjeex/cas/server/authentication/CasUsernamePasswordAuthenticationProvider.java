@@ -35,10 +35,13 @@ public class CasUsernamePasswordAuthenticationProvider implements Authentication
         String password = (String) authentication.getCredentials();
         Object details = token.getDetails();
         if (details instanceof CasServiceAuthenticationDetails) {
-            String service = ((CasServiceAuthenticationDetails) details).getService();
+            CasServiceAuthenticationDetails authenticationDetails = (CasServiceAuthenticationDetails) details;
+            String service = authenticationDetails.getService();
+            String scope = authenticationDetails.getScope();
             try {
                 String userType = this.serviceManager.getUserType(service);
-                UserSpecificDetails<?> userDetails = this.loginValidator.validateLogin(userType, username, password);
+                UserSpecificDetails<?> userDetails = this.loginValidator
+                        .validateLogin(userType, scope, username, password);
                 if (userDetails == null) {
                     throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_USER_TYPE, userType);
                 }

@@ -1,5 +1,10 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
@@ -9,13 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * 登录控制器
@@ -25,6 +27,8 @@ import java.io.IOException;
 public class LoginController {
 
     @Autowired
+    private ResolvableExceptionAuthenticationFailureHandler authenticationFailureHandler;
+    @Autowired
     private CasServiceManager serviceManager;
     @Autowired
     private TicketManager ticketManager;
@@ -33,23 +37,23 @@ public class LoginController {
 
     @GetMapping("/form")
     public ModelAndView form(@RequestParam("service") String service,
-                             HttpServletRequest request, HttpServletResponse response) {
+            HttpServletRequest request, HttpServletResponse response) {
         if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             return new ModelAndView("redirect:" + targetUrl);
         }
-        String userType = this.serviceManager.getUserType(service);
-        if (StringUtils.isBlank(userType)) { // 未指定用户类型的服务，只能在用户已登录后进行自动登录，否则报401
+        String result = this.authenticationFailureHandler.getTargetUrlFunction().apply(request);
+        if (result == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
-        return new ModelAndView("/login/" + userType.toLowerCase());
+        return new ModelAndView(result);
     }
 
     @GetMapping("/ajax")
     @ResponseBody
     public String ajax(@RequestParam("service") String service,
-                       HttpServletRequest request, HttpServletResponse response) throws IOException {
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
         String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
         if (originalRequest != null) {
             response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
