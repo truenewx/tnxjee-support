@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
@@ -62,13 +61,10 @@ public class LoginController {
             String targetUrl = this.serviceManager.getLoginUrl(request, service);
             this.redirectStrategy.sendRedirect(request, response, targetUrl);
         } else { // AJAX登录只能进行自动登录，否则报401
-            String userType = this.serviceManager.getUserType(service);
-            if (StringUtils.isNotBlank(userType)) { // 指定了用户类型的服务，才能取得对应的登录表单地址
-                String url = request.getRequestURL().toString();
-                url = url.replaceFirst("/login/ajax", "/login/form");
-                url += "?service=" + service;
-                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
-            }
+            String url = request.getRequestURL().toString();
+            url = url.replaceFirst("/login/ajax", "/login/form");
+            url += "?service=" + service;
+            response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return null;

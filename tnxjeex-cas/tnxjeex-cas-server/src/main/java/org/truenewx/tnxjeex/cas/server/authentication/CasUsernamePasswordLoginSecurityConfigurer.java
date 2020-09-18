@@ -34,7 +34,7 @@ public class CasUsernamePasswordLoginSecurityConfigurer
         filter.setAuthenticationDetailsSource(this.authenticationDetailsSource);
         filter.setAuthenticationSuccessHandler(this.authenticationSuccessHandler); // 指定登录成功时的处理器
         filter.setFailureTargetUrlFunction(request -> {
-            String service = request.getParameter("service");
+            String service = request.getParameter(CasServerConstants.PARAMETER_SERVICE);
             String userType = this.serviceManager.getUserType(service);
             if (CasServerConstants.SERVICE_USER_TYPE_ALL.equals(userType)) { // 不限定用户类型的服务，只能在用户已登录后进行自动登录
                 return null;
