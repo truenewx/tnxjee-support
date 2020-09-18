@@ -1,6 +1,9 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.*;
 
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
@@ -70,7 +74,8 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     public String getServiceTicket(HttpServletRequest request, String service) {
         String ticketGrantingTicket = getTicketGrantingTicket(request.getSession());
         if (ticketGrantingTicket != null) {
-            ServiceTicket ticket = this.serviceTicketRepo.findByTicketGrantingTicketAndService(ticketGrantingTicket, service);
+            ServiceTicket ticket = this.serviceTicketRepo
+                    .findByTicketGrantingTicketAndService(ticketGrantingTicket, service);
             if (ticket != null && ticket.getExpiredTime().before(new Date())) { // 已过期的先删除，再视为null
                 this.serviceTicketRepo.deleteById(ticket.getId());
                 ticket = null;
@@ -111,13 +116,12 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
             return null;
         }
         UserSpecificDetails<?> userDetails = ticket.getUserDetails();
-        AttributePrincipal principal = new AttributePrincipalImpl(userDetails.getIdentity().toString());
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("username", userDetails.getUsername());
-        attributes.put("caption", userDetails.getCaption());
-        attributes.put("authorities", userDetails.getAuthorities());
-        return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(),
-                ticket.getCreateTime(), attributes);
+        String name = userDetails.getIdentity().toString();
+        Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password", "enabled",
+                "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
+        AttributePrincipal principal = new AttributePrincipalImpl(name, attributes);
+        return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(), ticket.getCreateTime(),
+                Collections.emptyMap());
     }
 
     @Override
@@ -134,7 +138,8 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         String ticketGrantingTicket = getTicketGrantingTicket(session);
         if (ticketGrantingTicket != null) {
             session.removeAttribute(TGT_NAME);
-            Collection<ServiceTicket> tickets = this.serviceTicketRepo.deleteByTicketGrantingTicket(ticketGrantingTicket);
+            Collection<ServiceTicket> tickets = this.serviceTicketRepo
+                    .deleteByTicketGrantingTicket(ticketGrantingTicket);
             tickets.forEach(ticket -> {
                 this.logger.info("The service ticketId({}) has been deleted because session destroyed.",
                         ticket.getId());
