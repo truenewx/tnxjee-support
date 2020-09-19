@@ -11,10 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjee.web.util.WebConstants;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -34,41 +34,36 @@ public class LoginController {
     @Autowired
     private RedirectStrategy redirectStrategy;
 
-    @GetMapping("/form")
+    @GetMapping
     public ModelAndView form(@RequestParam("service") String service,
-            HttpServletRequest request, HttpServletResponse response) {
-        if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
-            String targetUrl = this.serviceManager.getLoginUrl(request, service);
-            return new ModelAndView("redirect:" + targetUrl);
-        }
-        String result = this.authenticationFailureHandler.getTargetUrlFunction().apply(request);
-        if (result == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        }
-        return new ModelAndView(result);
-    }
-
-    @GetMapping("/ajax")
-    @ResponseBody
-    public String ajax(@RequestParam("service") String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
-        if (originalRequest != null) {
-            response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+        if (WebUtil.isAjaxRequest(request)) {
+            String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
+            if (originalRequest != null) {
+                response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+            }
+            if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
+                String targetUrl = this.serviceManager.getLoginUrl(request, service);
+                this.redirectStrategy.sendRedirect(request, response, targetUrl);
+            } else { // AJAX登录只能进行自动登录，否则报401
+                String url = request.getRequestURL().toString();
+                url += "?service=" + service;
+                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            return null;
+        } else {
+            if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
+                String targetUrl = this.serviceManager.getLoginUrl(request, service);
+                return new ModelAndView("redirect:" + targetUrl);
+            }
+            String result = this.authenticationFailureHandler.getTargetUrlFunction().apply(request);
+            if (result == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+            return new ModelAndView(result);
         }
-        if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
-            String targetUrl = this.serviceManager.getLoginUrl(request, service);
-            this.redirectStrategy.sendRedirect(request, response, targetUrl);
-        } else { // AJAX登录只能进行自动登录，否则报401
-            String url = request.getRequestURL().toString();
-            url = url.replaceFirst("/login/ajax", "/login/form");
-            url += "?service=" + service;
-            response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        }
-        return null;
     }
-
 
 }

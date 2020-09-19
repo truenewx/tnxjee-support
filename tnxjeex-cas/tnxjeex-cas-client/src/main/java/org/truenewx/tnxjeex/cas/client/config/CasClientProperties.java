@@ -50,27 +50,19 @@ public class CasClientProperties extends ServiceProperties {
     }
 
     public String getLoginFormUrl() {
-        return getLoginUrl("form");
-    }
-
-    private String getLoginUrl(String type) {
         String url = getServerUrl();
         if (!url.endsWith(Strings.SLASH)) {
             url += Strings.SLASH;
         }
-        return url + "login/" + type + "?service=" + getService();
+        return url + "login?" + getServiceParameter() + "=" + getService();
     }
 
-    public String getLoginAjaxUrl() {
-        return getLoginUrl("ajax");
-    }
-
-    public String getLogoutUrl() {
+    public String getLogoutProcessUrl() {
         String url = getServerUrl();
         if (!url.endsWith(Strings.SLASH)) {
             url += Strings.SLASH;
         }
-        return url + "logout?service=" + getService();
+        return url + "logout?" + getServiceParameter() + "=" + getService();
     }
 
 }

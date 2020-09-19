@@ -36,14 +36,4 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
         logoutConfigurer.addLogoutHandler(this.ticketLogoutHandler);
     }
 
-    @Override
-    public String getLoginFormUrl() {
-        return "/login/form";
-    }
-
-    @Override
-    public String getLoginAjaxUrl() {
-        return "/login/ajax";
-    }
-
 }
