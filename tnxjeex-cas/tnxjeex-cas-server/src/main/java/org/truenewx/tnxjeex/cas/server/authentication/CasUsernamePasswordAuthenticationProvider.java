@@ -9,16 +9,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjeex.cas.server.service.CasServerExceptionCodes;
-import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 
 /**
  * CAS用户名密码授权提供者
  */
 @Component
 public class CasUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
-    @Autowired
-    private CasServiceManager serviceManager;
     @Autowired
     private CasLoginValidator loginValidator;
 
@@ -39,12 +35,8 @@ public class CasUsernamePasswordAuthenticationProvider implements Authentication
             String service = authenticationDetails.getService();
             String scope = authenticationDetails.getScope();
             try {
-                String userType = this.serviceManager.getUserType(service);
                 UserSpecificDetails<?> userDetails = this.loginValidator
-                        .validateLogin(userType, scope, username, password);
-                if (userDetails == null) {
-                    throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_USER_TYPE, userType);
-                }
+                        .validateLogin(service, scope, username, password);
                 return new CasUserSpecificDetailsAuthenticationToken(service, userDetails);
             } catch (BusinessException e) {
                 throw new BadCredentialsException(e.getLocalizedMessage(), e);
