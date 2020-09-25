@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * 服务票据仓库
@@ -10,6 +11,9 @@ public interface ServiceTicketRepo {
     void save(ServiceTicket ticket);
 
     ServiceTicket findById(String id);
+
+    long countByTicketGrantingTicketAndEarliestExpiredTime(String ticketGrantingTicket,
+            Date earliestExpiredTime);
 
     Collection<ServiceTicket> findByTicketGrantingTicket(String ticketGrantingTicket);
 

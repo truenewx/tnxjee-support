@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.web.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjee.web.util.WebUtil;
@@ -33,6 +36,8 @@ public class LoginController {
     private TicketManager ticketManager;
     @Autowired
     private RedirectStrategy redirectStrategy;
+    @Autowired
+    private ApiMetaProperties apiMetaProperties;
 
     @GetMapping
     public ModelAndView form(@RequestParam("service") String service,
@@ -42,8 +47,13 @@ public class LoginController {
             if (originalRequest != null) {
                 response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
             }
-            if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
+            if (this.ticketManager.validateTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginUrl(request, service);
+                if (originalRequest != null) {
+                    String originalUrl = originalRequest.substring(originalRequest.indexOf(Strings.SPACE) + 1);
+                    targetUrl = NetUtil.mergeParam(targetUrl, this.apiMetaProperties.getLoginSuccessRedirectParameter(),
+                            originalUrl);
+                }
                 this.redirectStrategy.sendRedirect(request, response, targetUrl);
             } else { // AJAX登录只能进行自动登录，否则报401
                 String url = request.getRequestURL().toString();
@@ -53,7 +63,7 @@ public class LoginController {
             }
             return null;
         } else {
-            if (this.ticketManager.validateTicketGrantingTicket(request, service)) {
+            if (this.ticketManager.validateTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginUrl(request, service);
                 return new ModelAndView("redirect:" + targetUrl);
             }

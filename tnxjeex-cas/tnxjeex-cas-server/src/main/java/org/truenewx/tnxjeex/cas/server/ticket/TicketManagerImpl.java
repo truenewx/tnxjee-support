@@ -56,23 +56,26 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         return TICKET_GRANTING_TICKET_PREFIX + EncryptUtil.encryptByMd5(sessionId + System.currentTimeMillis());
     }
 
+    private String getTicketGrantingTicket(HttpServletRequest request) {
+        return getTicketGrantingTicket(request.getSession());
+    }
+
     private String getTicketGrantingTicket(HttpSession session) {
         return (String) session.getAttribute(TGT_NAME);
     }
 
     @Override
-    public boolean validateTicketGrantingTicket(HttpServletRequest request,
-            String service) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request.getSession());
-        return ticketGrantingTicket != null
-                && this.serviceTicketRepo.findByTicketGrantingTicketAndService(ticketGrantingTicket, service) != null;
+    public boolean validateTicketGrantingTicket(HttpServletRequest request) {
+        String ticketGrantingTicket = getTicketGrantingTicket(request);
+        return ticketGrantingTicket != null && this.serviceTicketRepo
+                .countByTicketGrantingTicketAndEarliestExpiredTime(ticketGrantingTicket, new Date()) > 0;
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
     @Override
     @WriteTransactional
     public String getServiceTicket(HttpServletRequest request, String service) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request.getSession());
+        String ticketGrantingTicket = getTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
             ServiceTicket ticket = this.serviceTicketRepo
                     .findByTicketGrantingTicketAndService(ticketGrantingTicket, service);
@@ -101,7 +104,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
 
     @Override
     public Collection<ServiceTicket> findServiceTickets(HttpServletRequest request) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request.getSession());
+        String ticketGrantingTicket = getTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
             return this.serviceTicketRepo.findByTicketGrantingTicket(ticketGrantingTicket);
         }

@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,6 +21,19 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     @Override
     public ServiceTicket findById(String id) {
         return this.ticketMapping.get(id);
+    }
+
+    @Override
+    public long countByTicketGrantingTicketAndEarliestExpiredTime(String ticketGrantingTicket,
+            Date earliestExpiredTime) {
+        long count = 0;
+        for (ServiceTicket ticket : this.ticketMapping.values()) {
+            if (ticket.getTicketGrantingTicket().equals(ticketGrantingTicket) && ticket.getExpiredTime()
+                    .after(earliestExpiredTime)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     @Override

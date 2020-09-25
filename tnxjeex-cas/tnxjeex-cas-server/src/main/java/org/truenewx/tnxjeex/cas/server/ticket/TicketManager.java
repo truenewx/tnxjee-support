@@ -19,7 +19,7 @@ public interface TicketManager extends Service {
 
     void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response);
 
-    boolean validateTicketGrantingTicket(HttpServletRequest request, String service);
+    boolean validateTicketGrantingTicket(HttpServletRequest request);
 
     String getServiceTicket(HttpServletRequest request, String service);
 
