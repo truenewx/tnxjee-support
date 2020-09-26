@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
-import org.truenewx.tnxjee.web.api.meta.model.ApiMetaProperties;
-import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
-import org.truenewx.tnxjee.web.util.WebConstants;
-import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
+import org.truenewx.tnxjee.webmvc.util.WebmvcConstants;
+import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -40,25 +40,26 @@ public class LoginController {
     private ApiMetaProperties apiMetaProperties;
 
     @GetMapping
-    public ModelAndView form(@RequestParam("service") String service,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (WebUtil.isAjaxRequest(request)) {
-            String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
+    public ModelAndView form(@RequestParam("service") String service, HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        if (WebmvcUtil.isAjaxRequest(request)) {
+            String originalRequest = request.getHeader(WebmvcConstants.HEADER_ORIGINAL_REQUEST);
             if (originalRequest != null) {
-                response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+                response.setHeader(WebmvcConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
             }
             if (this.ticketManager.validateTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginUrl(request, service);
                 if (originalRequest != null) {
-                    String originalUrl = originalRequest.substring(originalRequest.indexOf(Strings.SPACE) + 1);
-                    targetUrl = NetUtil.mergeParam(targetUrl, this.apiMetaProperties.getLoginSuccessRedirectParameter(),
-                            originalUrl);
+                    String originalUrl = originalRequest
+                            .substring(originalRequest.indexOf(Strings.SPACE) + 1);
+                    targetUrl = NetUtil.mergeParam(targetUrl,
+                            this.apiMetaProperties.getLoginSuccessRedirectParameter(), originalUrl);
                 }
                 this.redirectStrategy.sendRedirect(request, response, targetUrl);
             } else { // AJAX登录只能进行自动登录，否则报401
                 String url = request.getRequestURL().toString();
                 url += "?service=" + service;
-                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
+                response.setHeader(WebmvcConstants.HEADER_LOGIN_URL, url);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
             return null;

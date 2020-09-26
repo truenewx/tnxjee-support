@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>org.truenewx.tnxjee</groupId>
-            <artifactId>tnxjee-web</artifactId>
+            <artifactId>tnxjee-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

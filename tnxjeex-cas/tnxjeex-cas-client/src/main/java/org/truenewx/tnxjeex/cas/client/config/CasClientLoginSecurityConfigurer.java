@@ -7,9 +7,9 @@ import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Component;
-import org.truenewx.tnxjee.web.api.meta.model.ApiMetaProperties;
-import org.truenewx.tnxjee.web.security.config.LoginSecurityConfigurerSupport;
-import org.truenewx.tnxjee.web.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
+import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
+import org.truenewx.tnxjee.webmvc.security.config.LoginSecurityConfigurerSupport;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.client.filter.CasClientAuthenticationFilter;
 
 /**

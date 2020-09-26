@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
@@ -44,8 +44,8 @@ public class ServiceController {
     @ConfigAnonymous
     @ResponseBody
     public Map<String, String> serviceLogoutUrls(HttpServletRequest request) {
-        String serviceString = WebUtil
-                .getCookieValue(request, CasServerConstants.COOKIE_LOGOUT_SERVICES);
+        String serviceString = WebmvcUtil.getCookieValue(request,
+                CasServerConstants.COOKIE_LOGOUT_SERVICES);
         if (StringUtils.isNotBlank(serviceString)) {
             String[] services = serviceString.split(Strings.COMMA);
             return this.serviceManager.getLogoutUrls(services);

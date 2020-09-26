@@ -5,7 +5,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.authentication.AttributePrincipalImpl;
@@ -21,8 +25,8 @@ import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
-import org.truenewx.tnxjee.web.security.util.SecurityUtil;
-import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
+import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
 
 /**
  * 票据管理器实现
@@ -49,11 +53,12 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         session.setAttribute(TGT_NAME, ticketGrantingTicket);
         // 按照CAS规范将TGT写入Cookie，实际上并不会使用Cookie中的值
         int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
+        WebmvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
     }
 
     private String generateTicketGrantingTicket(String sessionId) {
-        return TICKET_GRANTING_TICKET_PREFIX + EncryptUtil.encryptByMd5(sessionId + System.currentTimeMillis());
+        return TICKET_GRANTING_TICKET_PREFIX
+                + EncryptUtil.encryptByMd5(sessionId + System.currentTimeMillis());
     }
 
     private String getTicketGrantingTicket(HttpServletRequest request) {
@@ -67,8 +72,9 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     @Override
     public boolean validateTicketGrantingTicket(HttpServletRequest request) {
         String ticketGrantingTicket = getTicketGrantingTicket(request);
-        return ticketGrantingTicket != null && this.serviceTicketRepo
-                .countByTicketGrantingTicketAndEarliestExpiredTime(ticketGrantingTicket, new Date()) > 0;
+        return ticketGrantingTicket != null
+                && this.serviceTicketRepo.countByTicketGrantingTicketAndEarliestExpiredTime(
+                        ticketGrantingTicket, new Date()) > 0;
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
@@ -85,9 +91,11 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
             }
             if (ticket == null) { // 不存在则创建新的
                 Date now = new Date();
-                String text = ticketGrantingTicket + Strings.MINUS + service + Strings.MINUS + now.getTime();
+                String text = ticketGrantingTicket + Strings.MINUS + service + Strings.MINUS
+                        + now.getTime();
                 String ticketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(text);
-                long timeout = this.serverProperties.getServlet().getSession().getTimeout().toMillis();
+                long timeout = this.serverProperties.getServlet().getSession().getTimeout()
+                        .toMillis();
                 Date expiredTime = new Date(now.getTime() + timeout);
                 ticket = new ServiceTicket(ticketId);
                 ticket.setTicketGrantingTicket(ticketGrantingTicket);
@@ -120,11 +128,11 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         }
         UserSpecificDetails<?> userDetails = ticket.getUserDetails();
         String name = userDetails.getIdentity().toString();
-        Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password", "enabled",
-                "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
+        Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
+                "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
         AttributePrincipal principal = new AttributePrincipalImpl(name, attributes);
-        return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(), ticket.getCreateTime(),
-                Collections.emptyMap());
+        return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(),
+                ticket.getCreateTime(), Collections.emptyMap());
     }
 
     @Override
@@ -144,7 +152,8 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
             Collection<ServiceTicket> tickets = this.serviceTicketRepo
                     .deleteByTicketGrantingTicket(ticketGrantingTicket);
             tickets.forEach(ticket -> {
-                this.logger.info("The service ticketId({}) has been deleted because session destroyed.",
+                this.logger.info(
+                        "The service ticketId({}) has been deleted because session destroyed.",
                         ticket.getId());
             });
         }

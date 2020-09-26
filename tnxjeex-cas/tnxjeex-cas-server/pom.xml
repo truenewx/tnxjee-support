@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>org.truenewx.tnxjee</groupId>
-            <artifactId>tnxjee-web-view</artifactId>
+            <artifactId>tnxjee-webmvc-view</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jasig.cas.client</groupId>

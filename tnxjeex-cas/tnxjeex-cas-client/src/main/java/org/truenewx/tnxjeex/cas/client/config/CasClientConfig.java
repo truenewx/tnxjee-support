@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.authentication.CasAuthenticationToken;
-import org.truenewx.tnxjee.web.security.util.SecurityUtil;
+import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.cas.client.userdetails.DefaultCasAssertionUserDetailsService;
 import org.truenewx.tnxjeex.cas.client.validation.CasJsonServiceTicketValidator;
 

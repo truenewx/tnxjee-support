@@ -6,8 +6,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-import org.truenewx.tnxjee.web.security.config.LoginSecurityConfigurerSupport;
-import org.truenewx.tnxjee.web.security.web.authentication.WebUsernamePasswordAuthenticationFilter;
+import org.truenewx.tnxjee.webmvc.security.config.LoginSecurityConfigurerSupport;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.WebUsernamePasswordAuthenticationFilter;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 

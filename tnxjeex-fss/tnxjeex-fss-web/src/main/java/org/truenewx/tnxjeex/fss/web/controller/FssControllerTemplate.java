@@ -24,12 +24,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
-import org.truenewx.tnxjee.web.bind.annotation.ResponseStream;
-import org.truenewx.tnxjee.web.context.SpringWebContext;
-import org.truenewx.tnxjee.web.security.config.annotation.ConfigAnonymous;
-import org.truenewx.tnxjee.web.security.config.annotation.ConfigAuthority;
-import org.truenewx.tnxjee.web.security.util.SecurityUtil;
-import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
+import org.truenewx.tnxjee.webmvc.context.SpringWebmvcContext;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
+import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
+import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
 import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
@@ -44,8 +44,8 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements
-        FssReadUrlResolver, FssMetaResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>>
+        implements FssReadUrlResolver, FssMetaResolver {
 
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
@@ -89,7 +89,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
 
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 I userIdentity = getUserIdentity();
-                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
+                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename,
+                        in);
                 in.close();
 
                 FssUploadedFileMeta result;
@@ -103,7 +104,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                     String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl,
                             true);
                     thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
+                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl,
+                            thumbnailReadUrl);
                 }
                 results.add(result);
             } catch (IOException e) {
@@ -130,12 +132,12 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             // 加上下载路径前缀
             readUrl = getDownloadUrlPrefix() + readUrl;
             // 加上上下文根路径
-            String contextPath = SpringWebContext.getRequest().getContextPath();
+            String contextPath = SpringWebmvcContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 readUrl = contextPath + readUrl;
             }
             // 加上主机地址
-            String host = WebUtil.getHost(SpringWebContext.getRequest(), true);
+            String host = WebmvcUtil.getHost(SpringWebmvcContext.getRequest(), true);
             readUrl = "//" + host + readUrl;
         }
         return readUrl;
@@ -197,7 +199,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     }
 
     protected String getDownloadPath(HttpServletRequest request) {
-        String url = WebUtil.getRelativeRequestUrl(request);
+        String url = WebmvcUtil.getRelativeRequestUrl(request);
         url = URLDecoder.decode(url, StandardCharsets.UTF_8);
         String downloadUrlPrefix = getDownloadUrlPrefix();
         int index = url.indexOf(downloadUrlPrefix + Strings.SLASH);

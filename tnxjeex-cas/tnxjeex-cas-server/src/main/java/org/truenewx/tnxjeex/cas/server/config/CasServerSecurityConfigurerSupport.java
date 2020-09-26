@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.truenewx.tnxjee.web.view.security.config.WebViewSecurityConfigurerSupport;
+import org.truenewx.tnxjee.webmvc.view.security.config.WebViewSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
 import org.truenewx.tnxjeex.cas.server.authentication.logout.CasServerLogoutSuccessHandler;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketLogoutHandler;

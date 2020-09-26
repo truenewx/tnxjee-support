@@ -12,10 +12,18 @@
     <modules>
         <module>tnxjeex-cas</module>
         <module>tnxjeex-fss</module>
+        <module>tnxjeex-gateway</module>
         <module>tnxjeex-seata</module>
     </modules>
     <dependencyManagement>
         <dependencies><!-- ${project.version}是实际子工程的版本号，此处不能采用 -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Hoxton.SR8</version><!-- 适配spring-boot-2.2/2.3 -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.truenewx.tnxjeex.fss</groupId>
                 <artifactId>tnxjeex-fss-api</artifactId>
@@ -44,6 +52,11 @@
             <dependency>
                 <groupId>org.truenewx.tnxjeex.cas</groupId>
                 <artifactId>tnxjeex-cas-server</artifactId>
+                <version>${tnxjee.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex</groupId>
+                <artifactId>tnxjeex-gateway</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
         </dependencies>

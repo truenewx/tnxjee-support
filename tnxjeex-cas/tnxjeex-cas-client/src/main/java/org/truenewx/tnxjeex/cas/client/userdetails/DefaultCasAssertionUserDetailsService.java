@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.model.spec.user.DefaultUserIdentity;
 import org.truenewx.tnxjee.model.spec.user.security.DefaultUserSpecificDetails;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
-import org.truenewx.tnxjee.web.security.core.AuthenticationFailureException;
+import org.truenewx.tnxjee.webmvc.security.core.AuthenticationFailureException;
 
 /**
  * 默认的根据CasAssertion获取用户细节的服务

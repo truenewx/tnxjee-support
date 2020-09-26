@@ -1,7 +1,7 @@
 package org.truenewx.tnxjeex.cas.server.authentication;
 
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
-import org.truenewx.tnxjee.web.security.authentication.UserSpecificDetailsAuthenticationToken;
+import org.truenewx.tnxjee.webmvc.security.authentication.UserSpecificDetailsAuthenticationToken;
 
 /**
  * CAS用户特性细节鉴权令牌
