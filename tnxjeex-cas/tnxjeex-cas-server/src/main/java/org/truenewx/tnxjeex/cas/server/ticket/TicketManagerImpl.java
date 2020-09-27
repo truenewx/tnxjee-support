@@ -5,11 +5,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.*;
 
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.authentication.AttributePrincipalImpl;
@@ -26,7 +22,7 @@ import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
-import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
+import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 
 /**
  * 票据管理器实现
@@ -53,7 +49,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         session.setAttribute(TGT_NAME, ticketGrantingTicket);
         // 按照CAS规范将TGT写入Cookie，实际上并不会使用Cookie中的值
         int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebmvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
+        WebMvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
     }
 
     private String generateTicketGrantingTicket(String sessionId) {
@@ -74,7 +70,7 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
         String ticketGrantingTicket = getTicketGrantingTicket(request);
         return ticketGrantingTicket != null
                 && this.serviceTicketRepo.countByTicketGrantingTicketAndEarliestExpiredTime(
-                        ticketGrantingTicket, new Date()) > 0;
+                ticketGrantingTicket, new Date()) > 0;
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据

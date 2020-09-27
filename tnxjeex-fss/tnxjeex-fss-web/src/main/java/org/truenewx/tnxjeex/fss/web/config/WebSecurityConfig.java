@@ -2,11 +2,11 @@ package org.truenewx.tnxjeex.fss.web.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.truenewx.tnxjee.webmvc.security.config.WebSecurityConfigurerSupport;
+import org.truenewx.tnxjee.webmvc.security.config.WebMvcSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.client.config.CasClientProperties;
 
 @Configuration
-public class WebSecurityConfig extends WebSecurityConfigurerSupport {
+public class WebSecurityConfig extends WebMvcSecurityConfigurerSupport {
 
     @Autowired
     private CasClientProperties casClientProperties;

@@ -8,7 +8,7 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
-import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
+import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
@@ -26,7 +26,7 @@ public class CasServerLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
         String targetUrl = super.determineTargetUrl(request, response);
         if (targetUrl.startsWith(Strings.SLASH)) { // 以/开头为相对当前应用的路径，需转换为绝对路径
-            String prefix = WebmvcUtil.getProtocolAndHost(request) + request.getContextPath();
+            String prefix = WebMvcUtil.getProtocolAndHost(request) + request.getContextPath();
             if (prefix.endsWith(Strings.SLASH)) {
                 prefix = prefix.substring(0, prefix.length() - 1);
             }

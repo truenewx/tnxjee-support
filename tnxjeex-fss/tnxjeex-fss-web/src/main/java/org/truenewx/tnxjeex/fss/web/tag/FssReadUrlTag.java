@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.tnxjee.core.util.SpringUtil;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjee.webmvc.util.SpringWebmvcUtil;
+import org.truenewx.tnxjee.webmvc.util.SpringWebMvcUtil;
 import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 
 /**
@@ -38,7 +38,7 @@ public class FssReadUrlTag extends SimpleTagSupport {
     private FssReadUrlResolver getReadUrlResolver() {
         PageContext pageContext = (PageContext) getJspContext();
         HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
-        ApplicationContext context = SpringWebmvcUtil.getApplicationContext(request);
+        ApplicationContext context = SpringWebMvcUtil.getApplicationContext(request);
         if (context != null) {
             return SpringUtil.getFirstBeanByClass(context, FssReadUrlResolver.class);
         }

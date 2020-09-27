@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
+import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
@@ -44,7 +44,7 @@ public class TicketLogoutHandler implements LogoutHandler {
             }
             if (services.length() > 0) {
                 services.deleteCharAt(0);
-                WebmvcUtil.addCookie(request, response, CasServerConstants.COOKIE_LOGOUT_SERVICES,
+                WebMvcUtil.addCookie(request, response, CasServerConstants.COOKIE_LOGOUT_SERVICES,
                         services.toString(), 30);
             }
         }

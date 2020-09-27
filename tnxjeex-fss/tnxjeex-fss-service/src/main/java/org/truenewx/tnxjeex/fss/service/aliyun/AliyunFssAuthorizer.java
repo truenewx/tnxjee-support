@@ -14,7 +14,7 @@ import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.ObjectAcl;
 import com.aliyun.oss.model.ObjectPermission;
-import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
+import com.aliyuncs.auth.sts.AssumeRoleResponse;
 
 /**
  * 阿里云的文件存储授权器
@@ -89,7 +89,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
                 return url.toString();
             } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
                 String policyDocument = this.policyBuilder.buildReadDocument(path);
-                Credentials credentials = this.readStsRoleAssumer
+                AssumeRoleResponse.Credentials credentials = this.readStsRoleAssumer
                         .assumeRole(userIdentity.toString(), policyDocument);
                 if (credentials != null) {
                     OSS oss = AliyunOssUtil.buildOss(this.account.getOssEndpoint(),

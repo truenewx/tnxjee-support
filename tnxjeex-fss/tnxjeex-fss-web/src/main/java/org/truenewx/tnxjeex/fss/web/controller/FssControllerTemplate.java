@@ -29,7 +29,7 @@ import org.truenewx.tnxjee.webmvc.context.SpringWebmvcContext;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
-import org.truenewx.tnxjee.webmvc.util.WebmvcUtil;
+import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
 import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
@@ -137,7 +137,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
                 readUrl = contextPath + readUrl;
             }
             // 加上主机地址
-            String host = WebmvcUtil.getHost(SpringWebmvcContext.getRequest(), true);
+            String host = WebMvcUtil.getHost(SpringWebmvcContext.getRequest(), true);
             readUrl = "//" + host + readUrl;
         }
         return readUrl;
@@ -199,7 +199,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
     }
 
     protected String getDownloadPath(HttpServletRequest request) {
-        String url = WebmvcUtil.getRelativeRequestUrl(request);
+        String url = WebMvcUtil.getRelativeRequestUrl(request);
         url = URLDecoder.decode(url, StandardCharsets.UTF_8);
         String downloadUrlPrefix = getDownloadUrlPrefix();
         int index = url.indexOf(downloadUrlPrefix + Strings.SLASH);

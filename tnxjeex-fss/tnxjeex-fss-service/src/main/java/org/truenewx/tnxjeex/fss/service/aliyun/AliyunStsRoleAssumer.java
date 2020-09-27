@@ -2,10 +2,9 @@ package org.truenewx.tnxjeex.fss.service.aliyun;
 
 import org.slf4j.LoggerFactory;
 
+import com.aliyuncs.auth.sts.AssumeRoleRequest;
+import com.aliyuncs.auth.sts.AssumeRoleResponse;
 import com.aliyuncs.exceptions.ClientException;
-import com.aliyuncs.sts.model.v20150401.AssumeRoleRequest;
-import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse;
-import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 
 /**
  * 阿里云STS临时角色假扮器
@@ -19,7 +18,6 @@ public class AliyunStsRoleAssumer {
     private AliyunAccount account;
 
     /**
-     *
      * @param accountId 阿里云账号id
      * @param roleName  sts临时角色名称
      */
@@ -32,7 +30,7 @@ public class AliyunStsRoleAssumer {
         this.durationSeconds = durationSeconds;
     }
 
-    public Credentials assumeRole(String roleSessionName, String policyDocument) {
+    public AssumeRoleResponse.Credentials assumeRole(String roleSessionName, String policyDocument) {
         AssumeRoleRequest request = new AssumeRoleRequest();
         request.setRoleArn(this.roleArn);
         request.setRoleSessionName(roleSessionName);
