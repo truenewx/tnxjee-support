@@ -12,7 +12,6 @@
     <modules>
         <module>tnxjeex-cas</module>
         <module>tnxjeex-fss</module>
-        <module>tnxjeex-gateway</module>
         <module>tnxjeex-seata</module>
     </modules>
     <dependencyManagement>
