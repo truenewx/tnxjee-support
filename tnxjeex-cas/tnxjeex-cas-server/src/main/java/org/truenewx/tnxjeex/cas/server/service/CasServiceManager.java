@@ -13,9 +13,9 @@ public interface CasServiceManager {
 
     String getUserType(String service);
 
-    String getHost(String service);
+    String getUri(HttpServletRequest request, String service);
 
-    String getLoginUrl(HttpServletRequest request, String service);
+    String getLoginProcessUrl(HttpServletRequest request, String service);
 
-    Map<String, String> getLogoutUrls(String[] services);
+    Map<String, String> getLogoutProcessUrls(HttpServletRequest request, String[] services);
 }

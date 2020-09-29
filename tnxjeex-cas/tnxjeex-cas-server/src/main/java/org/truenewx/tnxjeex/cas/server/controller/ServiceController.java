@@ -48,7 +48,7 @@ public class ServiceController {
                 CasServerConstants.COOKIE_LOGOUT_SERVICES);
         if (StringUtils.isNotBlank(serviceString)) {
             String[] services = serviceString.split(Strings.COMMA);
-            return this.serviceManager.getLogoutUrls(services);
+            return this.serviceManager.getLogoutProcessUrls(request, services);
         }
         return Collections.emptyMap();
     }

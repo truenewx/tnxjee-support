@@ -25,7 +25,7 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
-import org.truenewx.tnxjee.webmvc.context.SpringWebmvcContext;
+import org.truenewx.tnxjee.webmvc.context.SpringWebMvcContext;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
@@ -132,12 +132,12 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
             // 加上下载路径前缀
             readUrl = getDownloadUrlPrefix() + readUrl;
             // 加上上下文根路径
-            String contextPath = SpringWebmvcContext.getRequest().getContextPath();
+            String contextPath = SpringWebMvcContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 readUrl = contextPath + readUrl;
             }
             // 加上主机地址
-            String host = WebMvcUtil.getHost(SpringWebmvcContext.getRequest(), true);
+            String host = WebMvcUtil.getHost(SpringWebMvcContext.getRequest(), true);
             readUrl = "//" + host + readUrl;
         }
         return readUrl;

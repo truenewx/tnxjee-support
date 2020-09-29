@@ -22,7 +22,7 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 public class CasServiceManagerImpl implements CasServiceManager {
 
     @Autowired
-    private CommonProperties microServiceProperties;
+    private CommonProperties commonProperties;
     @Autowired
     private TicketManager ticketManager;
 
@@ -32,12 +32,12 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public String getHost(String service) {
-        return obtainServiceConfiguration(service).getHost();
+    public String getUri(HttpServletRequest request, String service) {
+        return obtainServiceConfiguration(service).getUri();
     }
 
     private AppConfiguration obtainServiceConfiguration(String service) {
-        AppConfiguration msc = this.microServiceProperties.getApps().get(service);
+        AppConfiguration msc = this.commonProperties.getApps().get(service);
         if (msc == null) {
             throw new BusinessException(CasServerExceptionCodes.INVALID_SERVICE);
         }
@@ -45,8 +45,8 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public String getLoginUrl(HttpServletRequest request, String service) {
-        String loginUrl = obtainServiceConfiguration(service).getLoginUrl();
+    public String getLoginProcessUrl(HttpServletRequest request, String service) {
+        String loginUrl = obtainServiceConfiguration(service).getLoginProcessUrl();
         int index = loginUrl.indexOf(Strings.QUESTION);
         if (index < 0) {
             loginUrl += Strings.QUESTION;
@@ -58,13 +58,13 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public Map<String, String> getLogoutUrls(String[] services) {
+    public Map<String, String> getLogoutProcessUrls(HttpServletRequest request, String[] services) {
         Map<String, String> logoutUrls = new HashMap<>();
-        Map<String, AppConfiguration> serviceConfigurations = this.microServiceProperties.getApps();
+        Map<String, AppConfiguration> apps = this.commonProperties.getApps();
         for (String service : services) {
-            AppConfiguration serviceConfiguration = serviceConfigurations.get(service);
-            if (serviceConfiguration != null) {
-                logoutUrls.put(service, serviceConfiguration.getLogoutUrl());
+            AppConfiguration app = apps.get(service);
+            if (app != null) {
+                logoutUrls.put(service, app.getLogoutProcessUrl());
             }
         }
         return logoutUrls;
