@@ -44,13 +44,13 @@ public class CasClientProperties extends ServiceProperties {
         super.afterPropertiesSet();
     }
 
-    public String getContextUri() {
+    public String getServerContextUri(boolean direct) {
         AppConfiguration app = this.commonProperties.getApp(getServerAppName());
-        return app == null ? null : app.getContextUri();
+        return app == null ? null : app.getContextUri(direct);
     }
 
     public String getLoginFormUrl() {
-        String url = getContextUri();
+        String url = getServerContextUri(false);
         if (!url.endsWith(Strings.SLASH)) {
             url += Strings.SLASH;
         }
@@ -58,7 +58,7 @@ public class CasClientProperties extends ServiceProperties {
     }
 
     public String getLogoutProcessUrl() {
-        String url = getContextUri();
+        String url = getServerContextUri(false);
         if (!url.endsWith(Strings.SLASH)) {
             url += Strings.SLASH;
         }

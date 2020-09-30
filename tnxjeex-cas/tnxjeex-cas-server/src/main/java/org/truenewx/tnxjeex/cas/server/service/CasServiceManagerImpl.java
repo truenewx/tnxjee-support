@@ -33,7 +33,7 @@ public class CasServiceManagerImpl implements CasServiceManager {
 
     @Override
     public String getUri(HttpServletRequest request, String service) {
-        return obtainServiceConfiguration(service).getUri();
+        return obtainServiceConfiguration(service).getDirectUri();
     }
 
     private AppConfiguration obtainServiceConfiguration(String service) {

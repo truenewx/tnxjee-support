@@ -40,6 +40,10 @@ public class CasClientAuthenticationFilter extends CasAuthenticationFilter {
         }
     }
 
+    public void setDefaultTargetUrl(String defaultTargetUrl) {
+        acceptSuccessHandler(handler -> handler.setDefaultTargetUrl(defaultTargetUrl));
+    }
+
     public void setSuccessTargetUrlParameter(String targetUrlParameter) {
         acceptSuccessHandler(handler -> handler.setTargetUrlParameter(targetUrlParameter));
     }
