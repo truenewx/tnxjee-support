@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.server.ticket;
+package org.truenewx.tnxjeex.cas.server.entity;
 
 import java.util.Date;
 
@@ -11,9 +11,8 @@ import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 public class ServiceTicket implements Unity<String> {
 
     private String id;
-    private String ticketGrantingTicket;
-    private UserSpecificDetails<?> userDetails;
     private String service;
+    private UserSpecificDetails<?> userDetails;
     private Date createTime;
     private Date expiredTime;
 
@@ -33,12 +32,12 @@ public class ServiceTicket implements Unity<String> {
         this.id = id;
     }
 
-    public String getTicketGrantingTicket() {
-        return this.ticketGrantingTicket;
+    public String getService() {
+        return this.service;
     }
 
-    public void setTicketGrantingTicket(String ticketGrantingTicket) {
-        this.ticketGrantingTicket = ticketGrantingTicket;
+    public void setService(String service) {
+        this.service = service;
     }
 
     public UserSpecificDetails<?> getUserDetails() {
@@ -47,14 +46,6 @@ public class ServiceTicket implements Unity<String> {
 
     public void setUserDetails(UserSpecificDetails<?> userDetails) {
         this.userDetails = userDetails;
-    }
-
-    public String getService() {
-        return this.service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
     }
 
     public Date getCreateTime() {

@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jasig.cas.client.validation.Assertion;
 import org.truenewx.tnxjee.service.Service;
+import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 
 /**
  * 票据管理器
@@ -19,11 +20,12 @@ public interface TicketManager extends Service {
 
     void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response);
 
-    boolean validateTicketGrantingTicket(HttpServletRequest request);
+    boolean checkTicketGrantingTicket(HttpServletRequest request);
 
     String getServiceTicket(HttpServletRequest request, String service);
 
-    Collection<ServiceTicket> findServiceTickets(HttpServletRequest request);
+    Collection<ServiceTicket> deleteTicketGrantingTicket(HttpServletRequest request,
+            HttpServletResponse response);
 
-    Assertion validateServiceTicket(String service, String ticketId);
+    Assertion validateServiceTicket(String service, String serviceTicketId);
 }

@@ -9,6 +9,7 @@ import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.cas.client.userdetails.DefaultCasAssertionUserDetailsService;
 import org.truenewx.tnxjeex.cas.client.validation.CasJsonServiceTicketValidator;
+import org.truenewx.tnxjeex.cas.client.web.servlet.CasClientLoginHandlerMapping;
 
 @Configuration
 public class CasClientConfig {
@@ -24,6 +25,11 @@ public class CasClientConfig {
 
     @Autowired
     private CasClientProperties properties;
+
+    @Bean
+    public CasClientLoginHandlerMapping casClientLoginHandlerMapping() {
+        return new CasClientLoginHandlerMapping("/login/cas"); // 使用CasAuthenticationFilter的默认登录处理地址
+    }
 
     @Bean
     public TicketValidator ticketValidator() {

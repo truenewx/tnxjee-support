@@ -47,7 +47,7 @@ public class LoginController {
             if (originalRequest != null) {
                 response.setHeader(WebMvcConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
             }
-            if (this.ticketManager.validateTicketGrantingTicket(request)) {
+            if (this.ticketManager.checkTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
                 if (originalRequest != null) {
                     String originalUrl = originalRequest
@@ -64,7 +64,7 @@ public class LoginController {
             }
             return null;
         } else {
-            if (this.ticketManager.validateTicketGrantingTicket(request)) {
+            if (this.ticketManager.checkTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
                 return new ModelAndView("redirect:" + targetUrl);
             }

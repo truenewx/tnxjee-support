@@ -1,18 +1,16 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.authentication.AttributePrincipalImpl;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.AssertionImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
@@ -23,18 +21,27 @@ import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
+import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
+import org.truenewx.tnxjeex.cas.server.entity.TicketGrantingTicket;
+import org.truenewx.tnxjeex.cas.server.repo.MemoryServiceTicketRepo;
+import org.truenewx.tnxjeex.cas.server.repo.MemoryTicketGrantingTicketRepo;
+import org.truenewx.tnxjeex.cas.server.repo.ServiceTicketRepo;
+import org.truenewx.tnxjeex.cas.server.repo.TicketGrantingTicketRepo;
 
 /**
  * 票据管理器实现
  */
 @Service
-public class TicketManagerImpl implements TicketManager, HttpSessionListener {
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
+public class TicketManagerImpl implements TicketManager {
     @Autowired
     private ServerProperties serverProperties;
+    private TicketGrantingTicketRepo ticketGrantingTicketRepo = new MemoryTicketGrantingTicketRepo();
     private ServiceTicketRepo serviceTicketRepo = new MemoryServiceTicketRepo();
+
+    @Autowired(required = false)
+    public void setTicketGrantingTicketRepo(TicketGrantingTicketRepo ticketGrantingTicketRepo) {
+        this.ticketGrantingTicketRepo = ticketGrantingTicketRepo;
+    }
 
     @Autowired(required = false)
     public void setServiceTicketRepo(ServiceTicketRepo serviceTicketRepo) {
@@ -42,117 +49,126 @@ public class TicketManagerImpl implements TicketManager, HttpSessionListener {
     }
 
     @Override
-    public void createTicketGrantingTicket(HttpServletRequest request,
-            HttpServletResponse response) {
+    @WriteTransactional
+    public void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession();
-        String ticketGrantingTicket = generateTicketGrantingTicket(session.getId());
-        session.setAttribute(TGT_NAME, ticketGrantingTicket);
-        // 按照CAS规范将TGT写入Cookie，实际上并不会使用Cookie中的值
-        int maxAge = (int) this.serverProperties.getServlet().getSession().getTimeout().toSeconds();
-        WebMvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicket, maxAge);
+        String ticketGrantingTicketId = TICKET_GRANTING_TICKET_PREFIX
+                + EncryptUtil.encryptByMd5(session.getId() + System.currentTimeMillis());
+        TicketGrantingTicket ticketGrantingTicket = new TicketGrantingTicket(ticketGrantingTicketId);
+        Date createTime = new Date();
+        ticketGrantingTicket.setCreateTime(createTime);
+        Duration timeout = this.serverProperties.getServlet().getSession().getTimeout();
+        Date expiredTime = new Date(createTime.getTime() + timeout.toMillis());
+        ticketGrantingTicket.setExpiredTime(expiredTime);
+        this.ticketGrantingTicketRepo.save(ticketGrantingTicket);
+
+        // 按照CAS规范将TGT写入Cookie
+        int cookieMaxAge = (int) timeout.toSeconds();
+        WebMvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicketId, cookieMaxAge);
+
+        // Cookie中的TGT需要到下一个请求时才能获取，缓存TGT到当前会话，以便当前请求的后续处理获取TGT
+        session.setAttribute(TGT_NAME, ticketGrantingTicketId);
     }
 
-    private String generateTicketGrantingTicket(String sessionId) {
-        return TICKET_GRANTING_TICKET_PREFIX
-                + EncryptUtil.encryptByMd5(sessionId + System.currentTimeMillis());
+    /**
+     * 读取已有的票据授权票据id，如果没有则返回null
+     *
+     * @param request 请求
+     * @return 票据授权票据id
+     */
+    private String readTicketGrantingTicketId(HttpServletRequest request) {
+        // 优先从当前会话缓存中获取TGT
+        String ticketGrantingTicketId = (String) request.getSession().getAttribute(TGT_NAME);
+        if (ticketGrantingTicketId == null) {
+            ticketGrantingTicketId = WebMvcUtil.getCookieValue(request, TGT_NAME);
+        }
+        return ticketGrantingTicketId;
     }
 
-    private String getTicketGrantingTicket(HttpServletRequest request) {
-        return getTicketGrantingTicket(request.getSession());
-    }
-
-    private String getTicketGrantingTicket(HttpSession session) {
-        return (String) session.getAttribute(TGT_NAME);
+    /**
+     * 查找有效的票据授权票据实体，如果没有或已过期则返回null
+     *
+     * @param request 请求
+     * @return 票据授权票据实体
+     */
+    private TicketGrantingTicket findValidTicketGrantingTicket(HttpServletRequest request) {
+        String ticketGrantingTicketId = readTicketGrantingTicketId(request);
+        if (ticketGrantingTicketId != null) {
+            TicketGrantingTicket ticketGrantingTicket = this.ticketGrantingTicketRepo.findById(ticketGrantingTicketId)
+                    .orElse(null);
+            if (ticketGrantingTicket != null) {
+                if (ticketGrantingTicket.getExpiredTime().getTime() > System.currentTimeMillis()) {
+                    return ticketGrantingTicket;
+                } else { // 如果已过期则删除，以尽量减少垃圾数据
+                    this.ticketGrantingTicketRepo.delete(ticketGrantingTicket);
+                }
+            }
+        }
+        return null;
     }
 
     @Override
-    public boolean validateTicketGrantingTicket(HttpServletRequest request) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request);
-        return ticketGrantingTicket != null
-                && this.serviceTicketRepo.countByTicketGrantingTicketAndEarliestExpiredTime(
-                ticketGrantingTicket, new Date()) > 0;
+    @WriteTransactional
+    public boolean checkTicketGrantingTicket(HttpServletRequest request) {
+        return findValidTicketGrantingTicket(request) != null;
     }
 
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
     @Override
     @WriteTransactional
     public String getServiceTicket(HttpServletRequest request, String service) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request);
+        TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
-            ServiceTicket ticket = this.serviceTicketRepo
-                    .findByTicketGrantingTicketAndService(ticketGrantingTicket, service);
-            if (ticket != null && ticket.getExpiredTime().before(new Date())) { // 已过期的先删除，再视为null
-                this.serviceTicketRepo.deleteById(ticket.getId());
-                ticket = null;
-            }
-            if (ticket == null) { // 不存在则创建新的
+            ServiceTicket serviceTicket = ticketGrantingTicket.getServiceTicketByService(service);
+            if (serviceTicket == null) { // 不存在则创建新的
                 Date now = new Date();
-                String text = ticketGrantingTicket + Strings.MINUS + service + Strings.MINUS
-                        + now.getTime();
-                String ticketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5_16(text);
-                long timeout = this.serverProperties.getServlet().getSession().getTimeout()
-                        .toMillis();
-                Date expiredTime = new Date(now.getTime() + timeout);
-                ticket = new ServiceTicket(ticketId);
-                ticket.setTicketGrantingTicket(ticketGrantingTicket);
-                ticket.setService(service);
-                ticket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
-                ticket.setCreateTime(now);
-                ticket.setExpiredTime(expiredTime);
-                this.serviceTicketRepo.save(ticket);
+                String text = ticketGrantingTicket.getId() + Strings.MINUS + service + Strings.MINUS + now.getTime();
+                String serviceTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);
+                serviceTicket = new ServiceTicket(serviceTicketId);
+                serviceTicket.setService(service);
+                serviceTicket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
+                serviceTicket.setCreateTime(now);
+                // 所属票据授权票据的过期时间即为服务票据的过期时间
+                serviceTicket.setExpiredTime(ticketGrantingTicket.getExpiredTime());
+                ticketGrantingTicket.getServiceTickets().add(serviceTicket);
+                this.serviceTicketRepo.save(serviceTicket);
             }
-            return ticket.getId();
+            return serviceTicket.getId();
         }
         return null;
     }
 
     @Override
-    public Collection<ServiceTicket> findServiceTickets(HttpServletRequest request) {
-        String ticketGrantingTicket = getTicketGrantingTicket(request);
+    public Collection<ServiceTicket> deleteTicketGrantingTicket(HttpServletRequest request,
+            HttpServletResponse response) {
+        TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
-            return this.serviceTicketRepo.findByTicketGrantingTicket(ticketGrantingTicket);
+            Collection<ServiceTicket> serviceTickets = ticketGrantingTicket.getServiceTickets();
+            serviceTickets.forEach(serviceTicket -> {
+                this.serviceTicketRepo.delete(serviceTicket);
+            });
+            this.ticketGrantingTicketRepo.delete(ticketGrantingTicket);
+            // 按照CAS规范将TGT从Cookie移除
+            WebMvcUtil.removeCookie(request, response, TGT_NAME);
+            return new ArrayList<>(serviceTickets);
         }
         return Collections.emptyList();
     }
 
     // 用户访问业务服务，由业务服务校验票据有效性时调用
     @Override
-    public Assertion validateServiceTicket(String service, String ticketId) {
-        ServiceTicket ticket = this.serviceTicketRepo.findById(ticketId);
-        if (ticket == null || !ticket.getService().equals(service)) {
+    public Assertion validateServiceTicket(String service, String serviceTicketId) {
+        ServiceTicket serviceTicket = this.serviceTicketRepo.findById(serviceTicketId).orElse(null);
+        if (serviceTicket == null || !serviceTicket.getService().equals(service)) {
             return null;
         }
-        UserSpecificDetails<?> userDetails = ticket.getUserDetails();
+        UserSpecificDetails<?> userDetails = serviceTicket.getUserDetails();
         String name = userDetails.getIdentity().toString();
         Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
                 "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
         AttributePrincipal principal = new AttributePrincipalImpl(name, attributes);
-        return new AssertionImpl(principal, ticket.getCreateTime(), ticket.getExpiredTime(),
-                ticket.getCreateTime(), Collections.emptyMap());
-    }
-
-    @Override
-    public void sessionCreated(HttpSessionEvent event) {
-        String sessionId = event.getSession().getId();
-        this.logger.info("The session({}) has been created.", sessionId);
-    }
-
-    @Override
-    @WriteTransactional
-    public void sessionDestroyed(HttpSessionEvent event) {
-        // 此时sessionId已变化，根据sessionId获取TGT将无法与原始TGT匹配，只能从session中获取TGT属性值进行处理
-        HttpSession session = event.getSession();
-        String ticketGrantingTicket = getTicketGrantingTicket(session);
-        if (ticketGrantingTicket != null) {
-            session.removeAttribute(TGT_NAME);
-            Collection<ServiceTicket> tickets = this.serviceTicketRepo
-                    .deleteByTicketGrantingTicket(ticketGrantingTicket);
-            tickets.forEach(ticket -> {
-                this.logger.info(
-                        "The service ticketId({}) has been deleted because session destroyed.",
-                        ticket.getId());
-            });
-        }
+        return new AssertionImpl(principal, serviceTicket.getCreateTime(), serviceTicket.getExpiredTime(),
+                serviceTicket.getCreateTime(), Collections.emptyMap());
     }
 
 }
