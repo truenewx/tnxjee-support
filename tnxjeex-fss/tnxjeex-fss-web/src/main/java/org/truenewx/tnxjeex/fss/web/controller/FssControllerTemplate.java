@@ -15,10 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
@@ -49,6 +46,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
 
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
+
+    protected String downloadUrlPrefix;
 
     /**
      * 获取指定用户上传指定业务类型的文件上传限制条件
@@ -150,7 +149,18 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
      * @return 下载路径前缀
      */
     protected String getDownloadUrlPrefix() {
-        return "/dl";
+        if (this.downloadUrlPrefix == null) {
+            String prefix = Strings.EMPTY;
+            RequestMapping requestMapping = getClass().getAnnotation(RequestMapping.class);
+            if (requestMapping != null) {
+                String[] paths = requestMapping.value();
+                if (paths.length == 1) {
+                    prefix = paths[0];
+                }
+            }
+            this.downloadUrlPrefix = prefix + "/dl";
+        }
+        return this.downloadUrlPrefix;
     }
 
     /**
