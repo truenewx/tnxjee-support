@@ -21,12 +21,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.web.context.SpringWebContext;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
-import org.truenewx.tnxjee.webmvc.context.SpringWebMvcContext;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
-import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
 import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
@@ -131,12 +131,12 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
             // 加上下载路径前缀
             readUrl = getDownloadUrlPrefix() + readUrl;
             // 加上上下文根路径
-            String contextPath = SpringWebMvcContext.getRequest().getContextPath();
+            String contextPath = SpringWebContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 readUrl = contextPath + readUrl;
             }
             // 加上主机地址
-            String host = WebMvcUtil.getHost(SpringWebMvcContext.getRequest(), true);
+            String host = WebUtil.getHost(SpringWebContext.getRequest(), true);
             readUrl = "//" + host + readUrl;
         }
         return readUrl;
@@ -209,7 +209,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>>
     }
 
     protected String getDownloadPath(HttpServletRequest request) {
-        String url = WebMvcUtil.getRelativeRequestUrl(request);
+        String url = WebUtil.getRelativeRequestUrl(request);
         url = URLDecoder.decode(url, StandardCharsets.UTF_8);
         String downloadUrlPrefix = getDownloadUrlPrefix();
         int index = url.indexOf(downloadUrlPrefix + Strings.SLASH);

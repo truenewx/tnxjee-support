@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.truenewx.tnxjee.core.util.NetUtil;
-import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.view.util.WebViewUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
@@ -35,7 +35,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
         CasUserSpecificDetailsAuthenticationToken token = (CasUserSpecificDetailsAuthenticationToken) authentication;
         String service = token.getService();
         String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
-        Map<String, Object> parameters = WebMvcUtil.getRequestParameterMap(request, "username",
+        Map<String, Object> parameters = WebUtil.getRequestParameterMap(request, "username",
                 "password", CasServerConstants.PARAMETER_SERVICE,
                 CasServerConstants.PARAMETER_SCOPE);
         targetUrl = NetUtil.mergeParams(targetUrl, parameters, StandardCharsets.UTF_8.name());

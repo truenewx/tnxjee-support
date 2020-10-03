@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.web.util.WebConstants;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
-import org.truenewx.tnxjee.webmvc.util.WebMvcConstants;
-import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 
@@ -42,10 +42,10 @@ public class LoginController {
     @GetMapping
     public ModelAndView form(@RequestParam("service") String service, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        if (WebMvcUtil.isAjaxRequest(request)) {
-            String originalRequest = request.getHeader(WebMvcConstants.HEADER_ORIGINAL_REQUEST);
+        if (WebUtil.isAjaxRequest(request)) {
+            String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
             if (originalRequest != null) {
-                response.setHeader(WebMvcConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
+                response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
             }
             if (this.ticketManager.checkTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
@@ -59,7 +59,7 @@ public class LoginController {
             } else { // AJAX登录只能进行自动登录，否则报401
                 String url = request.getRequestURL().toString();
                 url += "?service=" + service;
-                response.setHeader(WebMvcConstants.HEADER_LOGIN_URL, url);
+                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
             return null;

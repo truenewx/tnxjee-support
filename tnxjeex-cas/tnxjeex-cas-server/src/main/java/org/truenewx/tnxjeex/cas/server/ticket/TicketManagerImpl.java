@@ -19,8 +19,8 @@ import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
-import org.truenewx.tnxjee.webmvc.util.WebMvcUtil;
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 import org.truenewx.tnxjeex.cas.server.entity.TicketGrantingTicket;
 import org.truenewx.tnxjeex.cas.server.repo.MemoryServiceTicketRepo;
@@ -64,7 +64,7 @@ public class TicketManagerImpl implements TicketManager {
 
         // 按照CAS规范将TGT写入Cookie
         int cookieMaxAge = (int) timeout.toSeconds();
-        WebMvcUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicketId, cookieMaxAge);
+        WebUtil.addCookie(request, response, TGT_NAME, ticketGrantingTicketId, cookieMaxAge);
 
         // Cookie中的TGT需要到下一个请求时才能获取，缓存TGT到当前会话，以便当前请求的后续处理获取TGT
         session.setAttribute(TGT_NAME, ticketGrantingTicketId);
@@ -80,7 +80,7 @@ public class TicketManagerImpl implements TicketManager {
         // 优先从当前会话缓存中获取TGT
         String ticketGrantingTicketId = (String) request.getSession().getAttribute(TGT_NAME);
         if (ticketGrantingTicketId == null) {
-            ticketGrantingTicketId = WebMvcUtil.getCookieValue(request, TGT_NAME);
+            ticketGrantingTicketId = WebUtil.getCookieValue(request, TGT_NAME);
         }
         return ticketGrantingTicketId;
     }
@@ -149,7 +149,7 @@ public class TicketManagerImpl implements TicketManager {
             });
             this.ticketGrantingTicketRepo.delete(ticketGrantingTicket);
             // 按照CAS规范将TGT从Cookie移除
-            WebMvcUtil.removeCookie(request, response, TGT_NAME);
+            WebUtil.removeCookie(request, response, TGT_NAME);
             return new ArrayList<>(serviceTickets);
         }
         return Collections.emptyList();
