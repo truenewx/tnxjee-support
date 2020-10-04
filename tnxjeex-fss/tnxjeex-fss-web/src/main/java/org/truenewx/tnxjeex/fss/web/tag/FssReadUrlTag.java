@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.truenewx.tnxjee.core.util.SpringUtil;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.webmvc.util.SpringWebMvcUtil;
-import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
+import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
 
 /**
  * 格式化日期输出标签
@@ -35,22 +35,22 @@ public class FssReadUrlTag extends SimpleTagSupport {
         this.thumbnail = thumbnail;
     }
 
-    private FssReadUrlResolver getReadUrlResolver() {
+    private FssMetaResolver getReadUrlResolver() {
         PageContext pageContext = (PageContext) getJspContext();
         HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
         ApplicationContext context = SpringWebMvcUtil.getApplicationContext(request);
         if (context != null) {
-            return SpringUtil.getFirstBeanByClass(context, FssReadUrlResolver.class);
+            return SpringUtil.getFirstBeanByClass(context, FssMetaResolver.class);
         }
         return null;
     }
 
     @Override
     public void doTag() throws JspException, IOException {
-        FssReadUrlResolver readUrlResolver = getReadUrlResolver();
-        if (readUrlResolver != null) {
+        FssMetaResolver metaResolver = getReadUrlResolver();
+        if (metaResolver != null) {
             try {
-                String readUrl = readUrlResolver.resolveReadUrl(this.value, this.thumbnail);
+                String readUrl = metaResolver.resolveReadUrl(this.value, this.thumbnail);
                 if (readUrl != null) {
                     JspWriter out = getJspContext().getOut();
                     out.print(readUrl);

@@ -28,7 +28,6 @@ import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
-import org.truenewx.tnxjeex.fss.api.FssReadUrlResolver;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
@@ -41,8 +40,7 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>>
-        implements FssReadUrlResolver, FssMetaResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
 
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
