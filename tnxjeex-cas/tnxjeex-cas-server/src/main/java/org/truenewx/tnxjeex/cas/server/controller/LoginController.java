@@ -40,7 +40,7 @@ public class LoginController {
     private ApiMetaProperties apiMetaProperties;
 
     @GetMapping
-    public ModelAndView form(@RequestParam("service") String service, HttpServletRequest request,
+    public ModelAndView get(@RequestParam("service") String service, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         if (WebUtil.isAjaxRequest(request)) {
             String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
