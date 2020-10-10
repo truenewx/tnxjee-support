@@ -8,6 +8,7 @@
       <configuration>
         <setting name="validation-enabled" value="true" />
         <datasource-mapping>
+          <factory-entry name="entityManagerFactory" />
           <factory-entry name="tnxjeex-fss-web" />
         </datasource-mapping>
         <naming-strategy-map />
