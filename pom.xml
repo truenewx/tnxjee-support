@@ -61,8 +61,13 @@
             </dependency>
             <dependency>
                 <groupId>org.truenewx.tnxjeex.openapi.client</groupId>
-                <artifactId>tnxjeex-openapi-client-model</artifactId>
-                <version>${project.version}</version>
+                <artifactId>tnxjeex-openapi-client-service</artifactId>
+                <version>${tnxjee.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.openapi.client</groupId>
+                <artifactId>tnxjeex-openapi-client-web</artifactId>
+                <version>${tnxjee.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

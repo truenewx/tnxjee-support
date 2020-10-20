@@ -15,4 +15,13 @@
         <module>tnxjeex-openapi-client-service</module>
         <module>tnxjeex-openapi-client-web</module>
     </modules>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.openapi.client</groupId>
+                <artifactId>tnxjeex-openapi-client-model</artifactId>
+                <version>${tnxjee.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
