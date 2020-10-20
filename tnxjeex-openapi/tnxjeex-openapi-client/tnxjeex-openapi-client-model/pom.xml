@@ -7,4 +7,10 @@
   </parent>
   <groupId>org.truenewx.tnxjeex.openapi.client</groupId>
   <artifactId>tnxjeex-openapi-client-model</artifactId>
+  <dependencies>
+      <dependency>
+          <groupId>org.truenewx.tnxjee</groupId>
+          <artifactId>tnxjee-model</artifactId>
+      </dependency>
+  </dependencies>
 </project>
