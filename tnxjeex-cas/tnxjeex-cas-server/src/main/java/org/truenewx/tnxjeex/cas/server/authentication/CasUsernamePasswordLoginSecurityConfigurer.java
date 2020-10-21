@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.webmvc.security.config.LoginSecurityConfigurerSupport;
-import org.truenewx.tnxjee.webmvc.security.web.authentication.WebUsernamePasswordAuthenticationFilter;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.PasswordLoginProcessingFilter;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
@@ -28,8 +28,7 @@ public class CasUsernamePasswordLoginSecurityConfigurer
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        WebUsernamePasswordAuthenticationFilter filter = new WebUsernamePasswordAuthenticationFilter(
-                getApplicationContext());
+        PasswordLoginProcessingFilter filter = new PasswordLoginProcessingFilter(getApplicationContext());
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class)); // 固定必须
         filter.setAuthenticationDetailsSource(this.authenticationDetailsSource);
         filter.setAuthenticationSuccessHandler(this.authenticationSuccessHandler); // 指定登录成功时的处理器

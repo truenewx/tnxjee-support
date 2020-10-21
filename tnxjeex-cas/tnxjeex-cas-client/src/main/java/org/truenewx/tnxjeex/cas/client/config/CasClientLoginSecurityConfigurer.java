@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.webmvc.security.config.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
-import org.truenewx.tnxjeex.cas.client.filter.CasClientAuthenticationFilter;
+import org.truenewx.tnxjeex.cas.client.web.authentication.CasClientLoginProcessingFilter;
 
 /**
  * CAS客户端登录安全配置器
@@ -28,7 +28,7 @@ public class CasClientLoginSecurityConfigurer
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        CasClientAuthenticationFilter filter = new CasClientAuthenticationFilter();
+        CasClientLoginProcessingFilter filter = new CasClientLoginProcessingFilter();
         filter.setRedirectStrategy(this.redirectStrategy);
         filter.setSuccessTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
         filter.setAuthenticationFailureHandler(this.authenticationFailureHandler);

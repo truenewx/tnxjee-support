@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.client.filter;
+package org.truenewx.tnxjeex.cas.client.web.authentication;
 
 import java.util.function.Consumer;
 
@@ -11,9 +11,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.truenewx.tnxjee.core.util.BeanUtil;
 
 /**
- * CAS客户端鉴权过滤器
+ * CAS客户端登录处理过滤器
  */
-public class CasClientAuthenticationFilter extends CasAuthenticationFilter {
+public class CasClientLoginProcessingFilter extends CasAuthenticationFilter {
 
     public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
         if (redirectStrategy != null) {
