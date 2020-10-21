@@ -16,8 +16,7 @@ import org.truenewx.tnxjeex.cas.client.web.authentication.CasClientLoginProcessi
  * CAS客户端登录安全配置器
  */
 @Component
-public class CasClientLoginSecurityConfigurer
-        extends LoginSecurityConfigurerSupport<CasAuthenticationProvider> {
+public class CasClientLoginSecurityConfigurer extends LoginSecurityConfigurerSupport<CasAuthenticationProvider> {
 
     @Autowired
     private ApiMetaProperties apiMetaProperties;
@@ -30,7 +29,9 @@ public class CasClientLoginSecurityConfigurer
     public void configure(HttpSecurity http) throws Exception {
         CasClientLoginProcessingFilter filter = new CasClientLoginProcessingFilter();
         filter.setRedirectStrategy(this.redirectStrategy);
-        filter.setSuccessTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
+        filter.acceptSuccessHandler(handler -> {
+            handler.setTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
+        });
         filter.setAuthenticationFailureHandler(this.authenticationFailureHandler);
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class)); // 固定必须
         http.addFilterAt(filter, CasAuthenticationFilter.class);

@@ -9,11 +9,13 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.truenewx.tnxjee.core.util.BeanUtil;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginProcessingHandlerAcceptable;
 
 /**
- * CAS客户端登录处理过滤器
+ * CAS客户端登录进程过滤器
  */
-public class CasClientLoginProcessingFilter extends CasAuthenticationFilter {
+public class CasClientLoginProcessingFilter extends CasAuthenticationFilter implements
+        LoginProcessingHandlerAcceptable<AbstractAuthenticationTargetUrlRequestHandler, SimpleUrlAuthenticationFailureHandler> {
 
     public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
         if (redirectStrategy != null) {
@@ -22,15 +24,16 @@ public class CasClientLoginProcessingFilter extends CasAuthenticationFilter {
         }
     }
 
-    private void acceptSuccessHandler(
-            Consumer<AbstractAuthenticationTargetUrlRequestHandler> consumer) {
+    @Override
+    public void acceptSuccessHandler(Consumer<AbstractAuthenticationTargetUrlRequestHandler> consumer) {
         AuthenticationSuccessHandler successHandler = getSuccessHandler();
         if (successHandler instanceof AbstractAuthenticationTargetUrlRequestHandler) {
             consumer.accept((AbstractAuthenticationTargetUrlRequestHandler) successHandler);
         }
     }
 
-    private void acceptFailureHandler(Consumer<SimpleUrlAuthenticationFailureHandler> consumer) {
+    @Override
+    public void acceptFailureHandler(Consumer<SimpleUrlAuthenticationFailureHandler> consumer) {
         AuthenticationFailureHandler failureHandler = getFailureHandler();
         if (!(failureHandler instanceof SimpleUrlAuthenticationFailureHandler)) {
             failureHandler = BeanUtil.getFieldValue(failureHandler, AuthenticationFailureHandler.class);
@@ -38,21 +41,6 @@ public class CasClientLoginProcessingFilter extends CasAuthenticationFilter {
         if (failureHandler instanceof SimpleUrlAuthenticationFailureHandler) {
             consumer.accept((SimpleUrlAuthenticationFailureHandler) failureHandler);
         }
-    }
-
-    public void setDefaultTargetUrl(String defaultTargetUrl) {
-        acceptSuccessHandler(handler -> handler.setDefaultTargetUrl(defaultTargetUrl));
-    }
-
-    public void setSuccessTargetUrlParameter(String targetUrlParameter) {
-        acceptSuccessHandler(handler -> handler.setTargetUrlParameter(targetUrlParameter));
-    }
-
-    public void setDefaultFailureUrl(String defaultFailureUrl, boolean useForward) {
-        acceptFailureHandler(handler -> {
-            handler.setDefaultFailureUrl(defaultFailureUrl);
-            handler.setUseForward(useForward);
-        });
     }
 
 }
