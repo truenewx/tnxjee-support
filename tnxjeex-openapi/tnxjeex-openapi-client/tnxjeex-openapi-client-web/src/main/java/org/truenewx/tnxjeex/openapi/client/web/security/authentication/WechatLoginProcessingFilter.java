@@ -8,12 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginProcessingFilterSupport;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractLoginProcessingFilter;
 
 /**
  * 微信登录进程过滤器
  */
-public class WechatLoginProcessingFilter extends LoginProcessingFilterSupport {
+public class WechatLoginProcessingFilter extends AbstractLoginProcessingFilter {
 
     public WechatLoginProcessingFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);

@@ -9,13 +9,11 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.truenewx.tnxjee.core.util.BeanUtil;
-import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginProcessingHandlerAcceptable;
 
 /**
  * CAS客户端登录进程过滤器
  */
-public class CasClientLoginProcessingFilter extends CasAuthenticationFilter implements
-        LoginProcessingHandlerAcceptable<AbstractAuthenticationTargetUrlRequestHandler, SimpleUrlAuthenticationFailureHandler> {
+public class CasClientLoginProcessingFilter extends CasAuthenticationFilter {
 
     public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
         if (redirectStrategy != null) {
@@ -24,7 +22,6 @@ public class CasClientLoginProcessingFilter extends CasAuthenticationFilter impl
         }
     }
 
-    @Override
     public void acceptSuccessHandler(Consumer<AbstractAuthenticationTargetUrlRequestHandler> consumer) {
         AuthenticationSuccessHandler successHandler = getSuccessHandler();
         if (successHandler instanceof AbstractAuthenticationTargetUrlRequestHandler) {
@@ -32,7 +29,6 @@ public class CasClientLoginProcessingFilter extends CasAuthenticationFilter impl
         }
     }
 
-    @Override
     public void acceptFailureHandler(Consumer<SimpleUrlAuthenticationFailureHandler> consumer) {
         AuthenticationFailureHandler failureHandler = getFailureHandler();
         if (!(failureHandler instanceof SimpleUrlAuthenticationFailureHandler)) {

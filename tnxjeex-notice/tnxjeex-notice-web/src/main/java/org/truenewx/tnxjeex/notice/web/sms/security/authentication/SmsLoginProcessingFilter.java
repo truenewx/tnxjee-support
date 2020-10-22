@@ -8,12 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginProcessingFilterSupport;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractLoginProcessingFilter;
 
 /**
  * 短信登录进程过滤器
  */
-public class SmsLoginProcessingFilter extends LoginProcessingFilterSupport {
+public class SmsLoginProcessingFilter extends AbstractLoginProcessingFilter {
 
     public SmsLoginProcessingFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);
