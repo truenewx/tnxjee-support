@@ -2,6 +2,7 @@ package org.truenewx.tnxjeex.notice.service.sms.aliyun;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -9,15 +10,18 @@ import org.slf4j.LoggerFactory;
 import org.truenewx.notice.model.sms.SmsModel;
 import org.truenewx.notice.model.sms.SmsSendResult;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjeex.notice.service.sms.send.SmsContentSender;
 import org.truenewx.tnxjeex.notice.service.sms.send.SmsSendCallback;
 
+import com.aliyuncs.CommonRequest;
+import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
-import com.aliyuncs.sms.model.v20160927.SingleSendSmsRequest;
 
 /**
  * 阿里云的短信内容发送器
@@ -27,7 +31,7 @@ import com.aliyuncs.sms.model.v20160927.SingleSendSmsRequest;
 public class AliyunSmsContentSender implements SmsContentSender {
 
     private Executor executor;
-    private String regionId;
+    private String regionId = "cn-hangzhou";
     private String accessKey;
     private String accessSecret;
     private String freeSignName;
@@ -89,18 +93,27 @@ public class AliyunSmsContentSender implements SmsContentSender {
         SmsSendResult result = new SmsSendResult(sms);
         try {
             IClientProfile profile = DefaultProfile.getProfile(this.regionId, this.accessKey, this.accessSecret);
-            DefaultProfile.addEndpoint(this.regionId, this.regionId, "Sms", "sms.aliyuncs.com");
             IAcsClient client = new DefaultAcsClient(profile);
-            SingleSendSmsRequest request = new SingleSendSmsRequest();
-            request.setSignName(this.freeSignName);
-            request.setTemplateCode(this.templateCode);
-            request.setParamString(content);
-            request.setRecNum(StringUtils.join(mobilePhones, Strings.COMMA));
-            client.getAcsResponse(request);
+            CommonRequest request = new CommonRequest();
+            request.setSysMethod(MethodType.POST);
+            request.setSysDomain("dysmsapi.aliyuncs.com");
+            request.setSysVersion("2017-05-25");
+            request.setSysAction("SendSms");
+            request.putQueryParameter("RegionId", this.regionId);
+            request.putQueryParameter("PhoneNumbers", StringUtils.join(mobilePhones, Strings.COMMA));
+            request.putQueryParameter("SignName", this.freeSignName);
+            request.putQueryParameter("TemplateCode", this.templateCode);
+            request.putQueryParameter("TemplateParam", content);
+            CommonResponse response = client.getCommonResponse(request);
+            Map<String, Object> data = JsonUtil.json2Map(response.getData());
+            String responseCode = (String) data.get("Code");
+            if ("OK".equalsIgnoreCase(responseCode)) {
+                return result;
+            }
         } catch (ClientException e) {
-            result.addFailures(mobilePhones);
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
+        result.addFailures(mobilePhones);
         return result;
     }
 
