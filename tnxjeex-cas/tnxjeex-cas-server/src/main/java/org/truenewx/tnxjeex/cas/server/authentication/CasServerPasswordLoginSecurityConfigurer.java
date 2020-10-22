@@ -13,6 +13,11 @@ public class CasServerPasswordLoginSecurityConfigurer
         extends AbstractCasServerLoginSecurityConfigurer<CasUsernamePasswordAuthenticationProvider> {
 
     @Override
+    protected String getFilterKey() {
+        return "password";
+    }
+
+    @Override
     protected AbstractAuthenticationProcessingFilter getProcessingFilter() {
         return new PasswordLoginProcessingFilter(getApplicationContext());
     }
