@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractLoginProcessingFilter;
@@ -15,8 +16,8 @@ import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractLoginProce
  */
 public class SmsLoginProcessingFilter extends AbstractLoginProcessingFilter {
 
-    public SmsLoginProcessingFilter(String defaultFilterProcessesUrl) {
-        super(defaultFilterProcessesUrl);
+    public SmsLoginProcessingFilter(String defaultFilterProcessesUrl, ApplicationContext context) {
+        super(defaultFilterProcessesUrl, context);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.truenewx.notice.model.sms;
+package org.truenewx.tnxjeex.notice.model.sms;
 
 import java.util.ArrayList;
 import java.util.Date;

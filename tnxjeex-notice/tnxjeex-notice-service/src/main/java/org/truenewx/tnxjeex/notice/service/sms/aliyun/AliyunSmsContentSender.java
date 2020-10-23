@@ -7,8 +7,8 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
-import org.truenewx.notice.model.sms.SmsModel;
-import org.truenewx.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
+import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjeex.notice.service.sms.send.SmsContentSender;

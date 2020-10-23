@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
-import org.truenewx.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
 import org.truenewx.tnxjee.core.util.concurrent.DefaultThreadPoolExecutor;
 
 /**

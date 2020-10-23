@@ -3,11 +3,7 @@ package org.truenewx.tnxjeex.openapi.client.service;
 import java.io.InputStream;
 import java.security.AlgorithmParameters;
 import java.security.Security;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import javax.crypto.Cipher;
@@ -162,7 +158,7 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
                 if (StringUtils.isBlank(fieldCaption)) {
                     fieldCaption = Strings.EMPTY;
                 }
-                throw new BusinessException("error.openapi.illegal_content", fieldCaption);
+                throw new BusinessException("error.openapi.client.illegal_content", fieldCaption);
             }
         }
     }

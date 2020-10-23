@@ -9,11 +9,11 @@ import org.truenewx.tnxjeex.openapi.client.model.WechatTemplateMessage;
 import org.truenewx.tnxjeex.openapi.client.model.WechatUser;
 
 /**
- * 微信服务号访问支持
+ * 微信服务号访问器
  *
  * @author jianglei
  */
-public abstract class WechatSaAccessSupport extends WechatPublicAppAccessSupport {
+public abstract class WechatSaAccessor extends WechatPublicAppAccessSupport {
 
     @Override
     public WechatUser getUser(String loginCode) {

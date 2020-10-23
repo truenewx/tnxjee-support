@@ -9,8 +9,8 @@
     <artifactId>tnxjeex-notice</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>tnxjeex-notice-api</module>
-        <module>tnxjeex-notice-impl</module>
+        <module>tnxjeex-notice-model</module>
+        <module>tnxjeex-notice-service</module>
         <module>tnxjeex-notice-web</module>
     </modules>
 </project>

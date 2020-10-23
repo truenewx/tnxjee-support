@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.model.spec.user.DefaultUserIdentity;
 import org.truenewx.tnxjee.model.spec.user.security.DefaultUserSpecificDetails;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
-import org.truenewx.tnxjee.webmvc.security.core.AuthenticationFailureException;
+import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 
 /**
  * 默认的根据CasAssertion获取用户细节的服务
@@ -47,7 +47,7 @@ public class DefaultCasAssertionUserDetailsService extends AbstractCasAssertionU
         if (assertion != null && assertion.isValid()) {
             return this.userSpecificDetailsFunction.apply(assertion.getPrincipal());
         }
-        throw new AuthenticationFailureException();
+        throw new BusinessAuthenticationException("error.service.security.authentication_failure");
     }
 
 }

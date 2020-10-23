@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.truenewx.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjeex.notice.service.sms.SmsContentProvider;
 

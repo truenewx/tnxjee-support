@@ -3,7 +3,7 @@ package org.truenewx.tnxjeex.notice.service.sms.send;
 import java.util.Locale;
 import java.util.Map;
 
-import org.truenewx.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
 
 /**
  * 短信发送器

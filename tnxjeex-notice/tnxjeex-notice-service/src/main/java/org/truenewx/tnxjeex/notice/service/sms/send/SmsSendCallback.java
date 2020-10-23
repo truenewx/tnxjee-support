@@ -1,6 +1,6 @@
 package org.truenewx.tnxjeex.notice.service.sms.send;
 
-import org.truenewx.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
 
 /**
  * 短信发送回调
