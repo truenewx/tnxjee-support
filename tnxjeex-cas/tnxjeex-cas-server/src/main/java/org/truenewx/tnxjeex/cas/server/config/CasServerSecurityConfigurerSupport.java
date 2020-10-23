@@ -1,14 +1,10 @@
 package org.truenewx.tnxjeex.cas.server.config;
 
-import java.util.Collection;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.truenewx.tnxjee.webmvc.view.security.config.WebViewSecurityConfigurerSupport;
 import org.truenewx.tnxjeex.cas.server.authentication.CasAuthenticationSuccessHandler;
 import org.truenewx.tnxjeex.cas.server.authentication.logout.CasServerLogoutSuccessHandler;
@@ -25,13 +21,6 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
     @Bean
     public CasAuthenticationSuccessHandler authenticationSuccessHandler() {
         return new CasAuthenticationSuccessHandler();
-    }
-
-    @Override
-    protected Collection<RequestMatcher> getAnonymousRequestMatchers() {
-        Collection<RequestMatcher> matchers = super.getAnonymousRequestMatchers();
-        matchers.add(new AntPathRequestMatcher("/login/*"));
-        return matchers;
     }
 
     @Bean
