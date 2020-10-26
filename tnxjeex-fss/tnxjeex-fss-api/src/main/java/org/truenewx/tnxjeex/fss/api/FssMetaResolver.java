@@ -26,7 +26,7 @@ public interface FssMetaResolver {
      * @return 外部读取地址
      */
     @GetMapping("/read-url")
-    String resolveReadUrl(@RequestParam("storageUrl") String storageUrl,
+    String resolveReadUrl(@RequestParam(value = "storageUrl", required = false) String storageUrl,
             @RequestParam("thumbnail") boolean thumbnail);
-    
+
 }
