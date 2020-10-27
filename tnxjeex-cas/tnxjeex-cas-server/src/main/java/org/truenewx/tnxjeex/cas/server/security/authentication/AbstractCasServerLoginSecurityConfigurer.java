@@ -73,7 +73,7 @@ public abstract class AbstractCasServerLoginSecurityConfigurer<AP extends Authen
             if (filter instanceof UsernamePasswordAuthenticationFilter) {
                 http.addFilterAt(filter, UsernamePasswordAuthenticationFilter.class);
             } else {
-                http.addFilterAfter(filter, UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
             }
         }
     }
