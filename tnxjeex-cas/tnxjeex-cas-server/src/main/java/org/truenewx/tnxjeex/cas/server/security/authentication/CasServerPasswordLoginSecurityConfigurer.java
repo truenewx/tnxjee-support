@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.server.authentication;
+package org.truenewx.tnxjeex.cas.server.security.authentication;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;

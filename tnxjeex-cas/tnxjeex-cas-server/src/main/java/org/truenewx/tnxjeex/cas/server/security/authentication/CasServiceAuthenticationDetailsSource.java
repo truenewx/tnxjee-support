@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.server.authentication;
+package org.truenewx.tnxjeex.cas.server.security.authentication;
 
 import javax.servlet.http.HttpServletRequest;
 

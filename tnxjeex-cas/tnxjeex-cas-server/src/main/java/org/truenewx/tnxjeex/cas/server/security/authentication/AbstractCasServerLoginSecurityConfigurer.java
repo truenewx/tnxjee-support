@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.server.authentication;
+package org.truenewx.tnxjeex.cas.server.security.authentication;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.truenewx.tnxjee.web.util.WebUtil;
-import org.truenewx.tnxjee.webmvc.security.config.LoginSecurityConfigurerSupport;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginProcessingFilter;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
