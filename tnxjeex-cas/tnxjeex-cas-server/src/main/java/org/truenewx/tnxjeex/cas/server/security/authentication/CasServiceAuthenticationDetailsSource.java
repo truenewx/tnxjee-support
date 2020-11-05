@@ -16,7 +16,8 @@ public class CasServiceAuthenticationDetailsSource implements
     public CasServiceAuthenticationDetails buildDetails(HttpServletRequest request) {
         String service = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SERVICE);
         String scope = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SCOPE);
-        return new CasServiceAuthenticationDetails(service, scope);
+        String ip = WebUtil.getRemoteAddress(request);
+        return new CasServiceAuthenticationDetails(service, scope, ip);
     }
 
 }

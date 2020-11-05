@@ -38,12 +38,13 @@ public abstract class AbstractCasServerAuthenticationProvider<T extends Authenti
             String service = authenticationDetails.getService();
             String userType = this.serviceManager.getUserType(service);
             String scope = authenticationDetails.getScope();
+            String ip = authenticationDetails.getIp();
             try {
                 UserSpecificDetails<?> userDetails = validateLogin(userType, scope, token);
                 if (userDetails == null) {
                     throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_USER_TYPE, userType);
                 }
-                return new CasUserSpecificDetailsAuthenticationToken(service, userDetails);
+                return new CasUserSpecificDetailsAuthenticationToken(service, userDetails, ip);
             } catch (BusinessException e) {
                 throw new BadCredentialsException(e.getLocalizedMessage(), e);
             }

@@ -8,10 +8,12 @@ public class CasServiceAuthenticationDetails implements Serializable {
 
     private String service;
     private String scope;
+    private String ip;
 
-    public CasServiceAuthenticationDetails(String service, String scope) {
+    public CasServiceAuthenticationDetails(String service, String scope, String ip) {
         this.service = service;
         this.scope = scope;
+        this.ip = ip;
     }
 
     public String getService() {
@@ -22,4 +24,7 @@ public class CasServiceAuthenticationDetails implements Serializable {
         return this.scope;
     }
 
+    public String getIp() {
+        return this.ip;
+    }
 }
