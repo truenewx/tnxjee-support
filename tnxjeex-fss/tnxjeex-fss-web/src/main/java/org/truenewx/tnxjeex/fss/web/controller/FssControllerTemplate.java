@@ -14,11 +14,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.config.AppConfiguration;
+import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
@@ -42,6 +45,10 @@ import com.aliyun.oss.internal.Mimetypes;
  */
 public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
 
+    @Value("${spring.application.name}")
+    private String appName;
+    @Autowired
+    private CommonProperties commonProperties;
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
 
@@ -129,15 +136,23 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             // 加上下载路径前缀
             readUrl = getDownloadUrlPrefix() + readUrl;
             // 加上上下文根路径
-            String contextPath = SpringWebContext.getRequest().getContextPath();
-            if (!contextPath.equals(Strings.SLASH)) {
-                readUrl = contextPath + readUrl;
-            }
-            // 加上主机地址
-            String host = WebUtil.getHost(SpringWebContext.getRequest(), true);
-            readUrl = "//" + host + readUrl;
+            readUrl = getContextUri() + readUrl;
         }
         return readUrl;
+    }
+
+    private String getContextUri() {
+        AppConfiguration appConfiguration = this.commonProperties.getApp(this.appName);
+        if (appConfiguration != null) { // 有配置多应用的，从配置中获取上下文根路径
+            return appConfiguration.getContextUri(false);
+        } else { // 否则取当前请求的上下文根路径
+            String contextUri = "//" + WebUtil.getHost(SpringWebContext.getRequest(), true);
+            String contextPath = SpringWebContext.getRequest().getContextPath();
+            if (!contextPath.equals(Strings.SLASH)) {
+                contextUri += contextPath;
+            }
+            return contextUri;
+        }
     }
 
     /**
