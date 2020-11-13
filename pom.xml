@@ -56,17 +56,17 @@
                 <version>${tnxjee.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.truenewx.notice</groupId>
+                <groupId>org.truenewx.tnxjeex.notice</groupId>
                 <artifactId>tnxjeex-notice-model</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.truenewx.notice</groupId>
+                <groupId>org.truenewx.tnxjeex.notice</groupId>
                 <artifactId>tnxjeex-notice-service</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.truenewx.notice</groupId>
+                <groupId>org.truenewx.tnxjeex.notice</groupId>
                 <artifactId>tnxjeex-notice-web</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
