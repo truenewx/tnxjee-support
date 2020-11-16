@@ -1,11 +1,8 @@
 # truenewx-support
 基于tnxjee的通用业务支持
 
-<strong>aduit</strong>: 审核框架<br/>
-<strong>batch</strong>: 基于spring-batch的批处理扩展<br/>
-<strong>cas</strong>: CAS登录支持框架<br/>
-<strong>email</strong>: 基于内容模板的邮件发送框架<br/>
-<strong>fss</strong>: 文件存储服务框架<br/>
-<strong>payment</strong>: 在线支付框架<br/>
-<strong>sms</strong>: 基于内容模板的短信发送框架<br/>
-<strong>verify</strong>: 验证码框架<br/>
+<strong>truenewx-cas</strong>: CAS登录支持框架<br/>
+<strong>truenewx-fss</strong>: 文件存储服务框架<br/>
+<strong>truenewx-notice</strong>: 消息通知框架，包括短信、Email、消息推送的支持<br/>
+<strong>truenewx-openapi</strong>: OpenApi支持框架，包括客户端和服务端的支持<br/>
+<strong>truenewx-seata</strong>: 分布式事务框架seata的扩展支持<br/>
