@@ -1,5 +1,6 @@
-# truenewx-support
-基于tnxjee的通用业务支持
+# tnxjeex
+
+基于tnxjee的通用业务支持框架集
 
 <strong>truenewx-cas</strong>: CAS登录支持框架<br/>
 <strong>truenewx-fss</strong>: 文件存储服务框架<br/>
