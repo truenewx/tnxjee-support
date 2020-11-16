@@ -19,9 +19,12 @@
             <artifactId>tnxjeex-openapi-client-model</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
         </dependency>
     </dependencies>
 </project>

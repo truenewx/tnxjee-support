@@ -26,13 +26,9 @@ import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
 import org.truenewx.tnxjee.core.util.function.ProfileSupplier;
 import org.truenewx.tnxjee.webmvc.view.util.WebViewUtil;
-import org.truenewx.tnxjeex.openapi.client.model.WechatEventMessage;
-import org.truenewx.tnxjeex.openapi.client.model.WechatEventType;
-import org.truenewx.tnxjeex.openapi.client.model.WechatMessage;
-import org.truenewx.tnxjeex.openapi.client.model.WechatMessageType;
-import org.truenewx.tnxjeex.openapi.client.model.WechatTextMessage;
+import org.truenewx.tnxjeex.openapi.client.model.wechat.*;
 import org.truenewx.tnxjeex.openapi.client.service.NoSuchMessageHandlerException;
-import org.truenewx.tnxjeex.openapi.client.service.WechatMessageListener;
+import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatMessageListener;
 
 /**
  * 微信开放接口回调控制器支持

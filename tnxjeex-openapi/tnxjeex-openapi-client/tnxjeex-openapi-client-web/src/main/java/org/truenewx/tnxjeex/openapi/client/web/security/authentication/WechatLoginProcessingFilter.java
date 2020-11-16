@@ -15,10 +15,10 @@ import org.truenewx.tnxjee.core.util.SpringUtil;
 import org.truenewx.tnxjee.webmvc.security.authentication.OAuth2ClientAuthenticationToken;
 import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractLoginProcessingFilter;
-import org.truenewx.tnxjeex.openapi.client.model.WechatUser;
-import org.truenewx.tnxjeex.openapi.client.model.WechatUserDetail;
-import org.truenewx.tnxjeex.openapi.client.service.WechatUserDetailRequiredPredicate;
-import org.truenewx.tnxjeex.openapi.client.service.WechatWebAccessor;
+import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
+import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUserDetail;
+import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatUserDetailRequiredPredicate;
+import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatWebAccessor;
 
 /**
  * 微信登录进程过滤器
