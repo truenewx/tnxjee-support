@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 import org.truenewx.tnxjeex.notice.service.sms.content.AbstractSmsContentSender;
 
 import com.yunpian.sdk.YunpianClient;
@@ -25,11 +25,11 @@ public class YunPianSmsContentProvider extends AbstractSmsContentSender {
     private String apiKey;
 
     @Override
-    public SmsSendResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
         SmsModel sms = new SmsModel();
         sms.setMobilePhones(mobilePhones);
         sms.setSendTime(new Date());
-        SmsSendResult result = new SmsSendResult(sms);
+        SmsNotifyResult result = new SmsNotifyResult(sms);
         YunpianClient client = new YunpianClient(this.apiKey).init();
         Map<String, String> params = client.newParam(2);
         StringBuffer msg = new StringBuffer("【");

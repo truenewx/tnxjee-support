@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 import org.truenewx.tnxjeex.notice.service.sms.content.AbstractSmsContentSender;
 import org.truenewx.tnxjeex.openapi.client.service.aliyun.AliyunSmsAccessor;
 
@@ -28,11 +28,11 @@ public class AliyunSmsContentSender extends AbstractSmsContentSender {
     }
 
     @Override
-    public SmsSendResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
         SmsModel sms = new SmsModel();
         sms.setMobilePhones(mobilePhones);
         sms.setSendTime(new Date());
-        SmsSendResult result = new SmsSendResult(sms);
+        SmsNotifyResult result = new SmsNotifyResult(sms);
         if (this.smsAccessor.send(signName, this.templateCode, content, mobilePhones)) {
             return result;
         }

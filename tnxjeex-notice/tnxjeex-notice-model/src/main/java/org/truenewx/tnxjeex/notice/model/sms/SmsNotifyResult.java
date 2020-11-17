@@ -4,15 +4,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 短信发送结果
+ * 短信通知结果
  *
  * @author jianglei
  */
-public class SmsSendResult {
+public class SmsNotifyResult {
     private Sms sms;
     private Set<String> failures;
 
-    public SmsSendResult(Sms sms) {
+    public SmsNotifyResult(Sms sms) {
         this.sms = sms;
     }
 

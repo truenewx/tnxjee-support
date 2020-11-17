@@ -1,6 +1,6 @@
 package org.truenewx.tnxjeex.notice.service.sms.content;
 
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 
 /**
  * 短信内容发送器<br/>
@@ -31,6 +31,6 @@ public interface SmsContentSender {
      * @param mobilePhones 手机号码清单
      * @return 短信发送结果
      */
-    SmsSendResult send(String signName, String content, int maxCount, String... mobilePhones);
+    SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones);
 
 }

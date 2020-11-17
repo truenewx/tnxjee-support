@@ -8,7 +8,7 @@ import org.truenewx.tnxjee.core.spec.HttpRequestMethod;
 import org.truenewx.tnxjee.core.util.HttpClientUtil;
 import org.truenewx.tnxjee.core.util.tuple.Binate;
 import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 import org.truenewx.tnxjeex.notice.service.sms.content.SplitableSmsContentSender;
 
 /**
@@ -28,12 +28,12 @@ public class HttpSmsContentSender extends SplitableSmsContentSender {
     }
 
     @Override
-    protected SmsSendResult send(String signName, List<String> contents, String... mobilePhones) {
+    protected SmsNotifyResult send(String signName, List<String> contents, String... mobilePhones) {
         SmsModel sms = new SmsModel();
         sms.setContents(contents);
         sms.setMobilePhones(mobilePhones);
         sms.setSendTime(new Date());
-        SmsSendResult result = new SmsSendResult(sms);
+        SmsNotifyResult result = new SmsNotifyResult(sms);
         try {
             if (this.strategy.isBatchable()) { // 支持批量
                 Set<String> failures = send(contents, -1, mobilePhones);

@@ -2,7 +2,7 @@ package org.truenewx.tnxjeex.notice.service.sms.content;
 
 import java.util.List;
 
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 
 /**
  * 可分割的短信内容发送器
@@ -21,7 +21,7 @@ public abstract class SplitableSmsContentSender extends AbstractSmsContentSender
     }
 
     @Override
-    public SmsSendResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
         List<String> contents = this.spliter.split(content, maxCount);
         return send(signName, contents, mobilePhones);
     }
@@ -34,6 +34,6 @@ public abstract class SplitableSmsContentSender extends AbstractSmsContentSender
      * @param mobilePhones 手机号码清单
      * @return 发送结果
      */
-    protected abstract SmsSendResult send(String signName, List<String> contents, String... mobilePhones);
+    protected abstract SmsNotifyResult send(String signName, List<String> contents, String... mobilePhones);
 
 }

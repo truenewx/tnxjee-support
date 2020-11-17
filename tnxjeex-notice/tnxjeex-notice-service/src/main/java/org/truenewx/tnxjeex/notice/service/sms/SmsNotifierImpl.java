@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
-import org.truenewx.tnxjeex.notice.model.sms.SmsSendResult;
+import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 import org.truenewx.tnxjeex.notice.service.sms.content.SmsContentProvider;
 import org.truenewx.tnxjeex.notice.service.sms.content.SmsContentSender;
 
@@ -23,7 +24,7 @@ import org.truenewx.tnxjeex.notice.service.sms.content.SmsContentSender;
  * @author jianglei
  */
 @Component
-public class SmsSenderImpl implements SmsSender, ContextInitializedBean {
+public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
 
     private Map<String, SmsContentProvider> contentProviders = new HashMap<>();
     private Map<String, SmsContentSender> contentSenders = new HashMap<>();
@@ -71,7 +72,7 @@ public class SmsSenderImpl implements SmsSender, ContextInitializedBean {
     }
 
     @Override
-    public SmsSendResult send(String type, Map<String, Object> params, Locale locale, String... mobilePhones) {
+    public SmsNotifyResult notify(String type, Map<String, Object> params, Locale locale, String... mobilePhones) {
         if (!this.disabled) {
             SmsContentProvider contentProvider = getContentProvider(type);
             if (contentProvider != null) {
@@ -81,7 +82,7 @@ public class SmsSenderImpl implements SmsSender, ContextInitializedBean {
                     if (contentSender != null) {
                         String signName = contentProvider.getSignName(locale);
                         int maxCount = contentProvider.getMaxCount();
-                        SmsSendResult result = contentSender.send(signName, content, maxCount, mobilePhones);
+                        SmsNotifyResult result = contentSender.send(signName, content, maxCount, mobilePhones);
                         putSendableInstants(contentSender, mobilePhones);
                         return result;
                     }
@@ -101,11 +102,11 @@ public class SmsSenderImpl implements SmsSender, ContextInitializedBean {
     }
 
     @Override
-    public void send(String type, Map<String, Object> params, Locale locale, String[] mobilePhones,
-            SmsSendCallback callback) {
+    public void notify(String type, Map<String, Object> params, Locale locale, String[] mobilePhones,
+            Consumer<SmsNotifyResult> callback) {
         this.executor.execute(() -> {
-            SmsSendResult result = send(type, params, locale, mobilePhones);
-            callback.onSmsSent(result);
+            SmsNotifyResult result = notify(type, params, locale, mobilePhones);
+            callback.accept(result);
         });
     }
 
