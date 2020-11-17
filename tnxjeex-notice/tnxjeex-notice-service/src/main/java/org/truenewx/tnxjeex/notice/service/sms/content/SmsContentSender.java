@@ -16,6 +16,13 @@ public interface SmsContentSender {
     String[] getTypes();
 
     /**
+     * @return 给同一个手机号码发送短信的间隔时间秒数，默认：60
+     */
+    default int getIntervalSeconds() {
+        return 60;
+    }
+
+    /**
      * 发送短信
      *
      * @param signName     签名
