@@ -73,19 +73,21 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
 
     @Override
     public SmsNotifyResult notify(String type, Map<String, Object> params, Locale locale, String... mobilePhones) {
-        if (!this.disabled) {
-            SmsContentProvider contentProvider = getContentProvider(type);
-            if (contentProvider != null) {
-                String content = contentProvider.getContent(params, locale);
-                if (content != null) {
-                    SmsContentSender contentSender = getContentSender(type);
-                    if (contentSender != null) {
-                        String signName = contentProvider.getSignName(locale);
-                        int maxCount = contentProvider.getMaxCount();
-                        SmsNotifyResult result = contentSender.send(signName, content, maxCount, mobilePhones);
+        SmsContentProvider contentProvider = getContentProvider(type);
+        if (contentProvider != null) {
+            String content = contentProvider.getContent(params, locale);
+            if (content != null) {
+                SmsContentSender contentSender = getContentSender(type);
+                if (contentSender != null) {
+                    if (this.disabled) { // 已禁用，则假装发送成功
                         putSendableInstants(contentSender, mobilePhones);
-                        return result;
+                        return new SmsNotifyResult(null);
                     }
+                    String signName = contentProvider.getSignName(locale);
+                    int maxCount = contentProvider.getMaxCount();
+                    SmsNotifyResult result = contentSender.send(signName, content, maxCount, mobilePhones);
+                    putSendableInstants(contentSender, mobilePhones);
+                    return result;
                 }
             }
         }
