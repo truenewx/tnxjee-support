@@ -20,7 +20,7 @@ public class CasServerOAuth2AuthenticationProvider
     protected UserSpecificDetails<?> validateLogin(String userType, String scope,
             OAuth2ClientAuthenticationToken token) {
         if (this.loginValidator != null) {
-            Object userModel = token.getPrincipal();
+            Object userModel = token.getUser();
             return this.loginValidator.validateOAuth2Login(userType, scope, userModel);
         }
         return null;
