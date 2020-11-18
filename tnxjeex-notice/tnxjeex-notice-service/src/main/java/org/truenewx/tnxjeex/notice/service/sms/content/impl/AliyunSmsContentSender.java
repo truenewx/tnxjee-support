@@ -1,6 +1,7 @@
 package org.truenewx.tnxjeex.notice.service.sms.content.impl;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
@@ -33,10 +34,10 @@ public class AliyunSmsContentSender extends AbstractSmsContentSender {
         sms.setMobilePhones(mobilePhones);
         sms.setSendTime(new Date());
         SmsNotifyResult result = new SmsNotifyResult(sms);
-        if (this.smsAccessor.send(signName, this.templateCode, content, mobilePhones)) {
-            return result;
+        Map<String, String> failures = this.smsAccessor.send(signName, this.templateCode, content, mobilePhones);
+        if (failures != null) {
+            result.getFailures().putAll(failures);
         }
-        result.addFailures(mobilePhones);
         return result;
     }
 

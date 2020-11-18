@@ -1,11 +1,8 @@
 package org.truenewx.tnxjeex.notice.service.sms.content.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjeex.notice.model.sms.SmsModel;
 import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
@@ -35,25 +32,20 @@ public class YunPianSmsContentProvider extends AbstractSmsContentSender {
         StringBuffer msg = new StringBuffer("【");
         msg.append(signName);
         msg.append("】").append(content);
-        List<String> failures = new ArrayList<>();
-        try {
-            for (String phone : mobilePhones) {
-                params.put(YunpianClient.MOBILE, phone);
-                params.put(YunpianClient.TEXT, msg.toString());
+        for (String mobilePhone : mobilePhones) {
+            params.put(YunpianClient.MOBILE, mobilePhone);
+            params.put(YunpianClient.TEXT, msg.toString());
+            try {
                 Result<SmsSingleSend> sendResult = client.sms().single_send(params);
                 if (sendResult.getCode() != 0) {
-                    failures.add(phone);
+                    result.getFailures().put(sendResult.getMsg(), mobilePhone);
                 }
+            } catch (Exception e) {
+                LogUtil.error(getClass(), e);
+                result.getFailures().put(e.getMessage(), mobilePhone);
             }
-            if (CollectionUtils.isNotEmpty(failures)) {
-                String failPhones[] = failures.toArray(new String[]{});
-                result.addFailures(failPhones);
-            }
-        } catch (Exception e) {
-            LogUtil.error(getClass(), e);
-        } finally {
-            client.close();
         }
+        client.close();
         return result;
     }
 

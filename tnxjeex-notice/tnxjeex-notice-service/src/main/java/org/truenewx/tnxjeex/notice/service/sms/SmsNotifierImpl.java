@@ -1,15 +1,14 @@
 package org.truenewx.tnxjeex.notice.service.sms;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.truenewx.tnxjee.core.Strings;
@@ -29,6 +28,8 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
     private Map<String, SmsContentProvider> contentProviders = new HashMap<>();
     private Map<String, SmsContentSender> contentSenders = new HashMap<>();
     private Map<String, Instant> sendableInstants = new HashMap<>(); // 可发送的时刻映射集
+    @Autowired
+    private MessageSource messageSource;
     @Autowired
     private Executor executor;
     @Value("${tnxjeex.notice.sms.disabled}")
@@ -83,15 +84,60 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
                         putSendableInstants(contentSender, mobilePhones);
                         return new SmsNotifyResult(null);
                     }
+
+                    // 检查获取因时限不可发送的手机号码
+                    List<String> unsendableMobilePhones = new ArrayList<>();
+                    if (mobilePhones.length == 1) { // 只有一个手机号码的，快速处理
+                        String mobilePhone = mobilePhones[0];
+                        if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
+                            unsendableMobilePhones.add(mobilePhone);
+                            mobilePhones = new String[0];
+                        }
+                    } else { // 多个手机号码的，循环处理
+                        List<String> sendableMobilePhones = new ArrayList<>();
+                        for (String mobilePhone : mobilePhones) {
+                            if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
+                                unsendableMobilePhones.add(mobilePhone);
+                            } else {
+                                sendableMobilePhones.add(mobilePhone);
+                            }
+                        }
+                        if (unsendableMobilePhones.size() > 0) {
+                            mobilePhones = sendableMobilePhones.toArray(new String[0]);
+                        }
+                    }
+
                     String signName = contentProvider.getSignName(locale);
                     int maxCount = contentProvider.getMaxCount();
                     SmsNotifyResult result = contentSender.send(signName, content, maxCount, mobilePhones);
                     putSendableInstants(contentSender, mobilePhones);
+                    // 添加因时限不能发送的失败手机号码
+                    if (unsendableMobilePhones.size() > 0) {
+                        Object[] args = { contentSender.getIntervalSeconds() };
+                        String errorMessage = this.messageSource
+                                .getMessage("error.notice.sms.interval_limited", args, locale);
+                        result.addFailures(errorMessage, unsendableMobilePhones.toArray(new String[0]));
+                    }
                     return result;
                 }
             }
         }
         return null;
+    }
+
+    private int getRemainingSeconds(SmsContentSender contentSender, String mobilePhone) {
+        String key = contentSender.toString() + Strings.MINUS + mobilePhone;
+        Instant instant = this.sendableInstants.get(key);
+        if (instant == null) { // 没有约束，剩余时间为0
+            return 0;
+        }
+        // 计算限定时间与当前时间的秒数差
+        long millis = instant.toEpochMilli() - System.currentTimeMillis();
+        if (millis <= 0) { // 约束时间已过，则从缓存移除
+            this.sendableInstants.remove(key);
+            return 0;
+        }
+        return (int) (millis / 1000 + (millis % 1000 == 0 ? 0 : 1));
     }
 
     private void putSendableInstants(SmsContentSender contentSender, String... mobilePhones) {
@@ -116,18 +162,7 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
     public int getRemainingSeconds(String type, String mobilePhone) {
         SmsContentSender contentSender = getContentSender(type);
         if (contentSender != null) {
-            String key = contentSender.toString() + Strings.MINUS + mobilePhone;
-            Instant instant = this.sendableInstants.get(key);
-            if (instant == null) { // 没有约束，剩余时间为0
-                return 0;
-            }
-            // 计算限定时间与当前时间的秒数差
-            long millis = instant.toEpochMilli() - System.currentTimeMillis();
-            if (millis <= 0) { // 约束时间已过，则从缓存移除
-                this.sendableInstants.remove(key);
-                return 0;
-            }
-            return (int) (millis / 1000 + (millis % 1000 == 0 ? 0 : 1));
+            return getRemainingSeconds(contentSender, mobilePhone);
         }
         return -1;
     }

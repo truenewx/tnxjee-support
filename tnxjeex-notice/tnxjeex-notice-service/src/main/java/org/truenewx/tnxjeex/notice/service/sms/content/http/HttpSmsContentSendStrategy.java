@@ -64,5 +64,5 @@ public interface HttpSmsContentSendStrategy {
      * @param content    响应内容
      * @return 发送失败的手机号码清单
      */
-    Set<String> getFailures(int statusCode, String content);
+    Map<String, String> getFailures(int statusCode, String content);
 }

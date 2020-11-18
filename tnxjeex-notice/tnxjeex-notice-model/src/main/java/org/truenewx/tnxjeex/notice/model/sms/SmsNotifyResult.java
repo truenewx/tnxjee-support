@@ -1,7 +1,7 @@
 package org.truenewx.tnxjeex.notice.model.sms;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 短信通知结果
@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public class SmsNotifyResult {
     private Sms sms;
-    private Set<String> failures;
+    private Map<String, String> failures = new HashMap<>();
 
     public SmsNotifyResult(Sms sms) {
         this.sms = sms;
@@ -21,19 +21,15 @@ public class SmsNotifyResult {
     }
 
     /**
-     * @return 发送失败的手机号码清单
+     * @return 发送失败的手机号码-错误消息映射集
      */
-    public Set<String> getFailures() {
-        if (this.failures == null) {
-            this.failures = new HashSet<>();
-        }
+    public Map<String, String> getFailures() {
         return this.failures;
     }
 
-    public void addFailures(String... failures) {
-        getFailures(); // 确保非空
+    public void addFailures(String errorMessage, String... failures) {
         for (String failure : failures) {
-            this.failures.add(failure);
+            this.failures.put(failure, errorMessage);
         }
     }
 
@@ -41,6 +37,7 @@ public class SmsNotifyResult {
      * @return 是否全部发送成功
      */
     public boolean isAllSuccessful() {
-        return this.failures == null || this.failures.isEmpty();
+        return this.failures.isEmpty();
     }
+
 }

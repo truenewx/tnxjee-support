@@ -66,7 +66,7 @@ public class RxtSmsContentSendStrategy extends AbstractHttpSmsContentSendStrateg
     }
 
     @Override
-    public Set<String> getFailures(int statusCode, String content) {
+    public Map<String, String> getFailures(int statusCode, String content) {
         return null;
     }
 
