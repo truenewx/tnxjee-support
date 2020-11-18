@@ -56,7 +56,8 @@ public class WechatLoginProcessingFilter extends AbstractLoginProcessingFilter {
         if (user == null) { // 无效的微信登录编码
             throw new BusinessAuthenticationException("error.openapi.client.invalid_login_code");
         }
-        if (this.userDetailRequiredPredicate != null && this.userDetailRequiredPredicate.test(user)) {
+        // 需要更多用户细节，则从微信服务器获取用户细节
+        if (this.userDetailRequiredPredicate != null && this.userDetailRequiredPredicate.requiresDetail(user)) {
             WechatUserDetail userDetail = this.webAccessor.getUserDetail(user.getOpenId(), user.getAccessToken());
             if (userDetail != null) {
                 user = userDetail;
@@ -65,10 +66,6 @@ public class WechatLoginProcessingFilter extends AbstractLoginProcessingFilter {
         OAuth2ClientAuthenticationToken authRequest = new OAuth2ClientAuthenticationToken(user, loginCode);
         setDetails(request, authRequest);
         return getAuthenticationManager().authenticate(authRequest);
-    }
-
-    protected void setDetails(HttpServletRequest request, OAuth2ClientAuthenticationToken authRequest) {
-        authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
     }
 
 }
