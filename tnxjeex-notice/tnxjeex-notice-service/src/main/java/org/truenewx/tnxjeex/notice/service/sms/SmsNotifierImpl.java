@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
+import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjeex.notice.model.sms.SmsNotifyResult;
 import org.truenewx.tnxjeex.notice.service.sms.content.SmsContentProvider;
 import org.truenewx.tnxjeex.notice.service.sms.content.SmsContentSender;
@@ -80,44 +81,53 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
             if (content != null) {
                 SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
-                    if (this.disabled) { // 已禁用，则假装发送成功
-                        putSendableInstants(contentSender, mobilePhones);
-                        return new SmsNotifyResult(null);
-                    }
-
                     // 检查获取因时限不可发送的手机号码
+                    List<String> notMobilePhones = new ArrayList<>();
                     List<String> unsendableMobilePhones = new ArrayList<>();
                     if (mobilePhones.length == 1) { // 只有一个手机号码的，快速处理
                         String mobilePhone = mobilePhones[0];
-                        if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
+                        if (!StringUtil.isMobilePhone(mobilePhone)) {
+                            notMobilePhones.add(mobilePhone);
+                            mobilePhones = new String[0];
+                        } else if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
                             unsendableMobilePhones.add(mobilePhone);
                             mobilePhones = new String[0];
                         }
                     } else { // 多个手机号码的，循环处理
                         List<String> sendableMobilePhones = new ArrayList<>();
                         for (String mobilePhone : mobilePhones) {
-                            if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
+                            if (!StringUtil.isMobilePhone(mobilePhone)) {
+                                notMobilePhones.add(mobilePhone);
+                            } else if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
                                 unsendableMobilePhones.add(mobilePhone);
                             } else {
                                 sendableMobilePhones.add(mobilePhone);
                             }
                         }
-                        if (unsendableMobilePhones.size() > 0) {
+                        if (notMobilePhones.size() + unsendableMobilePhones.size() > 0) {
                             mobilePhones = sendableMobilePhones.toArray(new String[0]);
                         }
                     }
 
                     String signName = contentProvider.getSignName(locale);
                     int maxCount = contentProvider.getMaxCount();
-                    SmsNotifyResult result = contentSender.send(signName, content, maxCount, mobilePhones);
+                    SmsNotifyResult result = contentSender
+                            .send(signName, content, maxCount, this.disabled ? new String[0] : mobilePhones);
                     putSendableInstants(contentSender, mobilePhones);
-                    // 添加因时限不能发送的失败手机号码
-                    if (unsendableMobilePhones.size() > 0) {
-                        Object[] args = { contentSender.getIntervalSeconds() };
+                    // 添加不是手机号码的错误
+                    notMobilePhones.forEach(mobilePhone -> {
+                        Object[] args = { mobilePhone };
+                        String errorMessage = this.messageSource
+                                .getMessage("error.notice.sms.invalid_mobile_phone", args, locale);
+                        result.addFailures(errorMessage, mobilePhone);
+                    });
+                    // 添加因时限不能发送的错误
+                    unsendableMobilePhones.forEach(mobilePhone -> {
+                        Object[] args = { getRemainingSeconds(contentSender, mobilePhone) };
                         String errorMessage = this.messageSource
                                 .getMessage("error.notice.sms.interval_limited", args, locale);
-                        result.addFailures(errorMessage, unsendableMobilePhones.toArray(new String[0]));
-                    }
+                        result.addFailures(errorMessage, mobilePhone);
+                    });
                     return result;
                 }
             }
