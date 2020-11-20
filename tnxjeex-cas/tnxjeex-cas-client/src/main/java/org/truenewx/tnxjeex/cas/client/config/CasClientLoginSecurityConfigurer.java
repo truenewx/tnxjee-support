@@ -1,7 +1,6 @@
 package org.truenewx.tnxjeex.cas.client.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,7 +15,8 @@ import org.truenewx.tnxjeex.cas.client.web.authentication.CasClientLoginProcessi
  * CAS客户端登录安全配置器
  */
 @Component
-public class CasClientLoginSecurityConfigurer extends LoginSecurityConfigurerSupport<CasAuthenticationProvider> {
+public class CasClientLoginSecurityConfigurer
+        extends LoginSecurityConfigurerSupport<CasClientLoginProcessingFilter, CasAuthenticationProvider> {
 
     @Autowired
     private ApiMetaProperties apiMetaProperties;
@@ -26,14 +26,17 @@ public class CasClientLoginSecurityConfigurer extends LoginSecurityConfigurerSup
     private ResolvableExceptionAuthenticationFailureHandler authenticationFailureHandler;
 
     @Override
-    public void configure(HttpSecurity http) throws Exception {
-        CasClientLoginProcessingFilter filter = new CasClientLoginProcessingFilter();
+    protected CasClientLoginProcessingFilter getProcessingFilter() {
+        return new CasClientLoginProcessingFilter();
+    }
+
+    @Override
+    protected void configure(HttpSecurity http, CasClientLoginProcessingFilter filter) {
         filter.setRedirectStrategy(this.redirectStrategy);
         filter.acceptSuccessHandler(handler -> {
             handler.setTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
         });
         filter.setAuthenticationFailureHandler(this.authenticationFailureHandler);
-        filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class)); // 固定必须
         http.addFilterAt(filter, CasAuthenticationFilter.class);
     }
 

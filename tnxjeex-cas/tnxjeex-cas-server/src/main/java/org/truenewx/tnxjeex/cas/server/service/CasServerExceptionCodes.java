@@ -14,8 +14,8 @@ public class CasServerExceptionCodes {
     public static final String INVALID_SERVICE = "error.cas.server.invalid_service";
 
     /**
-     * 不支持的用户类型
+     * 不支持的登录认证方式
      */
-    public static final String UNSUPPORTED_USER_TYPE = "error.cas.server.unsupported_user_type";
+    public static final String UNSUPPORTED_AUTHENTICATE_MODE = "error.cas.server.unsupported_authenticate_mode";
 
 }
