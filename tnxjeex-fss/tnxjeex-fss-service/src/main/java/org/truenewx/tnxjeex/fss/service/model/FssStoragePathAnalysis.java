@@ -23,6 +23,8 @@ public class FssStoragePathAnalysis {
             s = s.substring(5);
         } else if (s.startsWith("//")) {
             s = s.substring(1);
+        } else { // 其它前缀的地址不支持
+            return null;
         }
         int index = s.indexOf(Strings.SLASH, 1); // 第二个斜杠的位置
         if (index > 0) {

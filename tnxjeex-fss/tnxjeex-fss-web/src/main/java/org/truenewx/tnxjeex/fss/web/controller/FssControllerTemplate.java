@@ -70,8 +70,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @PostMapping("/upload/{type}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
-            MultipartHttpServletRequest request) {
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type, MultipartHttpServletRequest request) {
         return upload(type, null, request);
     }
 
@@ -79,8 +78,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
-            @PathVariable("modelIdentity") String modelIdentity,
-            MultipartHttpServletRequest request) {
+            @PathVariable("modelIdentity") String modelIdentity, MultipartHttpServletRequest request) {
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
         Collection<MultipartFile> files = request.getFiles("files");
@@ -93,8 +91,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
 
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 I userIdentity = getUserIdentity();
-                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename,
-                        in);
+                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
                 in.close();
 
                 FssUploadedFileMeta result;
@@ -105,11 +102,9 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                     String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
                     readUrl = getFullReadUrl(readUrl);
                     // 缩略读取地址附加的缩略参数对最终URL可能产生影响，故需要重新生成，而不能在读取URL上简单附加缩略参数
-                    String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl,
-                            true);
+                    String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl, true);
                     thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl,
-                            thumbnailReadUrl);
+                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
                 }
                 results.add(result);
             } catch (IOException e) {

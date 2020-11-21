@@ -129,7 +129,8 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     @Override
     public String getReadUrl(I userIdentity, String storageUrl, boolean thumbnail) {
         FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(storageUrl);
-        return getReadUrl(userIdentity, spa, thumbnail);
+        // spa为null说明指定存储路径不满足内部存储路径格式
+        return spa == null ? storageUrl : getReadUrl(userIdentity, spa, thumbnail);
     }
 
     private String getReadUrl(I userIdentity, FssStoragePathAnalysis spa, boolean thumbnail) {
