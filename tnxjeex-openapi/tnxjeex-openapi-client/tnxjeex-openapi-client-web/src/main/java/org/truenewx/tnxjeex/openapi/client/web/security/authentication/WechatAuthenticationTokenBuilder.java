@@ -11,8 +11,6 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenBuilder;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
-import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUserDetail;
-import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatUserDetailRequiredPredicate;
 import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatWebAccessor;
 
 /**
@@ -23,8 +21,6 @@ public class WechatAuthenticationTokenBuilder extends
 
     @Autowired
     private WechatWebAccessor webAccessor;
-    @Autowired
-    private WechatUserDetailRequiredPredicate userDetailRequiredPredicate;
 
     public WechatAuthenticationTokenBuilder(String loginMode) {
         super(loginMode);
@@ -56,13 +52,6 @@ public class WechatAuthenticationTokenBuilder extends
         WechatUser user = this.webAccessor.getUser(loginCode);
         if (user == null) { // 无效的微信登录编码
             throw new BusinessAuthenticationException("error.openapi.client.invalid_login_code");
-        }
-        // 需要更多用户细节，则从微信服务器获取用户细节
-        if (this.userDetailRequiredPredicate != null && this.userDetailRequiredPredicate.requiresDetail(user)) {
-            WechatUserDetail userDetail = this.webAccessor.getUserDetail(user.getOpenId(), user.getAccessToken());
-            if (userDetail != null) {
-                user = userDetail;
-            }
         }
         return new WechatAuthenticationToken(user, loginCode);
     }

@@ -25,6 +25,7 @@ public abstract class WechatOpenAppAccessSupport extends WechatAppAccessSupport 
         String openId = (String) result.get("openid");
         if (StringUtils.isNotBlank(openId)) { // openId不能为空
             WechatUser user = new WechatUser();
+            user.setAppType(getAppType());
             user.setOpenId(openId);
             user.setUnionId((String) result.get("unionid"));
             user.setAccessToken((String) result.get("access_token"));
@@ -40,6 +41,7 @@ public abstract class WechatOpenAppAccessSupport extends WechatAppAccessSupport 
         Map<String, Object> result = get("/sns/userinfo", params);
         if (openId.equals(result.get("openid"))) {
             WechatUserDetail user = new WechatUserDetail();
+            user.setAppType(getAppType());
             user.setOpenId(openId);
             user.setAccessToken(accessToken);
             user.setUnionId((String) result.get("unionid"));

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.HttpClientUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
+import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatAppType;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 
 /**
@@ -16,6 +17,11 @@ import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
  * @author jianglei
  */
 public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
+
+    @Override
+    protected final WechatAppType getAppType() {
+        return WechatAppType.MP;
+    }
 
     @Override
     public WechatUser getUser(String loginCode) {
@@ -28,6 +34,7 @@ public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
         String openId = (String) result.get("openid");
         if (StringUtils.isNotBlank(openId)) { // openId不能为空
             WechatUser user = new WechatUser();
+            user.setAppType(getAppType());
             user.setOpenId(openId);
             user.setUnionId((String) result.get("unionid"));
             user.setSessionKey((String) result.get("session_key"));

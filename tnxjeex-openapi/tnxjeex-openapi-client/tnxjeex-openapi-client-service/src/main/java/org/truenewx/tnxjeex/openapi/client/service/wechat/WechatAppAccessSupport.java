@@ -17,6 +17,7 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.HttpClientUtil;
 import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjee.core.util.tuple.Binate;
+import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatAppType;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 
 /**
@@ -68,6 +69,11 @@ public abstract class WechatAppAccessSupport {
         }
         return Collections.emptyMap();
     }
+
+    /**
+     * @return 应用类型
+     */
+    protected abstract WechatAppType getAppType();
 
     /**
      * @return 应用id

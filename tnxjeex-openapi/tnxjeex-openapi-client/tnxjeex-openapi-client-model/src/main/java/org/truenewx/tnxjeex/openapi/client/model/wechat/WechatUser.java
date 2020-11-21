@@ -7,10 +7,19 @@ package org.truenewx.tnxjeex.openapi.client.model.wechat;
  */
 public class WechatUser {
 
+    private WechatAppType appType;
     private String openId;
     private String unionId;
     private String sessionKey;
     private String accessToken;
+
+    public WechatAppType getAppType() {
+        return this.appType;
+    }
+
+    public void setAppType(WechatAppType appType) {
+        this.appType = appType;
+    }
 
     public String getOpenId() {
         return this.openId;
