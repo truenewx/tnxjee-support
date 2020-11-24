@@ -23,16 +23,17 @@ public class FssStoragePathAnalysis {
             s = s.substring(5);
         } else if (s.startsWith("//")) {
             s = s.substring(1);
-        } else { // 其它前缀的地址不支持
-            return null;
         }
-        int index = s.indexOf(Strings.SLASH, 1); // 第二个斜杠的位置
-        if (index > 0) {
-            String type = s.substring(1, index);
-            String relativePath = s.substring(index);
-            FssStoragePathAnalysis instance = new FssStoragePathAnalysis(type, relativePath);
-            if (instance.isValid()) {
-                return instance;
+        // 预处理后不以/开头的地址不支持，典型的如：http://
+        if (s.startsWith(Strings.SLASH)) {
+            int index = s.indexOf(Strings.SLASH, 1); // 第二个斜杠的位置
+            if (index > 0) {
+                String type = s.substring(1, index);
+                String relativePath = s.substring(index);
+                FssStoragePathAnalysis instance = new FssStoragePathAnalysis(type, relativePath);
+                if (instance.isValid()) {
+                    return instance;
+                }
             }
         }
         return null;
