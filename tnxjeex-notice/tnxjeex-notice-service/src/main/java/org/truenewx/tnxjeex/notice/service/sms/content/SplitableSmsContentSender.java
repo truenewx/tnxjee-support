@@ -21,19 +21,19 @@ public abstract class SplitableSmsContentSender extends AbstractSmsContentSender
     }
 
     @Override
-    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... cellphones) {
         List<String> contents = this.spliter.split(content, maxCount);
-        return send(signName, contents, mobilePhones);
+        return send(signName, contents, cellphones);
     }
 
     /**
      * 分成指定条数的内容发送短信
      *
-     * @param signName     签名
-     * @param contents     内容清单，每一个内容为一条短信
-     * @param mobilePhones 手机号码清单
+     * @param signName   签名
+     * @param contents   内容清单，每一个内容为一条短信
+     * @param cellphones 手机号码清单
      * @return 发送结果
      */
-    protected abstract SmsNotifyResult send(String signName, List<String> contents, String... mobilePhones);
+    protected abstract SmsNotifyResult send(String signName, List<String> contents, String... cellphones);
 
 }

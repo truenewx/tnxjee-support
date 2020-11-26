@@ -26,12 +26,12 @@ public class HechinaSmsContentSendStrategy extends AbstractHttpSmsContentSendStr
     }
 
     @Override
-    public boolean isValid(String mobilePhone) {
+    public boolean isValid(String cellphone) {
         return true;
     }
 
     @Override
-    public Map<String, Object> getParams(List<String> contents, int index, Set<String> mobilePhones) {
+    public Map<String, Object> getParams(List<String> contents, int index, Set<String> cellphones) {
         Map<String, Object> params = this.defaultParams;
         if (params == null) {
             params = new HashMap<>();
@@ -49,7 +49,7 @@ public class HechinaSmsContentSendStrategy extends AbstractHttpSmsContentSendStr
         params.put("msg", contentString.toString());
 
         // smsMob
-        params.put("dst", StringUtils.join(mobilePhones, Strings.COMMA));
+        params.put("dst", StringUtils.join(cellphones, Strings.COMMA));
         return params;
     }
 

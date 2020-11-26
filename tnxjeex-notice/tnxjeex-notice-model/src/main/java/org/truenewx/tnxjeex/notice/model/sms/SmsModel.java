@@ -17,7 +17,7 @@ public class SmsModel implements Sms {
     /**
      * 手机号码清单
      */
-    private String[] mobilePhones;
+    private String[] cellphones;
     /**
      * 发送时间
      */
@@ -43,18 +43,18 @@ public class SmsModel implements Sms {
     }
 
     @Override
-    public String[] getMobilePhones() {
-        if (this.mobilePhones == null) {
-            this.mobilePhones = new String[0];
+    public String[] getCellphones() {
+        if (this.cellphones == null) {
+            this.cellphones = new String[0];
         }
-        return this.mobilePhones;
+        return this.cellphones;
     }
 
     /**
-     * @param mobilePhones 手机号码清单
+     * @param cellphones 手机号码清单
      */
-    public void setMobilePhones(String... mobilePhones) {
-        this.mobilePhones = mobilePhones;
+    public void setCellphones(String... cellphones) {
+        this.cellphones = cellphones;
     }
 
     @Override

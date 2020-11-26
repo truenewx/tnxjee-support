@@ -22,12 +22,12 @@ public class WebChineseSmsContentSendStrategy extends AbstractHttpSmsContentSend
     }
 
     @Override
-    public boolean isValid(String mobilePhone) {
+    public boolean isValid(String cellphone) {
         return true;
     }
 
     @Override
-    public Map<String, Object> getParams(List<String> contents, int index, Set<String> mobilePhones) {
+    public Map<String, Object> getParams(List<String> contents, int index, Set<String> cellphones) {
         Map<String, Object> params = this.defaultParams;
         if (params == null) {
             params = new HashMap<>();
@@ -45,7 +45,7 @@ public class WebChineseSmsContentSendStrategy extends AbstractHttpSmsContentSend
         params.put("smsText", contentString.toString());
 
         // smsMob
-        params.put("smsMob", StringUtils.join(mobilePhones, Strings.COMMA));
+        params.put("smsMob", StringUtils.join(cellphones, Strings.COMMA));
         return params;
     }
 

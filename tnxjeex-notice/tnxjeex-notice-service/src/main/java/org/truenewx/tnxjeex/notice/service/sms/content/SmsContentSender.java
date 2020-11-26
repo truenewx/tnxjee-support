@@ -25,12 +25,12 @@ public interface SmsContentSender {
     /**
      * 发送短信
      *
-     * @param signName     签名
-     * @param content      短信内容
-     * @param maxCount     内容拆分的最大条数
-     * @param mobilePhones 手机号码清单
+     * @param signName   签名
+     * @param content    短信内容
+     * @param maxCount   内容拆分的最大条数
+     * @param cellphones 手机号码清单
      * @return 短信发送结果
      */
-    SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones);
+    SmsNotifyResult send(String signName, String content, int maxCount, String... cellphones);
 
 }

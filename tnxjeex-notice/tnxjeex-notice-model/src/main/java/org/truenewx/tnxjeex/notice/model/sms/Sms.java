@@ -18,7 +18,7 @@ public interface Sms {
     /**
      * @return 手机号码清单
      */
-    String[] getMobilePhones();
+    String[] getCellphones();
 
     /**
      * @return 发送时间

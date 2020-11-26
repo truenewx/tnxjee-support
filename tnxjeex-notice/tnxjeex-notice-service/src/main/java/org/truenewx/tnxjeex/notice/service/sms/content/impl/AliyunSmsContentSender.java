@@ -29,12 +29,12 @@ public class AliyunSmsContentSender extends AbstractSmsContentSender {
     }
 
     @Override
-    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... cellphones) {
         SmsModel sms = new SmsModel();
-        sms.setMobilePhones(mobilePhones);
+        sms.setCellphones(cellphones);
         sms.setSendTime(new Date());
         SmsNotifyResult result = new SmsNotifyResult(sms);
-        Map<String, String> failures = this.smsAccessor.send(signName, this.templateCode, content, mobilePhones);
+        Map<String, String> failures = this.smsAccessor.send(signName, this.templateCode, content, cellphones);
         if (failures != null) {
             result.getFailures().putAll(failures);
         }

@@ -22,9 +22,9 @@ public class YunPianSmsContentProvider extends AbstractSmsContentSender {
     private String apiKey;
 
     @Override
-    public SmsNotifyResult send(String signName, String content, int maxCount, String... mobilePhones) {
+    public SmsNotifyResult send(String signName, String content, int maxCount, String... cellphones) {
         SmsModel sms = new SmsModel();
-        sms.setMobilePhones(mobilePhones);
+        sms.setCellphones(cellphones);
         sms.setSendTime(new Date());
         SmsNotifyResult result = new SmsNotifyResult(sms);
         YunpianClient client = new YunpianClient(this.apiKey).init();
@@ -32,17 +32,17 @@ public class YunPianSmsContentProvider extends AbstractSmsContentSender {
         StringBuffer msg = new StringBuffer("【");
         msg.append(signName);
         msg.append("】").append(content);
-        for (String mobilePhone : mobilePhones) {
-            params.put(YunpianClient.MOBILE, mobilePhone);
+        for (String cellphone : cellphones) {
+            params.put(YunpianClient.MOBILE, cellphone);
             params.put(YunpianClient.TEXT, msg.toString());
             try {
                 Result<SmsSingleSend> sendResult = client.sms().single_send(params);
                 if (sendResult.getCode() != 0) {
-                    result.getFailures().put(sendResult.getMsg(), mobilePhone);
+                    result.getFailures().put(sendResult.getMsg(), cellphone);
                 }
             } catch (Exception e) {
                 LogUtil.error(getClass(), e);
-                result.getFailures().put(e.getMessage(), mobilePhone);
+                result.getFailures().put(e.getMessage(), cellphone);
             }
         }
         client.close();

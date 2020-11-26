@@ -32,12 +32,12 @@ public class RxtSmsContentSendStrategy extends AbstractHttpSmsContentSendStrateg
     }
 
     @Override
-    public boolean isValid(String mobilePhone) {
+    public boolean isValid(String cellphone) {
         return true;
     }
 
     @Override
-    public Map<String, Object> getParams(List<String> contents, int index, Set<String> mobilePhones) {
+    public Map<String, Object> getParams(List<String> contents, int index, Set<String> cellphones) {
         Map<String, Object> params;
         if (this.defaultParams == null) {
             params = new HashMap<>();
@@ -61,7 +61,7 @@ public class RxtSmsContentSendStrategy extends AbstractHttpSmsContentSendStrateg
         params.put("message", contentString.toString());
 
         // smsMob
-        params.put("mobile", StringUtils.join(mobilePhones, Strings.COMMA));
+        params.put("mobile", StringUtils.join(cellphones, Strings.COMMA));
         return params;
     }
 

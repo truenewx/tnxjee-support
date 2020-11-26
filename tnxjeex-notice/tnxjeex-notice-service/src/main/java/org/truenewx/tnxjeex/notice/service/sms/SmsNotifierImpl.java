@@ -74,7 +74,7 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
     }
 
     @Override
-    public SmsNotifyResult notify(String type, Map<String, Object> params, Locale locale, String... mobilePhones) {
+    public SmsNotifyResult notify(String type, Map<String, Object> params, Locale locale, String... cellphones) {
         SmsContentProvider contentProvider = getContentProvider(type);
         if (contentProvider != null) {
             String content = contentProvider.getContent(params, locale);
@@ -82,51 +82,51 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
                 SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
                     // 检查获取因时限不可发送的手机号码
-                    List<String> notMobilePhones = new ArrayList<>();
-                    List<String> unsendableMobilePhones = new ArrayList<>();
-                    if (mobilePhones.length == 1) { // 只有一个手机号码的，快速处理
-                        String mobilePhone = mobilePhones[0];
-                        if (!StringUtil.isMobilePhone(mobilePhone)) {
-                            notMobilePhones.add(mobilePhone);
-                            mobilePhones = new String[0];
-                        } else if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
-                            unsendableMobilePhones.add(mobilePhone);
-                            mobilePhones = new String[0];
+                    List<String> notCellphones = new ArrayList<>();
+                    List<String> unsendableCellphones = new ArrayList<>();
+                    if (cellphones.length == 1) { // 只有一个手机号码的，快速处理
+                        String cellphone = cellphones[0];
+                        if (!StringUtil.isCellphone(cellphone)) {
+                            notCellphones.add(cellphone);
+                            cellphones = new String[0];
+                        } else if (getRemainingSeconds(contentSender, cellphone) > 0) {
+                            unsendableCellphones.add(cellphone);
+                            cellphones = new String[0];
                         }
                     } else { // 多个手机号码的，循环处理
-                        List<String> sendableMobilePhones = new ArrayList<>();
-                        for (String mobilePhone : mobilePhones) {
-                            if (!StringUtil.isMobilePhone(mobilePhone)) {
-                                notMobilePhones.add(mobilePhone);
-                            } else if (getRemainingSeconds(contentSender, mobilePhone) > 0) {
-                                unsendableMobilePhones.add(mobilePhone);
+                        List<String> sendableCellphones = new ArrayList<>();
+                        for (String cellphone : cellphones) {
+                            if (!StringUtil.isCellphone(cellphone)) {
+                                notCellphones.add(cellphone);
+                            } else if (getRemainingSeconds(contentSender, cellphone) > 0) {
+                                unsendableCellphones.add(cellphone);
                             } else {
-                                sendableMobilePhones.add(mobilePhone);
+                                sendableCellphones.add(cellphone);
                             }
                         }
-                        if (notMobilePhones.size() + unsendableMobilePhones.size() > 0) {
-                            mobilePhones = sendableMobilePhones.toArray(new String[0]);
+                        if (notCellphones.size() + unsendableCellphones.size() > 0) {
+                            cellphones = sendableCellphones.toArray(new String[0]);
                         }
                     }
 
                     String signName = contentProvider.getSignName(locale);
                     int maxCount = contentProvider.getMaxCount();
                     SmsNotifyResult result = contentSender
-                            .send(signName, content, maxCount, this.disabled ? new String[0] : mobilePhones);
-                    putSendableInstants(contentSender, mobilePhones);
+                            .send(signName, content, maxCount, this.disabled ? new String[0] : cellphones);
+                    putSendableInstants(contentSender, cellphones);
                     // 添加不是手机号码的错误
-                    notMobilePhones.forEach(mobilePhone -> {
-                        Object[] args = { mobilePhone };
+                    notCellphones.forEach(cellphone -> {
+                        Object[] args = { cellphone };
                         String errorMessage = this.messageSource
-                                .getMessage("error.notice.sms.invalid_mobile_phone", args, locale);
-                        result.addFailures(errorMessage, mobilePhone);
+                                .getMessage("error.notice.sms.invalid_cellphone", args, locale);
+                        result.addFailures(errorMessage, cellphone);
                     });
                     // 添加因时限不能发送的错误
-                    unsendableMobilePhones.forEach(mobilePhone -> {
-                        Object[] args = { getRemainingSeconds(contentSender, mobilePhone) };
+                    unsendableCellphones.forEach(cellphone -> {
+                        Object[] args = { getRemainingSeconds(contentSender, cellphone) };
                         String errorMessage = this.messageSource
                                 .getMessage("error.notice.sms.interval_limited", args, locale);
-                        result.addFailures(errorMessage, mobilePhone);
+                        result.addFailures(errorMessage, cellphone);
                     });
                     return result;
                 }
@@ -135,8 +135,8 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
         return null;
     }
 
-    private int getRemainingSeconds(SmsContentSender contentSender, String mobilePhone) {
-        String key = contentSender.toString() + Strings.MINUS + mobilePhone;
+    private int getRemainingSeconds(SmsContentSender contentSender, String cellphone) {
+        String key = contentSender.toString() + Strings.MINUS + cellphone;
         Instant instant = this.sendableInstants.get(key);
         if (instant == null) { // 没有约束，剩余时间为0
             return 0;
@@ -150,29 +150,29 @@ public class SmsNotifierImpl implements SmsNotifier, ContextInitializedBean {
         return (int) (millis / 1000 + (millis % 1000 == 0 ? 0 : 1));
     }
 
-    private void putSendableInstants(SmsContentSender contentSender, String... mobilePhones) {
+    private void putSendableInstants(SmsContentSender contentSender, String... cellphones) {
         String prefix = contentSender.toString() + Strings.MINUS;
         Instant instant = Instant.now().plusSeconds(contentSender.getIntervalSeconds());
-        for (String mobilePhone : mobilePhones) {
-            String key = prefix + mobilePhone;
+        for (String cellphone : cellphones) {
+            String key = prefix + cellphone;
             this.sendableInstants.put(key, instant);
         }
     }
 
     @Override
-    public void notify(String type, Map<String, Object> params, Locale locale, String[] mobilePhones,
+    public void notify(String type, Map<String, Object> params, Locale locale, String[] cellphones,
             Consumer<SmsNotifyResult> callback) {
         this.executor.execute(() -> {
-            SmsNotifyResult result = notify(type, params, locale, mobilePhones);
+            SmsNotifyResult result = notify(type, params, locale, cellphones);
             callback.accept(result);
         });
     }
 
     @Override
-    public int getRemainingSeconds(String type, String mobilePhone) {
+    public int getRemainingSeconds(String type, String cellphone) {
         SmsContentSender contentSender = getContentSender(type);
         if (contentSender != null) {
-            return getRemainingSeconds(contentSender, mobilePhone);
+            return getRemainingSeconds(contentSender, cellphone);
         }
         return -1;
     }
