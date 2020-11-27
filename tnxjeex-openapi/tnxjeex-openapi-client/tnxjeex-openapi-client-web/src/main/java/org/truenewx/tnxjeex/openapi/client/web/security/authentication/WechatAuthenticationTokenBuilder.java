@@ -1,13 +1,14 @@
 package org.truenewx.tnxjeex.openapi.client.web.security.authentication;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.EncryptUtil;
+import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenBuilder;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
@@ -26,21 +27,13 @@ public class WechatAuthenticationTokenBuilder extends
         super(loginMode);
     }
 
-    public Map<String, String> parseState(HttpServletRequest request) {
-        Map<String, String> states = new HashMap<>();
+    public Map<String, Object> parseState(HttpServletRequest request) {
         String state = request.getParameter("state");
         if (StringUtils.isNotBlank(state) && !"undefined".equals(state)) {
-            String[] params = state.split(Strings.SEMICOLON);
-            for (String param : params) {
-                String[] array = param.split(Strings.COLON);
-                if (array.length == 2) {
-                    String name = array[0];
-                    String value = array[1];
-                    states.put(name, value);
-                }
-            }
+            state = EncryptUtil.decryptByBase64(state);
+            return JsonUtil.json2Map(state);
         }
-        return states;
+        return Collections.emptyMap();
     }
 
     @Override
