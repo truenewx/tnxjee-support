@@ -10,20 +10,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenBuilder;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenResolver;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatWebAccessor;
 
 /**
- * 微信登录认证令牌构建器
+ * 微信登录认证令牌解决器
  */
-public class WechatAuthenticationTokenBuilder extends
-        AbstractAuthenticationTokenBuilder<WechatAuthenticationToken> {
+public class WechatAuthenticationTokenResolver extends AbstractAuthenticationTokenResolver<WechatAuthenticationToken> {
 
     @Autowired
     private WechatWebAccessor webAccessor;
 
-    public WechatAuthenticationTokenBuilder(String loginMode) {
+    public WechatAuthenticationTokenResolver(String loginMode) {
         super(loginMode);
     }
 
@@ -46,7 +45,7 @@ public class WechatAuthenticationTokenBuilder extends
     }
 
     @Override
-    public WechatAuthenticationToken buildAuthenticationToken(HttpServletRequest request) {
+    public WechatAuthenticationToken resolveAuthenticationToken(HttpServletRequest request) {
         // 从state参数中解析service和scope放入请求属性中，以便于后续处理使用
         resolveState(request).forEach(request::setAttribute);
         WechatUser user = resolveUser(request);
