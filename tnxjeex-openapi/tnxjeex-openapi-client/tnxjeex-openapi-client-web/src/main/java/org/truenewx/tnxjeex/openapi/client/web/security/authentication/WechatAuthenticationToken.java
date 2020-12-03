@@ -10,16 +10,12 @@ public class WechatAuthenticationToken extends UnauthenticatedAuthenticationToke
 
     private static final long serialVersionUID = 9087828963670023544L;
 
-    public WechatAuthenticationToken(WechatUser user, String loginCode) {
-        super(user, loginCode);
+    public WechatAuthenticationToken(WechatUser user) {
+        super(user, null);
     }
 
     public WechatUser getUser() {
         return (WechatUser) getPrincipal();
-    }
-
-    public String getLoginCode() {
-        return (String) getCredentials();
     }
 
 }
