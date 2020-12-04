@@ -35,4 +35,9 @@ public class FssExceptionCodes {
      */
     public static final String UNSUPPORTED_EXTENSION = "error.fss.upload.unsupported_extension";
 
+    /**
+     * 未指定扩展名
+     */
+    public static final String NO_EXTENSION = "error.fss.no_extension";
+
 }

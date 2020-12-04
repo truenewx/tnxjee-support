@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.fss.web.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -7,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +27,10 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
 import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.LogUtil;
+import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
@@ -31,7 +38,9 @@ import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
+import org.truenewx.tnxjeex.fss.api.model.FssTransferBody;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
+import org.truenewx.tnxjeex.fss.service.FssExceptionCodes;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 import org.truenewx.tnxjeex.fss.web.model.FssUploadedFileMeta;
@@ -51,6 +60,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     private CommonProperties commonProperties;
     @Autowired(required = false)
     private FssServiceTemplate<I> service;
+    @Autowired
+    private Executor executor;
 
     protected String downloadUrlPrefix;
 
@@ -82,36 +93,41 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
         Collection<MultipartFile> files = request.getFiles("files");
+        boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
         int index = 0;
         for (MultipartFile file : files) {
             String fileId = fileIds[index++];
             try {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
-
-                // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
-                I userIdentity = getUserIdentity();
-                String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
-                in.close();
-
-                FssUploadedFileMeta result;
-                boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
-                if (onlyStorage) { // 只需要存储地址
-                    result = new FssUploadedFileMeta(fileId, null, storageUrl, null, null);
-                } else {
-                    String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
-                    readUrl = getFullReadUrl(readUrl);
-                    // 缩略读取地址附加的缩略参数对最终URL可能产生影响，故需要重新生成，而不能在读取URL上简单附加缩略参数
-                    String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl, true);
-                    thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                    result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
-                }
+                FssUploadedFileMeta result = write(type, modelIdentity, fileId, filename, in, onlyStorage);
                 results.add(result);
             } catch (IOException e) {
                 LogUtil.error(getClass(), e);
             }
         }
         return results;
+    }
+
+    private FssUploadedFileMeta write(String type, String modelIdentity, String fileId, String filename, InputStream in,
+            boolean onlyStorage) throws IOException {
+        // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
+        I userIdentity = getUserIdentity();
+        String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
+        in.close();
+
+        FssUploadedFileMeta result;
+        if (onlyStorage) { // 只需要存储地址
+            result = new FssUploadedFileMeta(fileId, null, storageUrl, null, null);
+        } else {
+            String readUrl = this.service.getReadUrl(userIdentity, storageUrl, false);
+            readUrl = getFullReadUrl(readUrl);
+            // 缩略读取地址附加的缩略参数对最终URL可能产生影响，故需要重新生成，而不能在读取URL上简单附加缩略参数
+            String thumbnailReadUrl = this.service.getReadUrl(userIdentity, storageUrl, true);
+            thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
+            result = new FssUploadedFileMeta(fileId, filename, storageUrl, readUrl, thumbnailReadUrl);
+        }
+        return result;
     }
 
     @Override
@@ -148,6 +164,53 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             }
             return contextUri;
         }
+    }
+
+    @Override
+    @ResponseBody
+    @ConfigAuthority // 登录用户才可转储资源，访问策略可能还有更多限定
+    public String transfer(FssTransferBody body) {
+        String type = body.getType();
+        String url = body.getUrl();
+        if (StringUtils.isNotBlank(type) && url != null) {
+//            url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+            if (url.startsWith("http://") || url.startsWith("https://")) {
+                try {
+                    String filename = getFilename(url, body.getExtension());
+                    File root = new ClassPathResource(".").getFile().getParentFile().getParentFile().getParentFile()
+                            .getParentFile();
+                    String fileId = StringUtil.uuid32();
+                    File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
+                    NetUtil.download(url, null, file);
+                    FssUploadedFileMeta meta = write(type, body.getModelIdentity(), fileId, filename,
+                            new FileInputStream(file), true);
+                    // 在独立线程中删除临时文件，以免影响正常流程
+                    this.executor.execute(file::delete);
+                    return meta.getStorageUrl();
+                } catch (IOException e) {
+                    LogUtil.error(getClass(), e);
+                }
+            }
+        }
+        return body.getUrl(); // url变量中途已被改变
+    }
+
+    private String getFilename(String url, String extension) {
+        String filename = url;
+        int index = url.lastIndexOf(Strings.SLASH);
+        if (index >= 0) {
+            filename = filename.substring(index + 1);
+        }
+        if (!filename.contains(Strings.DOT)) { // 从url中取得的文件名中不包含扩展名，则加上扩展名参数
+            if (StringUtils.isBlank(extension)) { // 此时扩展名不能为空
+                throw new BusinessException(FssExceptionCodes.NO_EXTENSION, url);
+            }
+            if (!extension.startsWith(Strings.DOT)) {
+                filename += Strings.DOT;
+            }
+            filename += extension;
+        }
+        return filename;
     }
 
     /**
@@ -198,8 +261,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @GetMapping("/dl/**")
     @ResponseStream
     @ConfigAnonymous // 匿名用户即可读取，具体权限由访问策略决定
-    public String download(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public String download(HttpServletRequest request, HttpServletResponse response) throws IOException {
         I userIdentity = getUserIdentity();
         String path = getDownloadPath(request);
         long modifiedTime = this.service.getLastModifiedTime(userIdentity, path);

@@ -69,8 +69,8 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     }
 
     @Override
-    public String write(String type, String modelIdentity, I userIdentity, String filename,
-            InputStream in) throws IOException {
+    public String write(String type, String modelIdentity, I userIdentity, String filename, InputStream in)
+            throws IOException {
         FssAccessStrategy<I> strategy = getStrategy(type);
         String extension = validateExtension(strategy, userIdentity, filename);
         FssProvider provider = strategy.getProvider();
@@ -81,8 +81,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         if (strategy.isMd5AsFilename()) {
             String md5Code = EncryptUtil.encryptByMd5(in);
             in.reset();
-            relativePath = strategy.getRelativePath(modelIdentity, userIdentity,
-                    md5Code + extension);
+            relativePath = strategy.getRelativePath(modelIdentity, userIdentity, md5Code + extension);
         } else {
             relativePath = strategy.getRelativePath(modelIdentity, userIdentity, filename);
         }
@@ -158,8 +157,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
             if (thumbnailParameters != null && thumbnailParameters.size() > 0) {
                 StringBuilder params = new StringBuilder();
                 for (Entry<String, String> entry : thumbnailParameters.entrySet()) {
-                    params.append(Strings.AND).append(entry.getKey()).append(Strings.EQUAL)
-                            .append(entry.getValue());
+                    params.append(Strings.AND).append(entry.getKey()).append(Strings.EQUAL).append(entry.getValue());
                 }
                 if (params.length() > 0) {
                     params.deleteCharAt(0);
@@ -167,8 +165,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
                 int index = path.indexOf(Strings.QUESTION);
                 // 确保缩略参数作为优先参数
                 if (index > 0) {
-                    path = path.substring(0, index + 1) + params + Strings.AND
-                            + path.substring(index + 1);
+                    path = path.substring(0, index + 1) + params + Strings.AND + path.substring(index + 1);
                 } else {
                     path += Strings.QUESTION + params;
                 }
