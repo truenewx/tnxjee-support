@@ -1,9 +1,9 @@
 package org.truenewx.tnxjeex.fss.api.model;
 
 /**
- * Fss转换方法的提交体
+ * Fss转储命令
  */
-public class FssTransferBody {
+public class FssTransferCommand {
 
     private String type;
     private String url;

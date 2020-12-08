@@ -38,7 +38,7 @@ import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
-import org.truenewx.tnxjeex.fss.api.model.FssTransferBody;
+import org.truenewx.tnxjeex.fss.api.model.FssTransferCommand;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.FssExceptionCodes;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
@@ -169,20 +169,20 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @Override
     @ResponseBody
     @ConfigAuthority // 登录用户才可转储资源，访问策略可能还有更多限定
-    public String transfer(FssTransferBody body) {
-        String type = body.getType();
-        String url = body.getUrl();
+    public String transfer(FssTransferCommand command) {
+        String type = command.getType();
+        String url = command.getUrl();
         if (StringUtils.isNotBlank(type) && url != null) {
 //            url = URLDecoder.decode(url, StandardCharsets.UTF_8);
             if (url.startsWith("http://") || url.startsWith("https://")) {
                 try {
-                    String filename = getFilename(url, body.getExtension());
+                    String filename = getFilename(url, command.getExtension());
                     File root = new ClassPathResource(".").getFile().getParentFile().getParentFile().getParentFile()
                             .getParentFile();
                     String fileId = StringUtil.uuid32();
                     File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
                     NetUtil.download(url, null, file);
-                    FssUploadedFileMeta meta = write(type, body.getModelIdentity(), fileId, filename,
+                    FssUploadedFileMeta meta = write(type, command.getModelIdentity(), fileId, filename,
                             new FileInputStream(file), true);
                     // 在独立线程中删除临时文件，以免影响正常流程
                     this.executor.execute(file::delete);
@@ -192,7 +192,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                 }
             }
         }
-        return body.getUrl(); // url变量中途已被改变
+        return command.getUrl(); // url变量中途已被改变
     }
 
     private String getFilename(String url, String extension) {
