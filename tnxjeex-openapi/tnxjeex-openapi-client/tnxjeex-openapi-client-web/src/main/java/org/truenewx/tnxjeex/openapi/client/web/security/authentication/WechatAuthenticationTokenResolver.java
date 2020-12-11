@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.JsonUtil;
-import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenResolver;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatWebAccessor;
@@ -37,11 +36,7 @@ public class WechatAuthenticationTokenResolver extends AbstractAuthenticationTok
 
     public WechatUser resolveUser(HttpServletRequest request) {
         String loginCode = request.getParameter("code");
-        WechatUser user = this.webAccessor.getUser(loginCode);
-        if (user == null) { // 无效的微信登录编码
-            throw new BusinessException("error.openapi.client.invalid_login_code");
-        }
-        return user;
+        return this.webAccessor.loadUser(loginCode);
     }
 
     @Override
