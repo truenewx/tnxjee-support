@@ -20,6 +20,7 @@ public class LoginModeCasServerAuthenticationProvider
     private Map<Class<?>, CasServerLoginAuthenticator<AbstractAuthenticationToken>> authenticators = new HashMap<>();
 
     @Override
+    @SuppressWarnings("unchecked")
     public void afterInitialized(ApplicationContext context) throws Exception {
         context.getBeansOfType(CasServerLoginAuthenticator.class).forEach((id, authenticator) -> {
             Class<?> tokenType = authenticator.getTokenType();
@@ -30,8 +31,8 @@ public class LoginModeCasServerAuthenticationProvider
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) || this.authenticators
-                .containsKey(authentication);
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication)
+                || this.authenticators.containsKey(authentication);
     }
 
     @Override
