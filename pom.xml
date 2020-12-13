@@ -85,6 +85,11 @@
                 <artifactId>tnxjeex-openapi-client-web</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
+            <dependency><!-- 与 spring-cloud-starter-openfeign 中依赖的版本保持一致 -->
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.64</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
