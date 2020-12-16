@@ -12,6 +12,5 @@
     <modules>
         <module>tnxjeex-notice-model</module>
         <module>tnxjeex-notice-service</module>
-        <module>tnxjeex-notice-web</module>
     </modules>
 </project>
