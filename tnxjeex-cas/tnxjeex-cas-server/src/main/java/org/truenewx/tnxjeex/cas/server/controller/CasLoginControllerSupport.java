@@ -49,6 +49,7 @@ public abstract class CasLoginControllerSupport {
             }
             request.setAttribute(CasServerConstants.PARAMETER_SERVICE, service);
         }
+        String redirectParameter = this.apiMetaProperties.getLoginSuccessRedirectParameter();
         if (WebUtil.isAjaxRequest(request)) {
             String originalRequest = request.getHeader(WebConstants.HEADER_ORIGINAL_REQUEST);
             if (originalRequest != null) {
@@ -57,10 +58,8 @@ public abstract class CasLoginControllerSupport {
             if (this.ticketManager.checkTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
                 if (originalRequest != null) {
-                    String originalUrl = originalRequest
-                            .substring(originalRequest.indexOf(Strings.SPACE) + 1);
-                    targetUrl = NetUtil.mergeParam(targetUrl,
-                            this.apiMetaProperties.getLoginSuccessRedirectParameter(), originalUrl);
+                    String originalUrl = originalRequest.substring(originalRequest.indexOf(Strings.SPACE) + 1);
+                    targetUrl = NetUtil.mergeParam(targetUrl, redirectParameter, originalUrl);
                 }
                 this.redirectStrategy.sendRedirect(request, response, targetUrl);
             } else { // AJAX登录只能进行自动登录，否则报401
@@ -73,7 +72,12 @@ public abstract class CasLoginControllerSupport {
         } else {
             if (this.ticketManager.checkTicketGrantingTicket(request)) {
                 String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
-                return new ModelAndView("redirect:" + targetUrl);
+                String redirectUrl = request.getParameter(redirectParameter);
+                if (StringUtils.isNotBlank(redirectUrl)) {
+                    targetUrl = NetUtil.mergeParam(targetUrl, redirectParameter, redirectUrl);
+                }
+                this.redirectStrategy.sendRedirect(request, response, targetUrl);
+                return null;
             }
             String result = this.authenticationFailureHandler.getTargetUrlFunction().apply(request);
             if (result == null) {
