@@ -78,15 +78,6 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
     }
 
     /**
-     * 判断指定用户对指定相对路径是否可写
-     *
-     * @param userIdentity 用户标识
-     * @param relativePath 相对路径
-     * @return 指定用户对指定相对路径是否可写
-     */
-    boolean isWritable(I userIdentity, String relativePath);
-
-    /**
      * 获取缩略图读取参数集，仅在文件为图片时有效，返回空时表示不支持缩略图
      *
      * @return 缩略图读取参数集

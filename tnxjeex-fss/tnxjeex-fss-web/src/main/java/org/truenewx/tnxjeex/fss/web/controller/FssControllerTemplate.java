@@ -234,26 +234,28 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         return this.downloadUrlPrefix;
     }
 
-    /**
-     * 当前用户获取指定存储URL集对应的文件元数据集
-     *
-     * @param storageUrls 存储URL集
-     * @return 文件元数据集
-     */
+    @Override
+    @ResponseBody
+    @ConfigAnonymous // 匿名用户即可获取，具体权限由访问策略决定
+    public FssFileMeta resolveMeta(String storageUrl) {
+        if (StringUtils.isNotBlank(storageUrl)) {
+            FssFileMeta meta = this.service.getMeta(getUserIdentity(), storageUrl);
+            if (meta != null) {
+                meta.setReadUrl(getFullReadUrl(meta.getReadUrl()));
+                meta.setThumbnailReadUrl(getFullReadUrl(meta.getThumbnailReadUrl()));
+            }
+            return meta;
+        }
+        return null;
+    }
+
     @Override
     @ResponseBody
     @ConfigAnonymous // 匿名用户即可获取，具体权限由访问策略决定
     public FssFileMeta[] resolveMetas(String[] storageUrls) {
         FssFileMeta[] metas = new FssFileMeta[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
-            if (StringUtils.isNotBlank(storageUrls[i])) {
-                FssFileMeta meta = this.service.getMeta(getUserIdentity(), storageUrls[i]);
-                if (meta != null) {
-                    meta.setReadUrl(getFullReadUrl(meta.getReadUrl()));
-                    meta.setThumbnailReadUrl(getFullReadUrl(meta.getThumbnailReadUrl()));
-                    metas[i] = meta;
-                }
-            }
+            metas[i] = resolveMeta(storageUrls[i]);
         }
         return metas;
     }

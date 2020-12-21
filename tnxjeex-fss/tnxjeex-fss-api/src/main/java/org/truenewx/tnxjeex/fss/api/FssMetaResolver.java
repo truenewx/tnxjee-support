@@ -14,6 +14,21 @@ import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 @RpcApi
 public interface FssMetaResolver {
 
+    /**
+     * 当前用户获取指定存储URL对应的文件元数据
+     *
+     * @param storageUrl 存储URL
+     * @return 文件元数据
+     */
+    @GetMapping("/meta")
+    FssFileMeta resolveMeta(@RequestParam("storageUrl") String storageUrl);
+
+    /**
+     * 当前用户获取指定存储URL集对应的文件元数据集
+     *
+     * @param storageUrls 存储URL集
+     * @return 文件元数据集
+     */
     @GetMapping("/metas")
     FssFileMeta[] resolveMetas(@RequestParam("storageUrls") String[] storageUrls);
 
