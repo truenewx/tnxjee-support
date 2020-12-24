@@ -1,5 +1,8 @@
 package org.truenewx.tnxjeex.cas.server.security.authentication.logout;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -9,7 +12,6 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * CAS服务端登出成功处理器
@@ -32,8 +34,9 @@ public class CasServerLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
             }
             targetUrl = prefix + targetUrl;
         }
-        String service = request.getParameter(CasServerConstants.PARAMETER_SERVICE);
-        targetUrl = NetUtil.mergeParam(targetUrl, CasServerConstants.PARAMETER_SERVICE, service);
+        Map<String, Object> params = WebUtil.getRequestParameterMap(request);
+        targetUrl = NetUtil.removeParams(targetUrl, params.keySet());
+        targetUrl = NetUtil.mergeParams(targetUrl, params, StandardCharsets.UTF_8.name());
         return targetUrl;
     }
 
