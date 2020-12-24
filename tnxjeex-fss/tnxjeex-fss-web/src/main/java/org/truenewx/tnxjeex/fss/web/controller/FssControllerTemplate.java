@@ -172,27 +172,24 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     public String transfer(FssTransferCommand command) {
         String type = command.getType();
         String url = command.getUrl();
-        if (StringUtils.isNotBlank(type) && url != null) {
-//            url = URLDecoder.decode(url, StandardCharsets.UTF_8);
-            if (url.startsWith("http://") || url.startsWith("https://")) {
-                try {
-                    String filename = getFilename(url, command.getExtension());
-                    File root = new ClassPathResource(".").getFile().getParentFile().getParentFile().getParentFile()
-                            .getParentFile();
-                    String fileId = StringUtil.uuid32();
-                    File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
-                    NetUtil.download(url, null, file);
-                    FssUploadedFileMeta meta = write(type, command.getModelIdentity(), fileId, filename,
-                            new FileInputStream(file), true);
-                    // 在独立线程中删除临时文件，以免影响正常流程
-                    this.executor.execute(file::delete);
-                    return meta.getStorageUrl();
-                } catch (IOException e) {
-                    LogUtil.error(getClass(), e);
-                }
+        if (StringUtils.isNotBlank(type) && url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+            try {
+                String filename = getFilename(url, command.getExtension());
+                File root = new ClassPathResource(".").getFile().getParentFile().getParentFile().getParentFile()
+                        .getParentFile();
+                String fileId = StringUtil.uuid32();
+                File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
+                NetUtil.download(url, null, file);
+                FssUploadedFileMeta meta = write(type, command.getModelIdentity(), fileId, filename,
+                        new FileInputStream(file), true);
+                // 在独立线程中删除临时文件，以免影响正常流程
+                this.executor.execute(file::delete);
+                return meta.getStorageUrl();
+            } catch (IOException e) {
+                LogUtil.error(getClass(), e);
             }
         }
-        return command.getUrl(); // url变量中途已被改变
+        return command.getUrl(); // url变量可能已被改变，此处需返回原始URL
     }
 
     private String getFilename(String url, String extension) {

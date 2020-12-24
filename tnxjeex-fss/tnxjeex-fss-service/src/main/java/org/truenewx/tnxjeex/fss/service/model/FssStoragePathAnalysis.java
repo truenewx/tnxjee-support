@@ -2,6 +2,7 @@ package org.truenewx.tnxjeex.fss.service.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 
 /**
  * 文件存储服务的存储路径分析
@@ -9,6 +10,8 @@ import org.truenewx.tnxjee.core.Strings;
  * @author jianglei
  */
 public class FssStoragePathAnalysis {
+
+    private static final String PROTOCOL = FssFileMeta.STORAGE_URL_PROTOCOL;
 
     private String type;
     private String relativePath;
@@ -19,8 +22,8 @@ public class FssStoragePathAnalysis {
     }
 
     public static FssStoragePathAnalysis of(String s) {
-        if (s.startsWith("fss://")) {
-            s = s.substring(5);
+        if (s.startsWith(PROTOCOL)) {
+            s = s.substring(PROTOCOL.length() - 1);
         } else if (s.startsWith("//")) {
             s = s.substring(1);
         }
@@ -52,7 +55,7 @@ public class FssStoragePathAnalysis {
     }
 
     public String getUrl() {
-        return isValid() ? "fss:/" + toString() : null;
+        return isValid() ? (PROTOCOL.substring(0, PROTOCOL.length() - 1) + toString()) : null;
     }
 
     @Override
