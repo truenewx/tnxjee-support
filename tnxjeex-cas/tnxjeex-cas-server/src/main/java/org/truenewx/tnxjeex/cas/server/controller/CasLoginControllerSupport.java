@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
@@ -63,9 +64,11 @@ public abstract class CasLoginControllerSupport {
                 }
                 this.redirectStrategy.sendRedirect(request, response, targetUrl);
             } else { // AJAX登录只能进行自动登录，否则报401
-                String url = request.getRequestURL().toString();
-                url += "?service=" + service;
-                response.setHeader(WebConstants.HEADER_LOGIN_URL, url);
+                StringBuffer url = request.getRequestURL();
+                StringUtil.ifNotBlank(request.getQueryString(), queryString -> {
+                    url.append(Strings.QUESTION).append(queryString);
+                });
+                response.setHeader(WebConstants.HEADER_LOGIN_URL, url.toString()); // 将当前ajax请求URL作为登录URL返回
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
             return null;

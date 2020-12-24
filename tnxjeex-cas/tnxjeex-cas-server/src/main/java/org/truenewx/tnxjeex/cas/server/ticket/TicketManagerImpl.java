@@ -126,7 +126,11 @@ public class TicketManagerImpl implements TicketManager {
                 String serviceTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);
                 serviceTicket = new ServiceTicket(serviceTicketId);
                 serviceTicket.setService(service);
-                serviceTicket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
+                UserSpecificDetails<?> userDetails = SecurityUtil.getAuthorizedUserDetails();
+                if (userDetails == null) {
+                    // TODO 登录用户细节从ServiceTicket迁移至TicketGrantingTicket
+                }
+                serviceTicket.setUserDetails(userDetails);
                 serviceTicket.setCreateTime(now);
                 // 所属票据授权票据的过期时间即为服务票据的过期时间
                 serviceTicket.setExpiredTime(ticketGrantingTicket.getExpiredTime());
@@ -163,6 +167,9 @@ public class TicketManagerImpl implements TicketManager {
             return null;
         }
         UserSpecificDetails<?> userDetails = serviceTicket.getUserDetails();
+        if (userDetails == null) {
+            return null;
+        }
         String name = userDetails.getIdentity().toString();
         Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
                 "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");

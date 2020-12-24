@@ -32,6 +32,7 @@ public class CasClientLoginSecurityConfigurer
 
     @Override
     protected void configure(HttpSecurity http, CasClientLoginProcessingFilter filter) {
+        filter.setApplicationEventPublisher(getApplicationContext());
         filter.setRedirectStrategy(this.redirectStrategy);
         filter.acceptSuccessHandler(handler -> {
             handler.setTargetUrlParameter(this.apiMetaProperties.getLoginSuccessRedirectParameter());
