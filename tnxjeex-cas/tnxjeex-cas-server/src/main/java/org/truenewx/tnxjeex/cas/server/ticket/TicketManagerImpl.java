@@ -1,7 +1,10 @@
 package org.truenewx.tnxjeex.cas.server.ticket;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +58,7 @@ public class TicketManagerImpl implements TicketManager {
         String ticketGrantingTicketId = TICKET_GRANTING_TICKET_PREFIX
                 + EncryptUtil.encryptByMd5(session.getId() + System.currentTimeMillis());
         TicketGrantingTicket ticketGrantingTicket = new TicketGrantingTicket(ticketGrantingTicketId);
+        ticketGrantingTicket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
         Date createTime = new Date();
         ticketGrantingTicket.setCreateTime(createTime);
         Duration timeout = this.serverProperties.getServlet().getSession().getTimeout();
@@ -119,22 +123,19 @@ public class TicketManagerImpl implements TicketManager {
     public String getServiceTicket(HttpServletRequest request, String service) {
         TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
-            ServiceTicket serviceTicket = ticketGrantingTicket.getServiceTicketByService(service);
+            String ticketGrantingTicketId = ticketGrantingTicket.getId();
+            ServiceTicket serviceTicket = this.serviceTicketRepo
+                    .findFirstByTicketGrantingTicketIdAndService(ticketGrantingTicketId, service);
             if (serviceTicket == null) { // 不存在则创建新的
                 Date now = new Date();
-                String text = ticketGrantingTicket.getId() + Strings.MINUS + service + Strings.MINUS + now.getTime();
+                String text = ticketGrantingTicketId + Strings.MINUS + service + Strings.MINUS + now.getTime();
                 String serviceTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);
                 serviceTicket = new ServiceTicket(serviceTicketId);
+                serviceTicket.setTicketGrantingTicket(ticketGrantingTicket);
                 serviceTicket.setService(service);
-                UserSpecificDetails<?> userDetails = SecurityUtil.getAuthorizedUserDetails();
-                if (userDetails == null) {
-                    // TODO 登录用户细节从ServiceTicket迁移至TicketGrantingTicket
-                }
-                serviceTicket.setUserDetails(userDetails);
                 serviceTicket.setCreateTime(now);
                 // 所属票据授权票据的过期时间即为服务票据的过期时间
                 serviceTicket.setExpiredTime(ticketGrantingTicket.getExpiredTime());
-                ticketGrantingTicket.getServiceTickets().add(serviceTicket);
                 this.serviceTicketRepo.save(serviceTicket);
             }
             return serviceTicket.getId();
@@ -147,14 +148,12 @@ public class TicketManagerImpl implements TicketManager {
             HttpServletResponse response) {
         TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
-            Collection<ServiceTicket> serviceTickets = ticketGrantingTicket.getServiceTickets();
-            serviceTickets.forEach(serviceTicket -> {
-                this.serviceTicketRepo.delete(serviceTicket);
-            });
+            Collection<ServiceTicket> serviceTickets = this.serviceTicketRepo
+                    .deleteByTicketGrantingTicketId(ticketGrantingTicket.getId());
             this.ticketGrantingTicketRepo.delete(ticketGrantingTicket);
             // 按照CAS规范将TGT从Cookie移除
             WebUtil.removeCookie(request, response, TGT_NAME);
-            return new ArrayList<>(serviceTickets);
+            return serviceTickets;
         }
         return Collections.emptyList();
     }
@@ -166,10 +165,7 @@ public class TicketManagerImpl implements TicketManager {
         if (serviceTicket == null || !serviceTicket.getService().equals(service)) {
             return null;
         }
-        UserSpecificDetails<?> userDetails = serviceTicket.getUserDetails();
-        if (userDetails == null) {
-            return null;
-        }
+        UserSpecificDetails<?> userDetails = serviceTicket.getTicketGrantingTicket().getUserDetails();
         String name = userDetails.getIdentity().toString();
         Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
                 "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");

@@ -1,5 +1,6 @@
 package org.truenewx.tnxjeex.cas.server.repo;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
@@ -13,6 +14,8 @@ public interface ServiceTicketRepo {
 
     Optional<ServiceTicket> findById(String id);
 
-    void delete(ServiceTicket unity);
+    ServiceTicket findFirstByTicketGrantingTicketIdAndService(String ticketGrantingTicketId, String service);
+
+    Collection<ServiceTicket> deleteByTicketGrantingTicketId(String ticketGrantingTicketId);
 
 }

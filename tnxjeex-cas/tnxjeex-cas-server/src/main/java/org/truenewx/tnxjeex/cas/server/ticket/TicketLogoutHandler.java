@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
-import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
@@ -20,6 +19,11 @@ import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
  */
 @Component
 public class TicketLogoutHandler implements LogoutHandler {
+
+    /**
+     * 登出服务Cookie值的分隔符
+     */
+    public static final String LOGOUT_SERVICES_COOKIE_VALUE_SEPARATOR = "|";
 
     @Autowired
     private TicketManager ticketManager;
@@ -40,13 +44,14 @@ public class TicketLogoutHandler implements LogoutHandler {
                 String service = ticket.getService();
                 // 尽量排除当前登出服务，以尽量缩短Cookie值长度
                 if (logoutService == null || !logoutService.equals(service)) {
-                    services.append(Strings.SPACE).append(service); // Cookie不支持逗号，用空格作为分隔符
+                    services.append(LOGOUT_SERVICES_COOKIE_VALUE_SEPARATOR)
+                            .append(service); // Cookie中不允许使用[ ] ( ) = , " / ? @ : ;
                 }
             }
             if (services.length() > 0) {
                 services.deleteCharAt(0);
-                WebUtil.addCookie(request, response, CasServerConstants.COOKIE_LOGOUT_SERVICES,
-                        services.toString(), 10);
+                WebUtil.addCookie(request, response, CasServerConstants.COOKIE_LOGOUT_SERVICES, services.toString(),
+                        10);
             }
         }
     }

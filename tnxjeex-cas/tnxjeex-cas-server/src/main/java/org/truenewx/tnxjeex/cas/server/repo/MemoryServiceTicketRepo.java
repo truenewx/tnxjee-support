@@ -1,8 +1,6 @@
 package org.truenewx.tnxjeex.cas.server.repo;
 
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 
@@ -11,12 +9,19 @@ import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
  */
 public class MemoryServiceTicketRepo implements ServiceTicketRepo {
 
-    private Map<String, ServiceTicket> dataMapping = new Hashtable<>();
+    private final Map<String, ServiceTicket> dataMapping = new Hashtable<>(); // serviceTicketId - serviceTicket
+    private final Map<String, Set<String>> ticketIdMapping = new Hashtable<>(); // ticketGrantingTicketId - serviceTicketIds
 
     @Override
     public void save(ServiceTicket unity) {
         if (unity != null) {
-            this.dataMapping.put(unity.getId(), unity);
+            synchronized (this.ticketIdMapping) {
+                String id = unity.getId();
+                this.dataMapping.put(id, unity);
+                String ticketGrantingTicketId = unity.getTicketGrantingTicket().getId();
+                Set<String> ids = this.ticketIdMapping.computeIfAbsent(ticketGrantingTicketId, key -> new HashSet<>());
+                ids.add(id);
+            }
         }
     }
 
@@ -26,10 +31,34 @@ public class MemoryServiceTicketRepo implements ServiceTicketRepo {
     }
 
     @Override
-    public void delete(ServiceTicket unity) {
-        if (unity != null) {
-            this.dataMapping.remove(unity.getId());
+    public ServiceTicket findFirstByTicketGrantingTicketIdAndService(String ticketGrantingTicketId, String service) {
+        Set<String> ids = this.ticketIdMapping.get(ticketGrantingTicketId);
+        if (ids != null) {
+            for (String id : ids) {
+                ServiceTicket serviceTicket = this.dataMapping.get(id);
+                if (serviceTicket != null && serviceTicket.getService().equals(service)) {
+                    return serviceTicket;
+                }
+            }
         }
+        return null;
+    }
+
+    @Override
+    public Collection<ServiceTicket> deleteByTicketGrantingTicketId(String ticketGrantingTicketId) {
+        Collection<ServiceTicket> result = new ArrayList<>();
+        synchronized (this.ticketIdMapping) {
+            Set<String> ids = this.ticketIdMapping.remove(ticketGrantingTicketId);
+            if (ids != null) {
+                for (String id : ids) {
+                    ServiceTicket serviceTicket = this.dataMapping.remove(id);
+                    if (serviceTicket != null) {
+                        result.add(serviceTicket);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 }
