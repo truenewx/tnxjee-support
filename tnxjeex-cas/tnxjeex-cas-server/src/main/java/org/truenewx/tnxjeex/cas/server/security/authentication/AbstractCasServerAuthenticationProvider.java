@@ -37,7 +37,7 @@ public abstract class AbstractCasServerAuthenticationProvider<A extends Authenti
                 if (userDetails == null) {
                     throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_AUTHENTICATE_MODE, userType);
                 }
-                return new CasUserSpecificDetailsAuthenticationToken(service, userDetails, ip);
+                return new CasUserSpecificDetailsAuthenticationToken(userDetails, service, scope, ip);
             } catch (BusinessException e) {
                 throw new BadCredentialsException(e.getLocalizedMessage(), e);
             }

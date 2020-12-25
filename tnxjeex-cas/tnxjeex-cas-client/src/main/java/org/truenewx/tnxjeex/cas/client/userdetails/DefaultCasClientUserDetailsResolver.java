@@ -10,9 +10,9 @@ import org.truenewx.tnxjee.model.spec.user.DefaultUserIdentity;
 import org.truenewx.tnxjee.model.spec.user.security.DefaultUserSpecificDetails;
 
 /**
- * 默认的用户细节解决器
+ * 默认的Cas客户端用户细节解决器
  */
-public class DefaultUserDetailsResolver implements UserDetailsResolver {
+public class DefaultCasClientUserDetailsResolver implements CasClientUserDetailsResolver {
 
     @Override
     @SuppressWarnings("unchecked")

@@ -22,7 +22,7 @@ public interface TicketManager extends Service {
 
     boolean checkTicketGrantingTicket(HttpServletRequest request);
 
-    String getServiceTicket(HttpServletRequest request, String service);
+    String getServiceTicket(HttpServletRequest request, String service, String scope);
 
     Collection<ServiceTicket> deleteTicketGrantingTicket(HttpServletRequest request,
             HttpServletResponse response);

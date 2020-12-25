@@ -45,7 +45,7 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public String getLoginProcessUrl(HttpServletRequest request, String service) {
+    public String getLoginProcessUrl(HttpServletRequest request, String service, String scope) {
         String loginUrl = obtainServiceConfiguration(service).getLoginProcessUrl();
         int index = loginUrl.indexOf(Strings.QUESTION);
         if (index < 0) {
@@ -53,7 +53,7 @@ public class CasServiceManagerImpl implements CasServiceManager {
         } else {
             loginUrl += Strings.AND;
         }
-        loginUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service);
+        loginUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service, scope);
         return loginUrl;
     }
 

@@ -20,12 +20,12 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
- * 服务控制器
+ * Cas服务端服务控制器
  *
  * @author jianglei
  */
 @Controller
-public class ServiceController {
+public class CasServerServiceController {
 
     @Autowired
     private CasServiceManager serviceManager;

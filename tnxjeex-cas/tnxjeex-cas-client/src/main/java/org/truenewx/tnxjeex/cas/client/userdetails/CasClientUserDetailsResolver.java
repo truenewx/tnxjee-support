@@ -4,9 +4,9 @@ import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * 用户细节解决器
+ * Cas客户端用户细节解决器
  */
-public interface UserDetailsResolver {
+public interface CasClientUserDetailsResolver {
 
     UserDetails resolveUserDetails(AttributePrincipal principal);
 

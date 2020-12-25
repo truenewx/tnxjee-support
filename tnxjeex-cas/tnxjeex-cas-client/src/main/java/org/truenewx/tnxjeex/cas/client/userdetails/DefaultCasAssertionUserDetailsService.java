@@ -13,10 +13,10 @@ import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 @Component
 public class DefaultCasAssertionUserDetailsService extends AbstractCasAssertionUserDetailsService {
 
-    private UserDetailsResolver userDetailsResolver = new DefaultUserDetailsResolver();
+    private CasClientUserDetailsResolver userDetailsResolver = new DefaultCasClientUserDetailsResolver();
 
     @Autowired(required = false)
-    public void setUserDetailsResolver(UserDetailsResolver userDetailsResolver) {
+    public void setUserDetailsResolver(CasClientUserDetailsResolver userDetailsResolver) {
         this.userDetailsResolver = userDetailsResolver;
     }
 

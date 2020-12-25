@@ -10,11 +10,14 @@ public class CasUserSpecificDetailsAuthenticationToken extends UserSpecificDetai
 
     private static final long serialVersionUID = -2997803056699252908L;
 
-    private final String service;
+    private String service;
+    private String scope;
 
-    public CasUserSpecificDetailsAuthenticationToken(String service, UserSpecificDetails<?> details, String ip) {
+    public CasUserSpecificDetailsAuthenticationToken(UserSpecificDetails<?> details, String service, String scope,
+            String ip) {
         super(details);
         this.service = service;
+        this.scope = scope;
         setIp(ip);
     }
 
@@ -22,4 +25,7 @@ public class CasUserSpecificDetailsAuthenticationToken extends UserSpecificDetai
         return this.service;
     }
 
+    public String getScope() {
+        return this.scope;
+    }
 }

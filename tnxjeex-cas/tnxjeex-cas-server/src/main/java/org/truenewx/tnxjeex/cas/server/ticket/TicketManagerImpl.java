@@ -30,6 +30,7 @@ import org.truenewx.tnxjeex.cas.server.repo.MemoryServiceTicketRepo;
 import org.truenewx.tnxjeex.cas.server.repo.MemoryTicketGrantingTicketRepo;
 import org.truenewx.tnxjeex.cas.server.repo.ServiceTicketRepo;
 import org.truenewx.tnxjeex.cas.server.repo.TicketGrantingTicketRepo;
+import org.truenewx.tnxjeex.cas.server.security.authentication.CasServerUserSpecificDetailsScopeSwitch;
 
 /**
  * 票据管理器实现
@@ -38,6 +39,8 @@ import org.truenewx.tnxjeex.cas.server.repo.TicketGrantingTicketRepo;
 public class TicketManagerImpl implements TicketManager {
     @Autowired
     private ServerProperties serverProperties;
+    @Autowired(required = false) // 没有登录范围区别的系统没有范围切换器实现
+    private CasServerUserSpecificDetailsScopeSwitch userSpecificDetailsScopeSwitch;
     private TicketGrantingTicketRepo ticketGrantingTicketRepo = new MemoryTicketGrantingTicketRepo();
     private ServiceTicketRepo serviceTicketRepo = new MemoryServiceTicketRepo();
 
@@ -55,8 +58,8 @@ public class TicketManagerImpl implements TicketManager {
     @WriteTransactional
     public void createTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession();
-        String ticketGrantingTicketId = TICKET_GRANTING_TICKET_PREFIX
-                + EncryptUtil.encryptByMd5(session.getId() + System.currentTimeMillis());
+        String ticketGrantingTicketId = TICKET_GRANTING_TICKET_PREFIX + EncryptUtil
+                .encryptByMd5(session.getId() + System.currentTimeMillis());
         TicketGrantingTicket ticketGrantingTicket = new TicketGrantingTicket(ticketGrantingTicketId);
         ticketGrantingTicket.setUserDetails(SecurityUtil.getAuthorizedUserDetails());
         Date createTime = new Date();
@@ -120,13 +123,21 @@ public class TicketManagerImpl implements TicketManager {
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
     @Override
     @WriteTransactional
-    public String getServiceTicket(HttpServletRequest request, String service) {
+    public String getServiceTicket(HttpServletRequest request, String service, String scope) {
         TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
             String ticketGrantingTicketId = ticketGrantingTicket.getId();
             ServiceTicket serviceTicket = this.serviceTicketRepo
                     .findFirstByTicketGrantingTicketIdAndService(ticketGrantingTicketId, service);
             if (serviceTicket == null) { // 不存在则创建新的
+                // 创建新的服务票据前，先进行可能的范围切换动作
+                if (this.userSpecificDetailsScopeSwitch != null) {
+                    UserSpecificDetails<?> userDetails = ticketGrantingTicket.getUserDetails();
+                    if (this.userSpecificDetailsScopeSwitch.switchScope(userDetails, scope)) {
+                        this.ticketGrantingTicketRepo.save(ticketGrantingTicket);
+                    }
+                }
+
                 Date now = new Date();
                 String text = ticketGrantingTicketId + Strings.MINUS + service + Strings.MINUS + now.getTime();
                 String serviceTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);

@@ -24,10 +24,10 @@ import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
- * 登录控制器
+ * Cas服务端登录控制器
  */
 @RequestMapping("/login")
-public abstract class CasLoginControllerSupport {
+public abstract class CasServerLoginControllerSupport {
 
     @Autowired
     private ResolvableExceptionAuthenticationFailureHandler authenticationFailureHandler;
@@ -42,7 +42,8 @@ public abstract class CasLoginControllerSupport {
 
     @GetMapping
     public ModelAndView get(@RequestParam(value = "service", required = false) String service,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
+            @RequestParam(value = "scope", required = false) String scope, HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         if (StringUtils.isBlank(service)) {
             service = getDefaultService();
             if (StringUtils.isBlank(service)) {
@@ -57,7 +58,7 @@ public abstract class CasLoginControllerSupport {
                 response.setHeader(WebConstants.HEADER_ORIGINAL_REQUEST, originalRequest);
             }
             if (this.ticketManager.checkTicketGrantingTicket(request)) {
-                String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
+                String targetUrl = this.serviceManager.getLoginProcessUrl(request, service, scope);
                 if (originalRequest != null) {
                     String originalUrl = originalRequest.substring(originalRequest.indexOf(Strings.SPACE) + 1);
                     targetUrl = NetUtil.mergeParam(targetUrl, redirectParameter, originalUrl);
@@ -74,7 +75,7 @@ public abstract class CasLoginControllerSupport {
             return null;
         } else {
             if (this.ticketManager.checkTicketGrantingTicket(request)) {
-                String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
+                String targetUrl = this.serviceManager.getLoginProcessUrl(request, service, scope);
                 String redirectUrl = request.getParameter(redirectParameter);
                 if (StringUtils.isNotBlank(redirectUrl)) {
                     targetUrl = NetUtil.mergeParam(targetUrl, redirectParameter, redirectUrl);

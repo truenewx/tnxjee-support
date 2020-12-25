@@ -34,7 +34,8 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
         this.ticketManager.createTicketGrantingTicket(request, response);
         CasUserSpecificDetailsAuthenticationToken token = (CasUserSpecificDetailsAuthenticationToken) authentication;
         String service = token.getService();
-        String targetUrl = this.serviceManager.getLoginProcessUrl(request, service);
+        String scope = token.getScope();
+        String targetUrl = this.serviceManager.getLoginProcessUrl(request, service, scope);
         Map<String, Object> parameters = WebUtil.getRequestParameterMap(request, "username",
                 "password", CasServerConstants.PARAMETER_SERVICE,
                 CasServerConstants.PARAMETER_SCOPE);
