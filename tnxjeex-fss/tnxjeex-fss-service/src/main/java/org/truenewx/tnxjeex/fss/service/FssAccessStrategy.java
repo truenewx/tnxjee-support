@@ -41,7 +41,7 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
     }
 
     /**
-     * 获取存储路径上下文根，要求在同一个系统中唯一
+     * 获取存储路径上下文根，要求在同一个系统中唯一。其与存储类型对应，不被包含在存储路径中
      *
      * @return 存储路径上下文根
      */
