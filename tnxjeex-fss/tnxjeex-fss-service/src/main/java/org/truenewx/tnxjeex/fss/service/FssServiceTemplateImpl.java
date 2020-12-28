@@ -21,7 +21,7 @@ import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
-import org.truenewx.tnxjeex.fss.service.model.FssStoragePathAnalysis;
+import org.truenewx.tnxjeex.fss.service.model.FssStoragePath;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
 /**
@@ -69,37 +69,34 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     }
 
     @Override
-    public String write(String type, String modelIdentity, I userIdentity, String filename, InputStream in)
-            throws IOException {
+    public String write(String type, String scope, I userIdentity, String filename, InputStream in) throws IOException {
         FssAccessStrategy<I> strategy = getStrategy(type);
+        // 校验扩展名
         String extension = validateExtension(strategy, userIdentity, filename);
-        FssProvider provider = strategy.getProvider();
+        // 获取相对目录，同时校验写权限
+        String relativeDir = strategy.getRelativeDir(scope, userIdentity);
+        if (relativeDir == null) {
+            throw new BusinessException(FssExceptionCodes.NO_WRITE_AUTHORITY);
+        }
         // 用BufferedInputStream装载以确保输入流可以标记和重置位置
         in = new BufferedInputStream(in);
         in.mark(Integer.MAX_VALUE);
-        String relativePath;
-        if (strategy.isMd5AsFilename()) {
-            String md5Code = EncryptUtil.encryptByMd5(in);
-            in.reset();
-            relativePath = strategy.getRelativePath(modelIdentity, userIdentity, md5Code + extension);
-        } else {
-            relativePath = strategy.getRelativePath(modelIdentity, userIdentity, filename);
-        }
-        if (relativePath == null) {
-            throw new BusinessException(FssExceptionCodes.NO_WRITE_AUTHORITY);
-        }
-        relativePath = NetUtil.standardizeUrl(relativePath);
-
+        String md5Code = EncryptUtil.encryptByMd5(in);
+        in.reset();
+        String storageFilename = md5Code + extension; // 存储文件名
+        FssStoragePath fsp = new FssStoragePath(type, NetUtil.standardizeUrl(relativeDir), storageFilename);
         String contextPath = NetUtil.standardizeUrl(strategy.getContextPath());
-        String path = contextPath + relativePath;
+        String storagePath = contextPath + fsp.getRelativePath();
+
+        FssProvider provider = strategy.getProvider();
         FssAccessor accessor = this.accessors.get(provider);
-        accessor.write(in, path, filename);
+        accessor.write(in, storagePath, filename);
         // 写好文件之后，如果访问策略是公开匿名可读，则还需要进行相应授权，不过本地自有提供商无需进行授权
         if (strategy.isPublicReadable() && provider != FssProvider.OWN) {
             FssAuthorizer authorizer = this.authorizers.get(provider);
-            authorizer.authorizePublicRead(path);
+            authorizer.authorizePublicRead(storagePath);
         }
-        return new FssStoragePathAnalysis(type, relativePath).getUrl();
+        return fsp.getUrl();
     }
 
     private String validateExtension(FssAccessStrategy<I> strategy, I user, String filename) {
@@ -127,21 +124,21 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
 
     @Override
     public String getReadUrl(I userIdentity, String storageUrl, boolean thumbnail) {
-        FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(storageUrl);
-        // spa为null说明指定存储路径不满足内部存储路径格式
-        return spa == null ? storageUrl : getReadUrl(userIdentity, spa, thumbnail);
+        FssStoragePath fsp = FssStoragePath.of(storageUrl);
+        // fsp为null说明指定存储路径不满足内部存储路径格式
+        return fsp == null ? storageUrl : getReadUrl(userIdentity, fsp, thumbnail);
     }
 
-    private String getReadUrl(I userIdentity, FssStoragePathAnalysis spa, boolean thumbnail) {
-        if (spa != null && spa.isValid()) {
-            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
+    private String getReadUrl(I userIdentity, FssStoragePath fsp, boolean thumbnail) {
+        if (fsp != null && fsp.isValid()) {
+            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, fsp);
             FssProvider provider = strategy.getProvider();
             if (provider == FssProvider.OWN) {
                 // 本地自有提供商的读取URL与存储URL保持一致，以便于读取时判断所属访问策略
-                return spa.toString();
+                return fsp.toString();
             } else {
                 FssAuthorizer authorizer = this.authorizers.get(provider);
-                String path = strategy.getContextPath() + spa.getRelativePath();
+                String path = strategy.getContextPath() + fsp.getRelativePath();
                 if (thumbnail) {
                     path = appendThumbnailParameters(strategy, path);
                 }
@@ -174,28 +171,28 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
         return path;
     }
 
-    private FssAccessStrategy<I> validateUserRead(I userIdentity, FssStoragePathAnalysis spa) {
-        if (spa != null && spa.isValid()) {
-            FssAccessStrategy<I> strategy = this.strategies.get(spa.getType());
-            if (strategy != null && strategy.isReadable(userIdentity, spa.getRelativePath())) {
+    private FssAccessStrategy<I> validateUserRead(I userIdentity, FssStoragePath fsp) {
+        if (fsp.isValid()) {
+            FssAccessStrategy<I> strategy = this.strategies.get(fsp.getType());
+            if (strategy != null && strategy.isReadable(userIdentity, fsp.getRelativeDir())) {
                 return strategy;
             }
         }
-        throw new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, spa.getUrl());
+        throw new BusinessException(FssExceptionCodes.NO_READ_AUTHORITY, fsp.getUrl());
     }
 
     @Override
     public FssFileMeta getMeta(I userIdentity, String storageUrl) {
         if (StringUtils.isNotBlank(storageUrl)) {
-            FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(storageUrl);
-            if (spa != null) {
-                FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
+            FssStoragePath fsp = FssStoragePath.of(storageUrl);
+            if (fsp != null) {
+                FssAccessStrategy<I> strategy = validateUserRead(userIdentity, fsp);
                 FssAccessor accessor = this.accessors.get(strategy.getProvider());
-                String path = strategy.getContextPath() + spa.getRelativePath();
-                String filename = accessor.getFilename(path);
+                String path = strategy.getContextPath() + fsp.getRelativePath();
+                String filename = accessor.getOriginalFilename(path);
                 if (filename != null) {
-                    String thumbnailReadUrl = getReadUrl(userIdentity, spa, true);
-                    String readUrl = getReadUrl(userIdentity, spa, false);
+                    String thumbnailReadUrl = getReadUrl(userIdentity, fsp, true);
+                    String readUrl = getReadUrl(userIdentity, fsp, false);
                     return new FssFileMeta(filename, storageUrl, readUrl, thumbnailReadUrl);
                 }
             }
@@ -206,21 +203,26 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     @Override
     public Long getLastModifiedTime(I userIdentity, String path) {
         path = NetUtil.standardizeUrl(path);
-        FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(path);
-        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
-        FssAccessor accessor = this.accessors.get(strategy.getProvider());
-        path = strategy.getContextPath() + spa.getRelativePath();
-        return accessor.getLastModifiedTime(path);
+        FssStoragePath fsp = FssStoragePath.of(path);
+        if (fsp != null) {
+            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, fsp);
+            FssAccessor accessor = this.accessors.get(strategy.getProvider());
+            path = strategy.getContextPath() + fsp.getRelativePath();
+            return accessor.getLastModifiedTime(path);
+        }
+        return null;
     }
 
     @Override
     public void read(I userIdentity, String path, OutputStream out) throws IOException {
         path = NetUtil.standardizeUrl(path);
-        FssStoragePathAnalysis spa = FssStoragePathAnalysis.of(path);
-        FssAccessStrategy<I> strategy = validateUserRead(userIdentity, spa);
-        FssAccessor accessor = this.accessors.get(strategy.getProvider());
-        path = strategy.getContextPath() + spa.getRelativePath();
-        accessor.read(path, out);
+        FssStoragePath fsp = FssStoragePath.of(path);
+        if (fsp != null) {
+            FssAccessStrategy<I> strategy = validateUserRead(userIdentity, fsp);
+            FssAccessor accessor = this.accessors.get(strategy.getProvider());
+            path = strategy.getContextPath() + fsp.getRelativePath();
+            accessor.read(path, out);
+        }
     }
 
 }

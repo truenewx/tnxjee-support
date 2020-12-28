@@ -32,15 +32,6 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
     FssUploadLimit getUploadLimit(I userIdentity);
 
     /**
-     * 是否将上传文件的MD5码作为文件名
-     *
-     * @return 是否将上传文件的MD5码作为文件名
-     */
-    default boolean isMd5AsFilename() {
-        return false;
-    }
-
-    /**
      * 获取存储路径上下文根，要求在同一个系统中唯一。其与存储类型对应，不被包含在存储路径中
      *
      * @return 存储路径上下文根
@@ -50,14 +41,13 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
     }
 
     /**
-     * 获取指定资源的相对于上下文根的存储路径（含扩展名）
+     * 获取指定资源的相对于上下文根的存储目录，不包含最后一级的文件名，文件名由框架自动加在路径中
      *
-     * @param modelIdentity 业务模型标识
-     * @param userIdentity  用户标识
-     * @param filename      原始文件名，含扩展名
-     * @return 相对于上下文根的存储路径，返回null表示没有写权限
+     * @param scope        业务范围
+     * @param userIdentity 用户标识。登录用户才能写资源，所以此处一定不为null
+     * @return 相对于上下文根的存储目录，返回null表示没有写权限
      */
-    String getRelativePath(String modelIdentity, I userIdentity, String filename);
+    String getRelativeDir(String scope, I userIdentity);
 
     /**
      * @return 是否公开匿名可读
@@ -70,10 +60,10 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
      * 判断指定用户对指定相对路径是否可读
      *
      * @param userIdentity 用户标识
-     * @param relativePath 相对路径
-     * @return 指定用户对指定相对路径是否可读
+     * @param relativeDir  相对目录，不包含文件名
+     * @return 指定用户对指定相对目录是否可读
      */
-    default boolean isReadable(I userIdentity, String relativePath) {
+    default boolean isReadable(I userIdentity, String relativeDir) {
         return isPublicReadable();
     }
 

@@ -1,11 +1,6 @@
 package org.truenewx.tnxjeex.fss.service.own;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
@@ -99,7 +94,7 @@ public class OwnFssAccessor implements FssAccessor {
     }
 
     @Override
-    public String getFilename(String path) {
+    public String getOriginalFilename(String path) {
         try {
             File file = getStorageFile(path);
             if (file.exists()) {

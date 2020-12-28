@@ -85,11 +85,12 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         return upload(type, null, request);
     }
 
-    @PostMapping("/upload/{type}/{modelIdentity}")
+    // 指定业务范围上传
+    @PostMapping("/upload/{type}/{scope}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type,
-            @PathVariable("modelIdentity") String modelIdentity, MultipartHttpServletRequest request) {
+    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type, @PathVariable("scope") String scope,
+            MultipartHttpServletRequest request) {
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
         Collection<MultipartFile> files = request.getFiles("files");
@@ -100,7 +101,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             try {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
-                FssUploadedFileMeta result = write(type, modelIdentity, fileId, filename, in, onlyStorage);
+                FssUploadedFileMeta result = write(type, scope, fileId, filename, in, onlyStorage);
                 results.add(result);
             } catch (IOException e) {
                 LogUtil.error(getClass(), e);
@@ -109,11 +110,11 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         return results;
     }
 
-    private FssUploadedFileMeta write(String type, String modelIdentity, String fileId, String filename, InputStream in,
+    private FssUploadedFileMeta write(String type, String scope, String fileId, String filename, InputStream in,
             boolean onlyStorage) throws IOException {
         // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
         I userIdentity = getUserIdentity();
-        String storageUrl = this.service.write(type, modelIdentity, userIdentity, filename, in);
+        String storageUrl = this.service.write(type, scope, userIdentity, filename, in);
         in.close();
 
         FssUploadedFileMeta result;
@@ -180,7 +181,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                 String fileId = StringUtil.uuid32();
                 File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
                 NetUtil.download(url, null, file);
-                FssUploadedFileMeta meta = write(type, command.getModelIdentity(), fileId, filename,
+                FssUploadedFileMeta meta = write(type, command.getScope(), fileId, filename,
                         new FileInputStream(file), true);
                 // 在独立线程中删除临时文件，以免影响正常流程
                 this.executor.execute(file::delete);

@@ -8,7 +8,7 @@ public class FssTransferCommand {
     private String type;
     private String url;
     private String extension;
-    private String modelIdentity;
+    private String scope;
 
     public String getType() {
         return this.type;
@@ -34,12 +34,12 @@ public class FssTransferCommand {
         this.extension = extension;
     }
 
-    public String getModelIdentity() {
-        return this.modelIdentity;
+    public String getScope() {
+        return this.scope;
     }
 
-    public void setModelIdentity(String modelIdentity) {
-        this.modelIdentity = modelIdentity;
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
 }

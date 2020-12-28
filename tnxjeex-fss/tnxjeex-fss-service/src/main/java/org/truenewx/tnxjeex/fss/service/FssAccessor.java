@@ -12,7 +12,7 @@ import org.truenewx.tnxjeex.fss.service.model.FssProvider;
  * @author jianglei
  */
 public interface FssAccessor {
-    
+
     FssProvider getProvider();
 
     void write(InputStream in, String path, String filename) throws IOException;
@@ -23,7 +23,7 @@ public interface FssAccessor {
      * @param path 文件路径
      * @return 原始文件名
      */
-    String getFilename(String path);
+    String getOriginalFilename(String path);
 
     /**
      * 获取指定文件的最后修改时间

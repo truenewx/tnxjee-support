@@ -40,7 +40,7 @@ public class AliyunFssAccessor implements FssAccessor {
     }
 
     @Override
-    public String getFilename(String path) {
+    public String getOriginalFilename(String path) {
         try {
             ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.bucket, path);
             return meta.getUserMetadata().get("filename");

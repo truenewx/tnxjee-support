@@ -29,15 +29,15 @@ public interface FssServiceTemplate<I extends UserIdentity<?>> extends Service {
     /**
      * 指定用户在业务授权类型下写文件
      *
-     * @param type          业务类型
-     * @param modelIdentity 业务模型标识
-     * @param userIdentity  用户标识
-     * @param filename      文件名
-     * @param in            输入流
+     * @param type         业务类型
+     * @param scope        业务模型标识
+     * @param userIdentity 用户标识
+     * @param filename     文件名
+     * @param in           输入流
      * @return 写好的文件的存储URL
      * @throws IOException 如果写的过程中出现错误
      */
-    String write(String type, String modelIdentity, I userIdentity, String filename, InputStream in)
+    String write(String type, String scope, I userIdentity, String filename, InputStream in)
             throws IOException;
 
     /**
