@@ -2,7 +2,6 @@ package org.truenewx.tnxjeex.fss.service;
 
 import java.util.Map;
 
-import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
@@ -36,9 +35,7 @@ public interface FssAccessStrategy<I extends UserIdentity<?>> {
      *
      * @return 存储路径上下文根
      */
-    default String getContextPath() {
-        return Strings.SLASH + getType();
-    }
+    String getContextPath();
 
     /**
      * 获取指定资源的相对于上下文根的存储目录，不包含最后一级的文件名，文件名由框架自动加在路径中
