@@ -33,10 +33,10 @@ import org.truenewx.tnxjeex.cas.server.repo.TicketGrantingTicketRepo;
 import org.truenewx.tnxjeex.cas.server.security.authentication.CasServerUserSpecificDetailsScopeSwitch;
 
 /**
- * 票据管理器实现
+ * CAS票据管理器实现
  */
 @Service
-public class TicketManagerImpl implements TicketManager {
+public class CasTicketManagerImpl implements CasTicketManager {
     @Autowired
     private ServerProperties serverProperties;
     @Autowired(required = false) // 没有登录范围区别的系统没有范围切换器实现

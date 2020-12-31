@@ -10,9 +10,9 @@ import org.truenewx.tnxjee.service.Service;
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 
 /**
- * 票据管理器
+ * CAS票据管理器
  */
-public interface TicketManager extends Service {
+public interface CasTicketManager extends Service {
 
     String TGT_NAME = "CASTGC";
     String TICKET_GRANTING_TICKET_PREFIX = "TGT-";

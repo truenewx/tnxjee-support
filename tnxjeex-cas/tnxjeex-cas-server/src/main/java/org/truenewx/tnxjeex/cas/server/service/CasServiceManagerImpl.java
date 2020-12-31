@@ -1,8 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +8,7 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
 import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.service.exception.BusinessException;
-import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
+import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 
 /**
  * CAS服务管理器实现
@@ -24,7 +21,7 @@ public class CasServiceManagerImpl implements CasServiceManager {
     @Autowired
     private CommonProperties commonProperties;
     @Autowired
-    private TicketManager ticketManager;
+    private CasTicketManager ticketManager;
 
     @Override
     public String getUserType(String service) {
@@ -58,16 +55,12 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public Map<String, String> getLogoutProcessUrls(HttpServletRequest request, String[] services) {
-        Map<String, String> logoutUrls = new HashMap<>();
-        Map<String, AppConfiguration> apps = this.commonProperties.getApps();
-        for (String service : services) {
-            AppConfiguration app = apps.get(service);
-            if (app != null) {
-                logoutUrls.put(service, app.getLogoutProcessUrl());
-            }
+    public String getLogoutProcessUrl(String service) {
+        AppConfiguration app = this.commonProperties.getApp(service);
+        if (app != null) {
+            return app.getLogoutProcessUrl();
         }
-        return logoutUrls;
+        return null;
     }
 
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
-import org.truenewx.tnxjeex.cas.client.web.authentication.CasClientLoginProcessingFilter;
+import org.truenewx.tnxjeex.cas.client.web.CasClientLoginProcessingFilter;
 
 /**
  * CAS客户端登录安全配置器

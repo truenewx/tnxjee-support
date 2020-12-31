@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.client.web.authentication;
+package org.truenewx.tnxjeex.cas.client.web;
 
 import java.util.function.Consumer;
 

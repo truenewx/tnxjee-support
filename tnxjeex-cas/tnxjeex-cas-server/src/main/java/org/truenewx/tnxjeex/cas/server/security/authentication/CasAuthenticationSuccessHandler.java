@@ -15,7 +15,7 @@ import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.view.util.WebViewUtil;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
-import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
+import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
@@ -26,7 +26,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
     @Autowired
     private CasServiceManager serviceManager;
     @Autowired
-    private TicketManager ticketManager;
+    private CasTicketManager ticketManager;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,

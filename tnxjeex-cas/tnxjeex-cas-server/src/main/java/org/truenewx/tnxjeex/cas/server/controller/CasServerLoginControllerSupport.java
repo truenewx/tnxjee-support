@@ -20,7 +20,7 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
-import org.truenewx.tnxjeex.cas.server.ticket.TicketManager;
+import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
@@ -34,7 +34,7 @@ public abstract class CasServerLoginControllerSupport {
     @Autowired
     private CasServiceManager serviceManager;
     @Autowired
-    private TicketManager ticketManager;
+    private CasTicketManager ticketManager;
     @Autowired
     private RedirectStrategy redirectStrategy;
     @Autowired

@@ -1,7 +1,5 @@
 package org.truenewx.tnxjeex.cas.server.service;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -17,5 +15,6 @@ public interface CasServiceManager {
 
     String getLoginProcessUrl(HttpServletRequest request, String service, String scope);
 
-    Map<String, String> getLogoutProcessUrls(HttpServletRequest request, String[] services);
+    String getLogoutProcessUrl(String service);
+
 }
