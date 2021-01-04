@@ -9,6 +9,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface CasServiceManager {
 
+    String getAppName(String service);
+
+    String getService(String appName);
+
     String getUserType(String service);
 
     String getUri(HttpServletRequest request, String service);

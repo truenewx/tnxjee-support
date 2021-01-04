@@ -5,20 +5,20 @@ import java.util.Date;
 import org.truenewx.tnxjee.model.entity.unity.Unity;
 
 /**
- * 服务票据
+ * 应用票据
  */
-public class ServiceTicket implements Unity<String> {
+public class AppTicket implements Unity<String> {
 
     private String id;
     private TicketGrantingTicket ticketGrantingTicket;
-    private String service;
+    private String app;
     private Date createTime;
     private Date expiredTime;
 
-    public ServiceTicket() {
+    public AppTicket() {
     }
 
-    public ServiceTicket(String id) {
+    public AppTicket(String id) {
         setId(id);
     }
 
@@ -39,12 +39,12 @@ public class ServiceTicket implements Unity<String> {
         this.ticketGrantingTicket = ticketGrantingTicket;
     }
 
-    public String getService() {
-        return this.service;
+    public String getApp() {
+        return this.app;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setApp(String app) {
+        this.app = app;
     }
 
     public Date getCreateTime() {

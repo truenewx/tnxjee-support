@@ -1,8 +1,6 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,8 +55,6 @@ public abstract class CasServerLoginControllerSupport {
             }
             // 写入请求属性中，便于后续获取
             request.setAttribute(CasServerConstants.PARAMETER_SERVICE, service);
-        } else {
-            service = URLDecoder.decode(service, StandardCharsets.UTF_8);
         }
         String redirectParameter = this.apiMetaProperties.getLoginSuccessRedirectParameter();
         if (WebUtil.isAjaxRequest(request)) {

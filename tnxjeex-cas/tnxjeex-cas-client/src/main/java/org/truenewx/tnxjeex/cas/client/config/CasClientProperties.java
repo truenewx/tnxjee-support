@@ -56,19 +56,27 @@ public class CasClientProperties extends ServiceProperties {
     }
 
     public String getLoginFormUrl() {
-        String url = getServerContextUri(false);
-        if (!url.endsWith(Strings.SLASH)) {
-            url += Strings.SLASH;
-        }
-        return url + "login?" + getServiceParameter() + "=" + getService();
+        String url = getServerContextUrl();
+        return url + "/login?" + getServiceParameter() + "=" + getService();
     }
 
-    public String getLogoutProcessUrl() {
-        String url = getServerContextUri(false);
-        if (!url.endsWith(Strings.SLASH)) {
-            url += Strings.SLASH;
+    private String getServerContextUrl() {
+        String url = Strings.EMPTY;
+        if (!this.appName.equals(this.serverAppName)) { // 当前应用并不同时也是CAS服务端，才需要添加服务端上下文根
+            url = getServerContextUri(false);
+            if (url.endsWith(Strings.SLASH)) { // 去掉末尾的斜杠
+                url = url.substring(0, url.length() - 1);
+            }
         }
-        return url + "logout?" + getServiceParameter() + "=" + getService();
+        return url;
+    }
+
+    public String getLogoutSuccessUrl() {
+        if (this.appName.equals(this.serverAppName)) { // 当前应用同时也是CAS服务端，则登出成功后默认跳转到登录表单页
+            return getLoginFormUrl();
+        } else { // 否则当前客户端登出后，跳转到服务端执行执行登出
+            return getServerContextUrl() + "/logout?" + getServiceParameter() + "=" + getService();
+        }
     }
 
 }

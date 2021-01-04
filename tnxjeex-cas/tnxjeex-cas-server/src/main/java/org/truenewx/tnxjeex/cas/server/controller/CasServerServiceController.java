@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
+import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 
 /**
@@ -21,6 +22,8 @@ import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 public class CasServerServiceController {
 
     @Autowired
+    private CasServiceManager serviceManager;
+    @Autowired
     private CasTicketManager ticketManager;
 
     @GetMapping("/serviceValidate")
@@ -29,7 +32,8 @@ public class CasServerServiceController {
     public Assertion serviceValidate(@RequestParam("service") String service,
             @RequestParam("ticket") String ticket) {
         service = URLDecoder.decode(service, StandardCharsets.UTF_8);
-        return this.ticketManager.validateServiceTicket(service, ticket);
+        String app = this.serviceManager.getAppName(service);
+        return this.ticketManager.validateAppTicket(app, ticket);
     }
 
 }

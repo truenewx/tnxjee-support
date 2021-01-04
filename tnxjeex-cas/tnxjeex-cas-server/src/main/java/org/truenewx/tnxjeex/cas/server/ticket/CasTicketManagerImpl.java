@@ -24,11 +24,11 @@ import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
-import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
+import org.truenewx.tnxjeex.cas.server.entity.AppTicket;
 import org.truenewx.tnxjeex.cas.server.entity.TicketGrantingTicket;
-import org.truenewx.tnxjeex.cas.server.repo.MemoryServiceTicketRepo;
+import org.truenewx.tnxjeex.cas.server.repo.AppTicketRepo;
+import org.truenewx.tnxjeex.cas.server.repo.MemoryAppTicketRepo;
 import org.truenewx.tnxjeex.cas.server.repo.MemoryTicketGrantingTicketRepo;
-import org.truenewx.tnxjeex.cas.server.repo.ServiceTicketRepo;
 import org.truenewx.tnxjeex.cas.server.repo.TicketGrantingTicketRepo;
 import org.truenewx.tnxjeex.cas.server.security.authentication.CasServerUserSpecificDetailsScopeSwitch;
 
@@ -42,7 +42,7 @@ public class CasTicketManagerImpl implements CasTicketManager {
     @Autowired(required = false) // 没有登录范围区别的系统没有范围切换器实现
     private CasServerUserSpecificDetailsScopeSwitch userSpecificDetailsScopeSwitch;
     private TicketGrantingTicketRepo ticketGrantingTicketRepo = new MemoryTicketGrantingTicketRepo();
-    private ServiceTicketRepo serviceTicketRepo = new MemoryServiceTicketRepo();
+    private AppTicketRepo appTicketRepo = new MemoryAppTicketRepo();
 
     @Autowired(required = false)
     public void setTicketGrantingTicketRepo(TicketGrantingTicketRepo ticketGrantingTicketRepo) {
@@ -50,8 +50,8 @@ public class CasTicketManagerImpl implements CasTicketManager {
     }
 
     @Autowired(required = false)
-    public void setServiceTicketRepo(ServiceTicketRepo serviceTicketRepo) {
-        this.serviceTicketRepo = serviceTicketRepo;
+    public void setAppTicketRepo(AppTicketRepo appTicketRepo) {
+        this.appTicketRepo = appTicketRepo;
     }
 
     @Override
@@ -123,13 +123,13 @@ public class CasTicketManagerImpl implements CasTicketManager {
     // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
     @Override
     @WriteTransactional
-    public String getServiceTicket(HttpServletRequest request, String service, String scope) {
+    public String getAppTicketId(HttpServletRequest request, String app, String scope) {
         TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
             String ticketGrantingTicketId = ticketGrantingTicket.getId();
-            ServiceTicket serviceTicket = this.serviceTicketRepo
-                    .findFirstByTicketGrantingTicketIdAndService(ticketGrantingTicketId, service);
-            if (serviceTicket == null) { // 不存在则创建新的
+            AppTicket appTicket = this.appTicketRepo
+                    .findByTicketGrantingTicketIdAndApp(ticketGrantingTicketId, app);
+            if (appTicket == null) { // 不存在则创建新的
                 // 创建新的服务票据前，先进行可能的范围切换动作
                 if (this.userSpecificDetailsScopeSwitch != null) {
                     UserSpecificDetails<?> userDetails = ticketGrantingTicket.getUserDetails();
@@ -139,50 +139,49 @@ public class CasTicketManagerImpl implements CasTicketManager {
                 }
 
                 Date now = new Date();
-                String text = ticketGrantingTicketId + Strings.MINUS + service + Strings.MINUS + now.getTime();
-                String serviceTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);
-                serviceTicket = new ServiceTicket(serviceTicketId);
-                serviceTicket.setTicketGrantingTicket(ticketGrantingTicket);
-                serviceTicket.setService(service);
-                serviceTicket.setCreateTime(now);
+                String text = ticketGrantingTicketId + Strings.MINUS + app + Strings.MINUS + now.getTime();
+                String appTicketId = SERVICE_TICKET_PREFIX + EncryptUtil.encryptByMd5(text);
+                appTicket = new AppTicket(appTicketId);
+                appTicket.setTicketGrantingTicket(ticketGrantingTicket);
+                appTicket.setApp(app);
+                appTicket.setCreateTime(now);
                 // 所属票据授权票据的过期时间即为服务票据的过期时间
-                serviceTicket.setExpiredTime(ticketGrantingTicket.getExpiredTime());
-                this.serviceTicketRepo.save(serviceTicket);
+                appTicket.setExpiredTime(ticketGrantingTicket.getExpiredTime());
+                this.appTicketRepo.save(appTicket);
             }
-            return serviceTicket.getId();
+            return appTicket.getId();
         }
         return null;
     }
 
     @Override
-    public Collection<ServiceTicket> deleteTicketGrantingTicket(HttpServletRequest request,
-            HttpServletResponse response) {
+    public Collection<AppTicket> deleteTicketGrantingTicket(HttpServletRequest request, HttpServletResponse response) {
         TicketGrantingTicket ticketGrantingTicket = findValidTicketGrantingTicket(request);
         if (ticketGrantingTicket != null) {
-            Collection<ServiceTicket> serviceTickets = this.serviceTicketRepo
+            Collection<AppTicket> appTickets = this.appTicketRepo
                     .deleteByTicketGrantingTicketId(ticketGrantingTicket.getId());
             this.ticketGrantingTicketRepo.delete(ticketGrantingTicket);
             // 按照CAS规范将TGT从Cookie移除
             WebUtil.removeCookie(request, response, TGT_NAME);
-            return serviceTickets;
+            return appTickets;
         }
         return Collections.emptyList();
     }
 
     // 用户访问业务服务，由业务服务校验票据有效性时调用
     @Override
-    public Assertion validateServiceTicket(String service, String serviceTicketId) {
-        ServiceTicket serviceTicket = this.serviceTicketRepo.findById(serviceTicketId).orElse(null);
-        if (serviceTicket == null || !serviceTicket.getService().equals(service)) {
+    public Assertion validateAppTicket(String app, String appTicketId) {
+        AppTicket appTicket = this.appTicketRepo.findById(appTicketId).orElse(null);
+        if (appTicket == null || !appTicket.getApp().equals(app)) {
             return null;
         }
-        UserSpecificDetails<?> userDetails = serviceTicket.getTicketGrantingTicket().getUserDetails();
+        UserSpecificDetails<?> userDetails = appTicket.getTicketGrantingTicket().getUserDetails();
         String name = userDetails.getIdentity().toString();
         Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
                 "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
         AttributePrincipal principal = new AttributePrincipalImpl(name, attributes);
-        return new AssertionImpl(principal, serviceTicket.getCreateTime(), serviceTicket.getExpiredTime(),
-                serviceTicket.getCreateTime(), Collections.emptyMap());
+        return new AssertionImpl(principal, appTicket.getCreateTime(), appTicket.getExpiredTime(),
+                appTicket.getCreateTime(), Collections.emptyMap());
     }
 
 }

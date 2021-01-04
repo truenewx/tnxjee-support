@@ -33,7 +33,7 @@ public class CasServerSecurityConfigurerSupport extends WebViewSecurityConfigure
     @Override
     public LogoutSuccessHandler logoutSuccessHandler() {
         CasServerLogoutSuccessHandler handler = new CasServerLogoutSuccessHandler();
-        handler.setDefaultTargetUrl(getLogoutSuccessUrl());
+        handler.setDefaultTargetUrl(this.urlProvider.getLogoutSuccessUrl());
         return handler;
     }
 
