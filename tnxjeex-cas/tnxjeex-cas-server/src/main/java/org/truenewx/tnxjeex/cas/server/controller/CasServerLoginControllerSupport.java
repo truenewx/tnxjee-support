@@ -1,6 +1,8 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.config.AppConfiguration;
+import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjee.web.util.WebConstants;
@@ -39,6 +43,8 @@ public abstract class CasServerLoginControllerSupport {
     private RedirectStrategy redirectStrategy;
     @Autowired
     private ApiMetaProperties apiMetaProperties;
+    @Autowired
+    private CommonProperties commonProperties;
 
     @GetMapping
     public ModelAndView get(@RequestParam(value = "service", required = false) String service,
@@ -49,7 +55,10 @@ public abstract class CasServerLoginControllerSupport {
             if (StringUtils.isBlank(service)) {
                 return toBadServiceView(response);
             }
+            // 写入请求属性中，便于后续获取
             request.setAttribute(CasServerConstants.PARAMETER_SERVICE, service);
+        } else {
+            service = URLDecoder.decode(service, StandardCharsets.UTF_8);
         }
         String redirectParameter = this.apiMetaProperties.getLoginSuccessRedirectParameter();
         if (WebUtil.isAjaxRequest(request)) {
@@ -98,6 +107,17 @@ public abstract class CasServerLoginControllerSupport {
     }
 
     protected String getDefaultService() {
+        String appName = getDefaultAppName();
+        if (StringUtils.isNotBlank(appName)) {
+            AppConfiguration app = this.commonProperties.getApp(appName);
+            if (app != null) {
+                return app.getContextUri(false);
+            }
+        }
+        return null;
+    }
+
+    protected String getDefaultAppName() {
         return null;
     }
 

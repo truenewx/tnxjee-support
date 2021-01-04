@@ -23,18 +23,24 @@ public class CasServiceManagerImpl implements CasServiceManager {
     @Autowired
     private CasTicketManager ticketManager;
 
+    private String artifactParameter = "ticket";
+
+    public void setArtifactParameter(String artifactParameter) {
+        this.artifactParameter = artifactParameter;
+    }
+
     @Override
     public String getUserType(String service) {
-        return obtainServiceConfiguration(service).getUserType();
+        return loadServiceConfiguration(service).getUserType();
     }
 
     @Override
     public String getUri(HttpServletRequest request, String service) {
-        return obtainServiceConfiguration(service).getDirectUri();
+        return loadServiceConfiguration(service).getDirectUri();
     }
 
-    private AppConfiguration obtainServiceConfiguration(String service) {
-        AppConfiguration msc = this.commonProperties.getApps().get(service);
+    private AppConfiguration loadServiceConfiguration(String service) {
+        AppConfiguration msc = this.commonProperties.findAppByContextUri(service, false);
         if (msc == null) {
             throw new BusinessException(CasServerExceptionCodes.INVALID_SERVICE);
         }
@@ -43,24 +49,20 @@ public class CasServiceManagerImpl implements CasServiceManager {
 
     @Override
     public String getLoginProcessUrl(HttpServletRequest request, String service, String scope) {
-        String loginUrl = obtainServiceConfiguration(service).getLoginProcessUrl();
+        String loginUrl = loadServiceConfiguration(service).getLoginProcessUrl();
         int index = loginUrl.indexOf(Strings.QUESTION);
         if (index < 0) {
             loginUrl += Strings.QUESTION;
         } else {
             loginUrl += Strings.AND;
         }
-        loginUrl += "ticket=" + this.ticketManager.getServiceTicket(request, service, scope);
+        loginUrl += this.artifactParameter + "=" + this.ticketManager.getServiceTicket(request, service, scope);
         return loginUrl;
     }
 
     @Override
     public String getLogoutProcessUrl(String service) {
-        AppConfiguration app = this.commonProperties.getApp(service);
-        if (app != null) {
-            return app.getLogoutProcessUrl();
-        }
-        return null;
+        return loadServiceConfiguration(service).getLogoutProcessUrl();
     }
 
 }

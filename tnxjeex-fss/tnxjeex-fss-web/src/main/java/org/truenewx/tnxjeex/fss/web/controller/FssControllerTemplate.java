@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 import javax.servlet.ServletOutputStream;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
+import org.truenewx.tnxjee.core.config.AppConstants;
 import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
@@ -54,7 +56,7 @@ import com.aliyun.oss.internal.Mimetypes;
  */
 public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
 
-    @Value("${spring.application.name}")
+    @Value(AppConstants.EL_SPRING_APP_NAME)
     private String appName;
     @Autowired
     private CommonProperties commonProperties;
@@ -154,12 +156,13 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     }
 
     private String getContextUri() {
-        AppConfiguration appConfiguration = this.commonProperties.getApp(this.appName);
-        if (appConfiguration != null) { // 有配置多应用的，从配置中获取上下文根路径
-            return appConfiguration.getContextUri(false);
+        AppConfiguration app = this.commonProperties.getApp(this.appName);
+        if (app != null) { // 有配置多应用的，从配置中获取上下文根路径
+            return app.getContextUri(false);
         } else { // 否则取当前请求的上下文根路径
-            String contextUri = "//" + WebUtil.getHost(SpringWebContext.getRequest(), true);
-            String contextPath = SpringWebContext.getRequest().getContextPath();
+            HttpServletRequest request = Objects.requireNonNull(SpringWebContext.getRequest());
+            String contextUri = "//" + WebUtil.getHost(request, true);
+            String contextPath = request.getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 contextUri += contextPath;
             }

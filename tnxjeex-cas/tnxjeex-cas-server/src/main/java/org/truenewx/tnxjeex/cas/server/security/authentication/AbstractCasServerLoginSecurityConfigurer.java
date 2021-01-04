@@ -9,12 +9,12 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginAuthenticationFilter;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
+import org.truenewx.tnxjeex.cas.server.util.CasServerUtil;
 
 /**
  * 抽象的CAS服务端登录安全配置器
@@ -38,7 +38,7 @@ public abstract class AbstractCasServerLoginSecurityConfigurer<PF extends Abstra
             AuthenticationFailureHandler failureHandler = loginFilter.getFailureHandler();
             if (failureHandler instanceof ResolvableExceptionAuthenticationFailureHandler) {
                 ((ResolvableExceptionAuthenticationFailureHandler) failureHandler).setTargetUrlFunction(request -> {
-                    String service = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SERVICE);
+                    String service = CasServerUtil.getService(request);
                     String userType = this.serviceManager.getUserType(service);
                     if (CasServerConstants.SERVICE_USER_TYPE_ALL.equals(userType)) { // 不限定用户类型的服务，只能在用户已登录后进行自动登录
                         return null;

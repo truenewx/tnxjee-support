@@ -22,8 +22,5 @@ public class CasServerConstants {
      * 参数：范围
      */
     public static final String PARAMETER_SCOPE = "scope";
-    /**
-     * Cookie：登出服务集
-     */
-    public static final String COOKIE_LOGOUT_SERVICES = "LogoutServices";
+
 }

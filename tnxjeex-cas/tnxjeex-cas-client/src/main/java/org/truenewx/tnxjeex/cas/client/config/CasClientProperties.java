@@ -1,13 +1,17 @@
 package org.truenewx.tnxjeex.cas.client.config;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.security.cas.ServiceProperties;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
+import org.truenewx.tnxjee.core.config.AppConstants;
 import org.truenewx.tnxjee.core.config.CommonProperties;
 
 /**
@@ -20,8 +24,8 @@ import org.truenewx.tnxjee.core.config.CommonProperties;
 public class CasClientProperties extends ServiceProperties {
 
     private String serverAppName = "cas";
-    @Autowired
-    private Environment environment;
+    @Value(AppConstants.EL_SPRING_APP_NAME)
+    private String appName;
     @Autowired
     private CommonProperties commonProperties;
 
@@ -39,7 +43,9 @@ public class CasClientProperties extends ServiceProperties {
     @Override
     public void afterPropertiesSet() {
         if (StringUtils.isBlank(getService())) {
-            setService(this.environment.getProperty("spring.application.name"));
+            AppConfiguration app = this.commonProperties.getApp(this.appName);
+            String contextUri = app.getContextUri(false);
+            setService(URLEncoder.encode(contextUri, StandardCharsets.UTF_8));
         }
         super.afterPropertiesSet();
     }

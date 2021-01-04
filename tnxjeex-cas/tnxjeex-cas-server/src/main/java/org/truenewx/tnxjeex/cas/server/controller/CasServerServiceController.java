@@ -1,5 +1,8 @@
 package org.truenewx.tnxjeex.cas.server.controller;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,6 +28,7 @@ public class CasServerServiceController {
     @ResponseBody
     public Assertion serviceValidate(@RequestParam("service") String service,
             @RequestParam("ticket") String ticket) {
+        service = URLDecoder.decode(service, StandardCharsets.UTF_8);
         return this.ticketManager.validateServiceTicket(service, ticket);
     }
 

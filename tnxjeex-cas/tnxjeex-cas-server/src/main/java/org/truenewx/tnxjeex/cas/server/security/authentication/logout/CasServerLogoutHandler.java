@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,7 @@ import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjeex.cas.server.entity.ServiceTicket;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
+import org.truenewx.tnxjeex.cas.server.util.CasServerUtil;
 
 /**
  * CAS服务端登出处理器
@@ -30,8 +29,6 @@ public class CasServerLogoutHandler implements LogoutHandler {
     private CasTicketManager ticketManager;
     @Autowired
     private CasServiceManager serviceManager;
-    @Value("${spring.application.name}")
-    private String currentService;
     @Autowired
     private Executor executor;
 
@@ -39,10 +36,7 @@ public class CasServerLogoutHandler implements LogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         Collection<ServiceTicket> serviceTickets = this.ticketManager.deleteTicketGrantingTicket(request, response);
         if (serviceTickets.size() > 0) {
-            String logoutService = request.getParameter(CasServerConstants.PARAMETER_SERVICE);
-            if (logoutService == null) {
-                logoutService = this.currentService;
-            }
+            String logoutService = CasServerUtil.getService(request);
             for (ServiceTicket ticket : serviceTickets) {
                 String service = ticket.getService();
                 if (logoutService == null || !logoutService.equals(service)) {
