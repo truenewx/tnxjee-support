@@ -5,9 +5,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.web.SecurityUrlProvider;
 import org.truenewx.tnxjeex.cas.client.config.CasClientProperties;
 
@@ -33,8 +36,11 @@ public class CasClientSecurityUrlProvider implements SecurityUrlProvider {
     @Override
     public String getLoginFormUrl(HttpServletRequest request) {
         String loginFormUrl = getDefaultLoginFormUrl();
-        String url = request.getRequestURL().toString();
-        return NetUtil.mergeParam(loginFormUrl, "service", url);
+        String action = WebUtil.getRelativeRequestAction(request);
+        if (StringUtils.isNotBlank(action) && !action.equals(Strings.SLASH)) {
+            loginFormUrl += action;
+        }
+        return loginFormUrl;
     }
 
     @Override
