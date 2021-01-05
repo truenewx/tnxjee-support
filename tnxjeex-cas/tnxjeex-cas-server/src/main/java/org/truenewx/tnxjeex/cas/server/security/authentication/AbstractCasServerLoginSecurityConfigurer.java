@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.truenewx.tnxjee.core.config.AppConfiguration;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginAuthenticationFilter;
@@ -40,7 +41,7 @@ public abstract class AbstractCasServerLoginSecurityConfigurer<PF extends Abstra
                 ((ResolvableExceptionAuthenticationFailureHandler) failureHandler).setTargetUrlFunction(request -> {
                     String service = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SERVICE);
                     String userType = this.serviceManager.getUserType(service);
-                    if (CasServerConstants.SERVICE_USER_TYPE_ALL.equals(userType)) { // 不限定用户类型的服务，只能在用户已登录后进行自动登录
+                    if (AppConfiguration.USER_TYPE_ALL.equals(userType)) { // 不限定用户类型的服务，只能在用户已登录后进行自动登录
                         return null;
                     }
                     String result = "/login";
