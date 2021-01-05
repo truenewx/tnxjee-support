@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.core.config.AppConfiguration;
-import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjee.web.util.WebConstants;
@@ -41,8 +39,6 @@ public abstract class CasServerLoginControllerSupport {
     private RedirectStrategy redirectStrategy;
     @Autowired
     private ApiMetaProperties apiMetaProperties;
-    @Autowired
-    private CommonProperties commonProperties;
 
     @GetMapping
     public ModelAndView get(@RequestParam(value = "service", required = false) String service,
@@ -105,10 +101,7 @@ public abstract class CasServerLoginControllerSupport {
     protected String getDefaultService() {
         String appName = getDefaultAppName();
         if (StringUtils.isNotBlank(appName)) {
-            AppConfiguration app = this.commonProperties.getApp(appName);
-            if (app != null) {
-                return app.getContextUri(false);
-            }
+            return this.serviceManager.getService(appName);
         }
         return null;
     }
