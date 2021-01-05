@@ -1,13 +1,18 @@
 package org.truenewx.tnxjeex.cas.server.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
 import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.service.exception.BusinessException;
+import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
 import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
@@ -19,10 +24,14 @@ import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 @Component
 public class CasServiceManagerImpl implements CasServiceManager {
 
+    private static final String ENCODED_WELL = URLEncoder.encode(Strings.WELL, StandardCharsets.UTF_8);
+
     @Autowired
     private CommonProperties commonProperties;
     @Autowired
     private CasTicketManager ticketManager;
+    @Autowired
+    private ApiMetaProperties apiMetaProperties;
 
     private String artifactParameter = CasServerConstants.PARAMETER_ARTIFACT;
 
@@ -67,14 +76,29 @@ public class CasServiceManagerImpl implements CasServiceManager {
     @Override
     public String getLoginProcessUrl(HttpServletRequest request, String service, String scope) {
         String appName = getAppName(service);
-        String loginUrl = loadAppConfigurationByName(appName).getLoginProcessUrl();
+        AppConfiguration app = loadAppConfigurationByName(appName);
+        String loginUrl = app.getLoginProcessUrl();
         int index = loginUrl.indexOf(Strings.QUESTION);
         if (index < 0) {
             loginUrl += Strings.QUESTION;
         } else {
             loginUrl += Strings.AND;
         }
-        loginUrl += this.artifactParameter + "=" + this.ticketManager.getAppTicketId(request, appName, scope);
+        loginUrl += this.artifactParameter + Strings.EQUAL + this.ticketManager.getAppTicketId(request, appName, scope);
+        String redirectParameter = this.apiMetaProperties.getLoginSuccessRedirectParameter();
+        if (StringUtils.isBlank(request.getParameter(redirectParameter))) {
+            String contextUri = app.getContextUri(false);
+            if (service.length() > contextUri.length()) {
+                String redirectUrl = service.substring(contextUri.length());
+                if (redirectUrl.contains(Strings.WELL)) {
+                    redirectUrl = redirectUrl.replace(Strings.WELL, ENCODED_WELL);
+                }
+                if (!redirectUrl.startsWith(Strings.SLASH)) { // 确保以斜杠开头
+                    redirectUrl = Strings.SLASH + redirectUrl;
+                }
+                loginUrl += Strings.AND + redirectParameter + Strings.EQUAL + redirectUrl;
+            }
+        }
         return loginUrl;
     }
 
