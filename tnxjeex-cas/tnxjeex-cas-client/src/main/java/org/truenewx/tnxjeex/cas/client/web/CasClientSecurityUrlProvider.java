@@ -36,9 +36,11 @@ public class CasClientSecurityUrlProvider implements SecurityUrlProvider {
     @Override
     public String getLoginFormUrl(HttpServletRequest request) {
         String loginFormUrl = getDefaultLoginFormUrl();
-        String action = WebUtil.getRelativeRequestAction(request);
-        if (StringUtils.isNotBlank(action) && !action.equals(Strings.SLASH)) {
-            loginFormUrl += action;
+        if (!WebUtil.isAjaxRequest(request)) { // 不是AJAX请求，才需要附加当前执行动作
+            String action = WebUtil.getRelativeRequestAction(request);
+            if (StringUtils.isNotBlank(action) && !action.equals(Strings.SLASH)) {
+                loginFormUrl += action;
+            }
         }
         return loginFormUrl;
     }
