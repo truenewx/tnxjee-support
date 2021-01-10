@@ -120,7 +120,7 @@ public class CasTicketManagerImpl implements CasTicketManager {
         return findValidTicketGrantingTicket(request) != null;
     }
 
-    // 用户登录或登出CAS服务器成功后调用，以获取目标服务的票据
+    // 用户登录或登出CAS服务器成功后调用，以获取目标应用的票据
     @Override
     @WriteTransactional
     public String getAppTicketId(HttpServletRequest request, String app, String scope) {
