@@ -3,12 +3,14 @@ package org.truenewx.tnxjeex.cas.server.controller;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.truenewx.tnxjee.webmvc.http.annotation.ResultFilter;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
@@ -29,6 +31,8 @@ public class CasServerServiceController {
     @GetMapping("/serviceValidate")
     @ConfigAnonymous
     @ResponseBody
+    @ResultFilter(withClass = false)
+    @ResultFilter(type = AttributePrincipal.class, withClass = false)
     public Assertion serviceValidate(@RequestParam("service") String service,
             @RequestParam("ticket") String ticket) {
         service = URLDecoder.decode(service, StandardCharsets.UTF_8);
