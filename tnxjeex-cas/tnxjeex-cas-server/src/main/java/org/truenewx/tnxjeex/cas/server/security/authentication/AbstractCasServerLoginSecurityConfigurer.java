@@ -14,8 +14,8 @@ import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.LoginSecurityConfigurerSupport;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginAuthenticationFilter;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
+import org.truenewx.tnxjeex.cas.core.validation.constant.CasParameterNames;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * 抽象的CAS服务端登录安全配置器
@@ -39,7 +39,7 @@ public abstract class AbstractCasServerLoginSecurityConfigurer<PF extends Abstra
             AuthenticationFailureHandler failureHandler = loginFilter.getFailureHandler();
             if (failureHandler instanceof ResolvableExceptionAuthenticationFailureHandler) {
                 ((ResolvableExceptionAuthenticationFailureHandler) failureHandler).setTargetUrlFunction(request -> {
-                    String service = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SERVICE);
+                    String service = WebUtil.getParameterOrAttribute(request, CasParameterNames.SERVICE);
                     String userType = this.serviceManager.getUserType(service);
                     if (AppConfiguration.USER_TYPE_ALL.equals(userType)) { // 不限定用户类型的服务，只能在用户已登录后进行自动登录
                         return null;

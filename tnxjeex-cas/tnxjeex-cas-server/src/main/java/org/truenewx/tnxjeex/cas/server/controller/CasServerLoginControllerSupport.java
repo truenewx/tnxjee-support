@@ -19,9 +19,9 @@ import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
+import org.truenewx.tnxjeex.cas.core.validation.constant.CasParameterNames;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * Cas服务端登录控制器
@@ -50,7 +50,7 @@ public abstract class CasServerLoginControllerSupport {
                 return toBadServiceView(response);
             }
             // 写入请求属性中，便于后续获取
-            request.setAttribute(CasServerConstants.PARAMETER_SERVICE, service);
+            request.setAttribute(CasParameterNames.SERVICE, service);
         }
         String redirectParameter = this.apiMetaProperties.getLoginSuccessRedirectParameter();
         if (WebUtil.isAjaxRequest(request)) {

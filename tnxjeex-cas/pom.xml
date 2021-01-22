@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>tnxjeex-cas-client</module>
+        <module>tnxjeex-cas-core</module>
         <module>tnxjeex-cas-server</module>
     </modules>
     <dependencyManagement>
@@ -20,6 +21,11 @@
                 <groupId>org.jasig.cas.client</groupId>
                 <artifactId>cas-client-core</artifactId>
                 <version>3.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.cas</groupId>
+                <artifactId>tnxjeex-cas-core</artifactId>
+                <version>2.2.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

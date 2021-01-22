@@ -15,10 +15,10 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.web.util.WebUtil;
+import org.truenewx.tnxjeex.cas.core.validation.constant.CasParameterNames;
 import org.truenewx.tnxjeex.cas.server.entity.AppTicket;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
 import org.truenewx.tnxjeex.cas.server.ticket.CasTicketManager;
-import org.truenewx.tnxjeex.cas.server.util.CasServerConstants;
 
 /**
  * CAS服务端登出处理器
@@ -37,7 +37,7 @@ public class CasServerLogoutHandler implements LogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         Collection<AppTicket> appTickets = this.ticketManager.deleteTicketGrantingTicket(request, response);
         if (appTickets.size() > 0) {
-            String logoutService = WebUtil.getParameterOrAttribute(request, CasServerConstants.PARAMETER_SERVICE);
+            String logoutService = WebUtil.getParameterOrAttribute(request, CasParameterNames.SERVICE);
             for (AppTicket ticket : appTickets) {
                 String app = ticket.getApp();
                 String service = this.serviceManager.getService(app);

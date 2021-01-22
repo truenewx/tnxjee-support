@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.cas.client.authentication;
+package org.truenewx.tnxjeex.cas.core.authentication;
 
 import java.util.Map;
 

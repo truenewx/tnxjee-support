@@ -1,10 +1,11 @@
-package org.truenewx.tnxjeex.cas.client.validation;
+package org.truenewx.tnxjeex.cas.core.validation;
 
 import java.util.Date;
 import java.util.Map;
 
+import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.validation.Assertion;
-import org.truenewx.tnxjeex.cas.client.authentication.SimpleAttributePrincipal;
+import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 
 /**
  * 便于序列化和反序列化的简单Assertion实现
@@ -13,12 +14,20 @@ public class SimpleAssertion implements Assertion {
 
     private static final long serialVersionUID = -5843298720172335725L;
 
+    private UserSpecificDetails<?> userDetails;
     private Date validFromDate;
     private Date validUntilDate;
     private Date authenticationDate;
     private Map<String, Object> attributes;
-    private SimpleAttributePrincipal principal;
-    private boolean valid;
+    private AttributePrincipal principal;
+
+    public UserSpecificDetails<?> getUserDetails() {
+        return this.userDetails;
+    }
+
+    public void setUserDetails(UserSpecificDetails<?> userDetails) {
+        this.userDetails = userDetails;
+    }
 
     @Override
     public Date getValidFromDate() {
@@ -57,20 +66,22 @@ public class SimpleAssertion implements Assertion {
     }
 
     @Override
-    public SimpleAttributePrincipal getPrincipal() {
+    public AttributePrincipal getPrincipal() {
         return this.principal;
     }
 
-    public void setPrincipal(SimpleAttributePrincipal principal) {
+    public void setPrincipal(AttributePrincipal principal) {
         this.principal = principal;
     }
 
     @Override
     public boolean isValid() {
-        return this.valid;
-    }
+        if (this.validFromDate == null) {
+            return true;
+        }
 
-    public void setValid(boolean valid) {
-        this.valid = valid;
+        Date now = new Date();
+        return (this.validFromDate.before(now) || this.validFromDate.equals(now))
+                && (this.validUntilDate == null || this.validUntilDate.after(now) || this.validUntilDate.equals(now));
     }
 }

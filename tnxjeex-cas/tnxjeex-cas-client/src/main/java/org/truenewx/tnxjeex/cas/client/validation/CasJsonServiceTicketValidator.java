@@ -5,6 +5,7 @@ import org.jasig.cas.client.validation.AbstractCasProtocolUrlBasedTicketValidato
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.truenewx.tnxjee.core.util.JsonUtil;
+import org.truenewx.tnxjeex.cas.core.validation.SimpleAssertion;
 
 /**
  * 基于JSON数据格式的CAS服务票据校验器

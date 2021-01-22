@@ -11,8 +11,8 @@
     <artifactId>tnxjeex-cas-client</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.truenewx.tnxjee</groupId>
-            <artifactId>tnxjee-webmvc</artifactId>
+            <groupId>org.truenewx.tnxjeex.cas</groupId>
+            <artifactId>tnxjeex-cas-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

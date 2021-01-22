@@ -4,26 +4,22 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jasig.cas.client.authentication.AttributePrincipal;
-import org.jasig.cas.client.authentication.AttributePrincipalImpl;
 import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.AssertionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 import org.truenewx.tnxjee.core.Strings;
-import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.model.spec.user.security.UserSpecificDetails;
 import org.truenewx.tnxjee.service.transaction.annotation.WriteTransactional;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
+import org.truenewx.tnxjeex.cas.core.validation.SimpleAssertion;
 import org.truenewx.tnxjeex.cas.server.entity.AppTicket;
 import org.truenewx.tnxjeex.cas.server.entity.TicketGrantingTicket;
 import org.truenewx.tnxjeex.cas.server.repo.AppTicketRepo;
@@ -176,12 +172,12 @@ public class CasTicketManagerImpl implements CasTicketManager {
             return null;
         }
         UserSpecificDetails<?> userDetails = appTicket.getTicketGrantingTicket().getUserDetails();
-        String name = userDetails.getIdentity().toString();
-        Map<String, Object> attributes = BeanUtil.toMap(userDetails, "identity", "password",
-                "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired");
-        AttributePrincipal principal = new AttributePrincipalImpl(name, attributes);
-        return new AssertionImpl(principal, appTicket.getCreateTime(), appTicket.getExpiredTime(),
-                appTicket.getCreateTime(), Collections.emptyMap());
+        SimpleAssertion assertion = new SimpleAssertion();
+        assertion.setUserDetails(userDetails);
+        assertion.setValidFromDate(appTicket.getCreateTime());
+        assertion.setValidUntilDate(appTicket.getExpiredTime());
+        assertion.setAuthenticationDate(appTicket.getCreateTime());
+        return assertion;
     }
 
 }

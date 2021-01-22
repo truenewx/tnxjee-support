@@ -15,8 +15,8 @@
             <artifactId>tnxjee-webmvc-view</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jasig.cas.client</groupId>
-            <artifactId>cas-client-core</artifactId>
+            <groupId>org.truenewx.tnxjeex.cas</groupId>
+            <artifactId>tnxjeex-cas-core</artifactId>
         </dependency>
     </dependencies>
 </project>
