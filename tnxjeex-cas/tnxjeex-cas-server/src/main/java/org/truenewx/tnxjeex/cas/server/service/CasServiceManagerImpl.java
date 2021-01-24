@@ -64,11 +64,6 @@ public class CasServiceManagerImpl implements CasServiceManager {
     }
 
     @Override
-    public String getUserType(String service) {
-        return loadAppConfigurationByService(service).getUserType();
-    }
-
-    @Override
     public String getUri(HttpServletRequest request, String service) {
         return loadAppConfigurationByService(service).getDirectUri();
     }

@@ -15,6 +15,6 @@ public interface CasServerLoginAuthenticator<T extends AbstractAuthenticationTok
         return ClassUtil.getActualGenericType(getClass(), CasServerLoginAuthenticator.class, 0);
     }
 
-    UserSpecificDetails<?> authenticate(String userType, String scope, T token);
+    UserSpecificDetails<?> authenticate(String appName, String scope, T token);
 
 }

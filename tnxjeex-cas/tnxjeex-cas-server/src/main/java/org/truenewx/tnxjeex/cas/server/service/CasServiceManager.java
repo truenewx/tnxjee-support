@@ -13,8 +13,6 @@ public interface CasServiceManager {
 
     String getService(String appName);
 
-    String getUserType(String service);
-
     String getUri(HttpServletRequest request, String service);
 
     String getLoginProcessUrl(HttpServletRequest request, String service, String scope);

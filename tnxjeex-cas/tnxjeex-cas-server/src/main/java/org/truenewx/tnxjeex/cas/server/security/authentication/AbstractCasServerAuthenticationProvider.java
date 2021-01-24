@@ -29,13 +29,13 @@ public abstract class AbstractCasServerAuthenticationProvider<A extends Authenti
         if (details instanceof CasServiceAuthenticationDetails) {
             CasServiceAuthenticationDetails authenticationDetails = (CasServiceAuthenticationDetails) details;
             String service = authenticationDetails.getService();
-            String userType = this.serviceManager.getUserType(service);
+            String appName = this.serviceManager.getAppName(service);
             String scope = authenticationDetails.getScope();
             String ip = authenticationDetails.getIp();
             try {
-                UserSpecificDetails<?> userDetails = authenticate(userType, scope, token);
+                UserSpecificDetails<?> userDetails = authenticate(appName, scope, token);
                 if (userDetails == null) {
-                    throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_AUTHENTICATE_MODE, userType);
+                    throw new BusinessException(CasServerExceptionCodes.UNSUPPORTED_AUTHENTICATE_MODE);
                 }
                 return new CasUserSpecificDetailsAuthenticationToken(userDetails, service, scope, ip);
             } catch (BusinessException e) {
@@ -45,5 +45,5 @@ public abstract class AbstractCasServerAuthenticationProvider<A extends Authenti
         return null;
     }
 
-    protected abstract UserSpecificDetails<?> authenticate(String userType, String scope, A token);
+    protected abstract UserSpecificDetails<?> authenticate(String appName, String scope, A token);
 }

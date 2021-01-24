@@ -36,11 +36,11 @@ public class LoginModeCasServerAuthenticationProvider
     }
 
     @Override
-    protected UserSpecificDetails<?> authenticate(String userType, String scope, AbstractAuthenticationToken token) {
+    protected UserSpecificDetails<?> authenticate(String appName, String scope, AbstractAuthenticationToken token) {
         CasServerLoginAuthenticator<AbstractAuthenticationToken> authenticator = this.authenticators
                 .get(token.getClass());
         if (authenticator != null) {
-            return authenticator.authenticate(userType, scope, token);
+            return authenticator.authenticate(appName, scope, token);
         }
         return null;
     }
