@@ -18,6 +18,7 @@ import org.truenewx.tnxjee.core.util.StringUtil;
 import org.truenewx.tnxjee.web.util.WebConstants;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.api.meta.model.ApiMetaProperties;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.LoginViewResultResolver;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 import org.truenewx.tnxjeex.cas.core.validation.constant.CasParameterNames;
 import org.truenewx.tnxjeex.cas.server.service.CasServiceManager;
@@ -84,7 +85,8 @@ public abstract class CasServerLoginControllerSupport {
                 this.redirectStrategy.sendRedirect(request, response, targetUrl);
                 return null;
             }
-            String result = this.authenticationFailureHandler.getTargetUrlFunction().apply(request);
+            LoginViewResultResolver resultResolver = this.authenticationFailureHandler.getLoginViewResultResolver();
+            String result = resultResolver == null ? null : resultResolver.resolveLoginViewResult(request);
             if (result == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
