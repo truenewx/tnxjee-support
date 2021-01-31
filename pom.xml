@@ -13,6 +13,7 @@
         <module>tnxjeex-cas</module>
         <module>tnxjeex-fss</module>
         <module>tnxjeex-notice</module>
+        <module>tnxjeex-office</module>
         <module>tnxjeex-openapi</module>
         <module>tnxjeex-seata</module>
     </modules>
@@ -89,6 +90,11 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>1.64</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>5.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
