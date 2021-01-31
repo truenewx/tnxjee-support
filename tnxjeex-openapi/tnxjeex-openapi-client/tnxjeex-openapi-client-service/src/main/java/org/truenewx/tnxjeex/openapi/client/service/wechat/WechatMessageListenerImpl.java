@@ -1,9 +1,13 @@
 package org.truenewx.tnxjeex.openapi.client.service.wechat;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -26,8 +30,7 @@ public class WechatMessageListenerImpl implements WechatMessageListener, Context
 
     @Override
     public void afterInitialized(ApplicationContext context) throws Exception {
-        Map<String, WechatMessageHandler> beans = context
-                .getBeansOfType(WechatMessageHandler.class);
+        Map<String, WechatMessageHandler> beans = context.getBeansOfType(WechatMessageHandler.class);
         beans.values().forEach(handler -> {
             WechatMessageType messageType = handler.getMessageType();
             List<WechatMessageHandler> handlers = this.handlerMapping.computeIfAbsent(messageType,
