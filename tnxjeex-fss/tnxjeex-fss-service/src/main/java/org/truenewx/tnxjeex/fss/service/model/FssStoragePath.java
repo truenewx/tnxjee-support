@@ -62,7 +62,8 @@ public class FssStoragePath {
     }
 
     public String getRelativePath() {
-        return this.relativeDir + Strings.SLASH + this.filename;
+        String dir = Strings.SLASH.equals(this.relativeDir) ? Strings.EMPTY : this.relativeDir;
+        return dir + Strings.SLASH + this.filename;
     }
 
     public boolean isValid() {
