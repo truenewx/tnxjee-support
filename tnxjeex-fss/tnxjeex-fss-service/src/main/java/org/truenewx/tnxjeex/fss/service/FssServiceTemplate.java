@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.Service;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
-import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
 /**
  * 文件存储服务模版
@@ -24,7 +24,7 @@ public interface FssServiceTemplate<I extends UserIdentity<?>> extends Service {
      * @param userIdentity 用户标识
      * @return 指定用户上传指定业务类型的文件上传限制条件
      */
-    FssUploadLimit getUploadLimit(String type, I userIdentity);
+    FileUploadLimit getUploadLimit(String type, I userIdentity);
 
     /**
      * 指定用户在业务授权类型下写文件

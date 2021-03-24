@@ -17,12 +17,12 @@ import org.truenewx.tnxjee.core.beans.ContextInitializedBean;
 import org.truenewx.tnxjee.core.util.ArrayUtil;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
+import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 import org.truenewx.tnxjeex.fss.service.model.FssStoragePath;
-import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 
 /**
  * 文件存储服务模版实现
@@ -56,7 +56,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
     }
 
     @Override
-    public FssUploadLimit getUploadLimit(String type, I userIdentity) {
+    public FileUploadLimit getUploadLimit(String type, I userIdentity) {
         return getStrategy(type).getUploadLimit(userIdentity);
     }
 
@@ -101,7 +101,7 @@ public class FssServiceTemplateImpl<I extends UserIdentity<?>>
 
     private String validateExtension(FssAccessStrategy<I> strategy, I user, String filename) {
         String extension = FilenameUtils.getExtension(filename);
-        FssUploadLimit uploadLimit = strategy.getUploadLimit(user);
+        FileUploadLimit uploadLimit = strategy.getUploadLimit(user);
         String[] extensions = uploadLimit.getExtensions();
         if (ArrayUtils.isNotEmpty(extensions)) { // 上传限制中没有设置扩展名，则不限定扩展名
             if (uploadLimit.isExtensionsRejected()) { // 拒绝扩展名模式

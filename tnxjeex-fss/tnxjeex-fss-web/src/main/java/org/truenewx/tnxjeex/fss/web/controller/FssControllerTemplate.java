@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
@@ -31,11 +29,13 @@ import org.truenewx.tnxjee.core.config.CommonProperties;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
+import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
+import org.truenewx.tnxjee.webmvc.controller.UploadControllerSupport;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
@@ -44,7 +44,6 @@ import org.truenewx.tnxjeex.fss.api.model.FssTransferCommand;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.FssExceptionCodes;
 import org.truenewx.tnxjeex.fss.service.FssServiceTemplate;
-import org.truenewx.tnxjeex.fss.service.model.FssUploadLimit;
 import org.truenewx.tnxjeex.fss.web.model.FssUploadedFileMeta;
 
 import com.aliyun.oss.internal.Mimetypes;
@@ -54,7 +53,8 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>> extends UploadControllerSupport
+        implements FssMetaResolver {
 
     @Value(AppConstants.EL_SPRING_APP_NAME)
     private String appName;
@@ -76,8 +76,13 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @GetMapping("/upload-limit/{type}")
     @ResponseBody
     @ConfigAnonymous // 匿名用户即可读取上传限制
-    public FssUploadLimit getUploadLimit(@PathVariable("type") String type) {
+    public FileUploadLimit getUploadLimit(@PathVariable("type") String type) {
         return this.service.getUploadLimit(type, getUserIdentity());
+    }
+
+    @Override
+    protected String getFileParameterName() {
+        return "files";
     }
 
     @PostMapping("/upload/{type}")
@@ -93,13 +98,11 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
     public List<FssUploadedFileMeta> upload(@PathVariable("type") String type, @PathVariable("scope") String scope,
             MultipartHttpServletRequest request) {
+        boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
         List<FssUploadedFileMeta> results = new ArrayList<>();
         String[] fileIds = request.getParameterValues("fileIds");
-        Collection<MultipartFile> files = request.getFiles("files");
-        boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
-        int index = 0;
-        for (MultipartFile file : files) {
-            String fileId = fileIds[index++];
+        upload(request, (file, index) -> {
+            String fileId = fileIds[index];
             try {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
@@ -108,7 +111,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             } catch (IOException e) {
                 LogUtil.error(getClass(), e);
             }
-        }
+        });
         return results;
     }
 
