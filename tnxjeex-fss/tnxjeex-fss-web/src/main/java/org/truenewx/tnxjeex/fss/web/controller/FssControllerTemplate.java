@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -21,11 +19,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.config.AppConfiguration;
 import org.truenewx.tnxjee.core.config.AppConstants;
 import org.truenewx.tnxjee.core.config.CommonProperties;
+import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
@@ -35,7 +35,6 @@ import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
-import org.truenewx.tnxjee.webmvc.controller.UploadControllerSupport;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
@@ -53,8 +52,7 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>> extends UploadControllerSupport
-        implements FssMetaResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
 
     @Value(AppConstants.EL_SPRING_APP_NAME)
     private String appName;
@@ -80,15 +78,10 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> extends U
         return this.service.getUploadLimit(type, getUserIdentity());
     }
 
-    @Override
-    protected String getFileParameterName() {
-        return "files";
-    }
-
     @PostMapping("/upload/{type}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type, MultipartHttpServletRequest request) {
+    public FssUploadedFileMeta upload(@PathVariable("type") String type, MultipartHttpServletRequest request) {
         return upload(type, null, request);
     }
 
@@ -96,23 +89,21 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> extends U
     @PostMapping("/upload/{type}/{scope}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
-    public List<FssUploadedFileMeta> upload(@PathVariable("type") String type, @PathVariable("scope") String scope,
+    public FssUploadedFileMeta upload(@PathVariable("type") String type, @PathVariable("scope") String scope,
             MultipartHttpServletRequest request) {
         boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
-        List<FssUploadedFileMeta> results = new ArrayList<>();
-        String[] fileIds = request.getParameterValues("fileIds");
-        upload(request, (file, index) -> {
-            String fileId = fileIds[index];
-            try {
+        String fileId = request.getParameter("fileId");
+        MultipartFile file = WebUtil.getMultipartFile(request, "file");
+        try {
+            if (file != null) {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
-                FssUploadedFileMeta result = write(type, scope, fileId, filename, in, onlyStorage);
-                results.add(result);
-            } catch (IOException e) {
-                LogUtil.error(getClass(), e);
+                return write(type, scope, fileId, filename, in, onlyStorage);
             }
-        });
-        return results;
+        } catch (IOException e) {
+            LogUtil.error(getClass(), e);
+        }
+        return null;
     }
 
     private FssUploadedFileMeta write(String type, String scope, String fileId, String filename, InputStream in,
@@ -121,6 +112,10 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> extends U
         I userIdentity = getUserIdentity();
         String storageUrl = this.service.write(type, scope, userIdentity, filename, in);
         in.close();
+
+        if (StringUtils.isBlank(fileId)) { // 如果文件id未指定，则根据存储路径加密得到文件id
+            fileId = EncryptUtil.encryptByMd5(storageUrl);
+        }
 
         FssUploadedFileMeta result;
         if (onlyStorage) { // 只需要存储地址
