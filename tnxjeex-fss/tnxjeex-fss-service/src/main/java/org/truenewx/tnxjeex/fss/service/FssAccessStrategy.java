@@ -2,8 +2,8 @@ package org.truenewx.tnxjeex.fss.service;
 
 import java.util.Map;
 
-import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
+import org.truenewx.tnxjee.service.spec.upload.FileUploadLimit;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
 /**

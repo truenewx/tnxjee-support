@@ -29,9 +29,9 @@ import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.LogUtil;
 import org.truenewx.tnxjee.core.util.NetUtil;
 import org.truenewx.tnxjee.core.util.StringUtil;
-import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.exception.BusinessException;
+import org.truenewx.tnxjee.service.spec.upload.FileUploadLimit;
 import org.truenewx.tnxjee.web.context.SpringWebContext;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.bind.annotation.ResponseStream;
@@ -98,7 +98,7 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
             if (file != null) {
                 String filename = file.getOriginalFilename();
                 InputStream in = file.getInputStream();
-                return write(type, scope, fileId, filename, in, onlyStorage);
+                return write(type, scope, fileId, file.getSize(), filename, in, onlyStorage);
             }
         } catch (IOException e) {
             LogUtil.error(getClass(), e);
@@ -106,11 +106,11 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         return null;
     }
 
-    private FssUploadedFileMeta write(String type, String scope, String fileId, String filename, InputStream in,
-            boolean onlyStorage) throws IOException {
+    private FssUploadedFileMeta write(String type, String scope, String fileId, long fileSize, String filename,
+            InputStream in, boolean onlyStorage) throws IOException {
         // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
         I userIdentity = getUserIdentity();
-        String storageUrl = this.service.write(type, scope, userIdentity, filename, in);
+        String storageUrl = this.service.write(type, scope, userIdentity, fileSize, filename, in);
         in.close();
 
         if (StringUtils.isBlank(fileId)) { // 如果文件id未指定，则根据存储路径加密得到文件id
@@ -182,8 +182,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                 String fileId = StringUtil.uuid32();
                 File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
                 NetUtil.download(url, null, file);
-                FssUploadedFileMeta meta = write(type, command.getScope(), fileId, filename,
-                        new FileInputStream(file), true);
+                FssUploadedFileMeta meta = write(type, command.getScope(), fileId, file.length(),
+                        filename, new FileInputStream(file), true);
                 // 在独立线程中删除临时文件，以免影响正常流程
                 this.executor.execute(file::delete);
                 return meta.getStorageUrl();

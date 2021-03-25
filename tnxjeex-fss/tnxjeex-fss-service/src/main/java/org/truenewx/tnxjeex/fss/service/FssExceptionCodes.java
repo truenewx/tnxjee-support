@@ -26,16 +26,6 @@ public class FssExceptionCodes {
     public static final String NO_READ_AUTHORITY = "error.fss.no_read_authority";
 
     /**
-     * 仅支持指定扩展名
-     */
-    public static final String ONLY_SUPPORTED_EXTENSION = "error.fss.upload.only_supported_extension";
-
-    /**
-     * 不支持指定扩展名
-     */
-    public static final String UNSUPPORTED_EXTENSION = "error.fss.upload.unsupported_extension";
-
-    /**
      * 未指定扩展名
      */
     public static final String NO_EXTENSION = "error.fss.no_extension";

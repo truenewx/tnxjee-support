@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.truenewx.tnxjee.model.spec.FileUploadLimit;
 import org.truenewx.tnxjee.model.spec.user.UserIdentity;
 import org.truenewx.tnxjee.service.Service;
+import org.truenewx.tnxjee.service.spec.upload.FileUploadLimit;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 
 /**
@@ -32,12 +32,13 @@ public interface FssServiceTemplate<I extends UserIdentity<?>> extends Service {
      * @param type         业务类型
      * @param scope        业务模型标识
      * @param userIdentity 用户标识
+     * @param fileSize     文件大小
      * @param filename     文件名
      * @param in           输入流
      * @return 写好的文件的存储URL
      * @throws IOException 如果写的过程中出现错误
      */
-    String write(String type, String scope, I userIdentity, String filename, InputStream in)
+    String write(String type, String scope, I userIdentity, long fileSize, String filename, InputStream in)
             throws IOException;
 
     /**
