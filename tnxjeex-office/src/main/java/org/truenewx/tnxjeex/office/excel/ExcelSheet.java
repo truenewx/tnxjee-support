@@ -1,7 +1,7 @@
 package org.truenewx.tnxjeex.office.excel;
 
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 
 /**
  * Excel工作表
@@ -10,15 +10,15 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
  */
 public class ExcelSheet {
 
-    private HSSFSheet origin;
+    private Sheet origin;
     private ExcelDoc doc;
 
-    public ExcelSheet(ExcelDoc doc, HSSFSheet origin) {
+    public ExcelSheet(ExcelDoc doc, Sheet origin) {
         this.doc = doc;
         this.origin = origin;
     }
 
-    public HSSFSheet getOrigin() {
+    public Sheet getOrigin() {
         return this.origin;
     }
 
@@ -27,12 +27,12 @@ public class ExcelSheet {
     }
 
     public ExcelRow createRow(int rowIndex) {
-        HSSFRow row = this.origin.createRow(rowIndex);
+        Row row = this.origin.createRow(rowIndex);
         return new ExcelRow(this, row);
     }
 
     public ExcelRow getRow(int rowIndex, boolean createIfNull) {
-        HSSFRow row = this.origin.getRow(rowIndex);
+        Row row = this.origin.getRow(rowIndex);
         if (row == null && createIfNull) {
             return createRow(rowIndex);
         }

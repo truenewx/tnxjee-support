@@ -7,12 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * Excel文档
@@ -21,31 +22,35 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
  */
 public class ExcelDoc {
 
-    private HSSFWorkbook origin;
-    private Map<String, HSSFCellStyle> styles = new HashMap<>();
-    private Map<String, HSSFFont> fonts = new HashMap<>();
+    private Workbook origin;
+    private Map<String, CellStyle> styles = new HashMap<>();
+    private Map<String, Font> fonts = new HashMap<>();
 
     public ExcelDoc() {
         this.origin = new HSSFWorkbook();
     }
 
-    public ExcelDoc(InputStream in) throws IOException {
-        this.origin = new HSSFWorkbook(in);
+    public ExcelDoc(InputStream in, String extension) throws IOException {
+        if ("xls".equalsIgnoreCase(extension)) {
+            this.origin = new HSSFWorkbook(in);
+        } else {
+            this.origin = new SXSSFWorkbook(new XSSFWorkbook(in));
+        }
     }
 
-    public HSSFWorkbook getOrigin() {
+    public Workbook getOrigin() {
         return this.origin;
     }
 
     public ExcelSheet cloneSheet(int sourceSheetIndex, String sheetName) {
-        HSSFSheet sheet = this.origin.cloneSheet(sourceSheetIndex);
+        Sheet sheet = this.origin.cloneSheet(sourceSheetIndex);
         int newSheetIndex = this.origin.getSheetIndex(sheet);
         this.origin.setSheetName(newSheetIndex, sheetName);
         return new ExcelSheet(this, sheet);
     }
 
     public ExcelSheet getSheetAt(int sheetIndex) {
-        HSSFSheet sheet = this.origin.getSheetAt(sheetIndex);
+        Sheet sheet = this.origin.getSheetAt(sheetIndex);
         return sheet == null ? null : new ExcelSheet(this, sheet);
     }
 
@@ -61,24 +66,20 @@ public class ExcelDoc {
         this.origin.close();
     }
 
-    public void write() throws IOException {
-        this.origin.write();
-    }
-
     public void write(OutputStream stream) throws IOException {
         this.origin.write(stream);
     }
 
-    public HSSFCellStyle createCellStyle(String name) {
-        HSSFCellStyle style = this.origin.createCellStyle();
+    public CellStyle createCellStyle(String name) {
+        CellStyle style = this.origin.createCellStyle();
         if (name != null) {
             setCellStyleName(style, name);
         }
         return style;
     }
 
-    public HSSFCellStyle createCellStyle(String name, HSSFCellStyle baseStyle, Consumer<HSSFCellStyle> consumer) {
-        HSSFCellStyle style = createCellStyle(name);
+    public CellStyle createCellStyle(String name, CellStyle baseStyle, Consumer<CellStyle> consumer) {
+        CellStyle style = createCellStyle(name);
         if (baseStyle != null) {
             style.cloneStyleFrom(baseStyle);
         }
@@ -86,20 +87,20 @@ public class ExcelDoc {
         return style;
     }
 
-    public void setCellStyleName(HSSFCellStyle style, String name) {
+    public void setCellStyleName(CellStyle style, String name) {
         this.styles.put(name, style);
     }
 
-    public HSSFCellStyle getCellStyle(String name) {
+    public CellStyle getCellStyle(String name) {
         return this.styles.get(name);
     }
 
-    public HSSFCellStyle getCellStyle(int sheetIndex, int rowIndex, int columnIndex) {
-        HSSFSheet sheet = this.origin.getSheetAt(sheetIndex);
+    public CellStyle getCellStyle(int sheetIndex, int rowIndex, int columnIndex) {
+        Sheet sheet = this.origin.getSheetAt(sheetIndex);
         if (sheet != null) {
-            HSSFRow row = sheet.getRow(rowIndex);
+            Row row = sheet.getRow(rowIndex);
             if (row != null) {
-                HSSFCell cell = row.getCell(columnIndex);
+                Cell cell = row.getCell(columnIndex);
                 if (cell != null) {
                     return cell.getCellStyle();
                 }
@@ -108,16 +109,16 @@ public class ExcelDoc {
         return null;
     }
 
-    public HSSFFont createFont(String name) {
-        HSSFFont font = this.origin.createFont();
+    public Font createFont(String name) {
+        Font font = this.origin.createFont();
         if (name != null) {
             setFontName(font, name);
         }
         return font;
     }
 
-    public HSSFFont createFont(String name, HSSFFont baseFont, Consumer<HSSFFont> consumer) {
-        HSSFFont font = createFont(name);
+    public Font createFont(String name, HSSFFont baseFont, Consumer<Font> consumer) {
+        Font font = createFont(name);
         if (baseFont != null) {
             ExcelUtil.cloneFont(baseFont, font);
         }
@@ -125,18 +126,20 @@ public class ExcelDoc {
         return font;
     }
 
-    public void setFontName(HSSFFont font, String name) {
+    public void setFontName(Font font, String name) {
         this.fonts.put(name, font);
     }
 
-    public HSSFFont getFont(String name) {
+    public Font getFont(String name) {
         return this.fonts.get(name);
     }
 
-    public HSSFFont getFont(int sheetIndex, int rowIndex, int columnIndex) {
-        HSSFCellStyle style = getCellStyle(sheetIndex, rowIndex, columnIndex);
-        if (style != null) {
-            return style.getFont(this.origin);
+    public Font getFont(int sheetIndex, int rowIndex, int columnIndex) {
+        CellStyle style = getCellStyle(sheetIndex, rowIndex, columnIndex);
+        if (style instanceof HSSFCellStyle) {
+            return ((HSSFCellStyle) style).getFont(this.origin);
+        } else if (style instanceof XSSFCellStyle) {
+            return ((XSSFCellStyle) style).getFont();
         }
         return null;
     }

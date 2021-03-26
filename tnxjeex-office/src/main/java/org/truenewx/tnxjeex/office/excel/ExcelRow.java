@@ -1,25 +1,24 @@
 package org.truenewx.tnxjeex.office.excel;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 
 /**
  * Excel行
  *
  * @author jianglei
- * @since JDK 1.8
  */
 public class ExcelRow {
 
-    private HSSFRow origin;
+    private Row origin;
     private ExcelSheet sheet;
 
-    public ExcelRow(ExcelSheet sheet, HSSFRow origin) {
+    public ExcelRow(ExcelSheet sheet, Row origin) {
         this.origin = origin;
         this.sheet = sheet;
     }
 
-    public HSSFRow getOrigin() {
+    public Row getOrigin() {
         return this.origin;
     }
 
@@ -28,12 +27,12 @@ public class ExcelRow {
     }
 
     public ExcelCell createCell(int columnIndex) {
-        HSSFCell cell = this.origin.createCell(columnIndex);
+        Cell cell = this.origin.createCell(columnIndex);
         return new ExcelCell(this, cell);
     }
 
     public ExcelCell getCell(int columnIndex, boolean createIfNull) {
-        HSSFCell cell = this.origin.getCell(columnIndex);
+        Cell cell = this.origin.getCell(columnIndex);
         if (cell == null && createIfNull) {
             return createCell(columnIndex);
         }

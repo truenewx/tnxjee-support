@@ -2,8 +2,9 @@ package org.truenewx.tnxjeex.office.excel;
 
 import java.time.temporal.Temporal;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.TemporalUtil;
 
@@ -14,15 +15,15 @@ import org.truenewx.tnxjee.core.util.TemporalUtil;
  */
 public class ExcelCell {
 
-    private HSSFCell origin;
+    private Cell origin;
     private ExcelRow row;
 
-    public ExcelCell(ExcelRow row, HSSFCell origin) {
+    public ExcelCell(ExcelRow row, Cell origin) {
         this.origin = origin;
         this.row = row;
     }
 
-    public HSSFCell getOrigin() {
+    public Cell getOrigin() {
         return this.origin;
     }
 
@@ -55,7 +56,7 @@ public class ExcelCell {
         this.origin.setCellStyle(style);
     }
 
-    public HSSFCellStyle getCellStyle() {
+    public CellStyle getCellStyle() {
         return this.origin.getCellStyle();
     }
 
