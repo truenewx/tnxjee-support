@@ -1,5 +1,7 @@
 package org.truenewx.tnxjeex.office.excel;
 
+import java.util.function.BiConsumer;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -45,6 +47,13 @@ public class ExcelSheet {
 
     public void mergeCells(int firstRowIndex, int firstColumnIndex, int lastRowIndex, int lastColumnIndex) {
         ExcelUtil.mergeCells(this.origin, firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
+    }
+
+    public void forEach(BiConsumer<ExcelRow, Integer> consumer, int startIndex) {
+        for (int i = startIndex; i < this.origin.getLastRowNum(); i++) {
+            Row row = this.origin.getRow(i);
+            consumer.accept(new ExcelRow(this, row), i);
+        }
     }
 
 }

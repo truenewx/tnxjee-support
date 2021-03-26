@@ -26,8 +26,12 @@ public class ExcelDoc {
     private Map<String, CellStyle> styles = new HashMap<>();
     private Map<String, Font> fonts = new HashMap<>();
 
-    public ExcelDoc() {
-        this.origin = new HSSFWorkbook();
+    public ExcelDoc(String extension) {
+        if ("xls".equalsIgnoreCase(extension)) {
+            this.origin = new HSSFWorkbook();
+        } else {
+            this.origin = new SXSSFWorkbook(new XSSFWorkbook());
+        }
     }
 
     public ExcelDoc(InputStream in, String extension) throws IOException {
@@ -142,6 +146,18 @@ public class ExcelDoc {
             return ((XSSFCellStyle) style).getFont();
         }
         return null;
+    }
+
+    public void forEach(Consumer<ExcelSheet> consumer) {
+        forEach(consumer, 0);
+    }
+
+    public void forEach(Consumer<ExcelSheet> consumer, int startIndex) {
+        int size = this.origin.getNumberOfSheets();
+        for (int i = startIndex; i < size; i++) {
+            Sheet sheet = this.origin.getSheetAt(i);
+            consumer.accept(new ExcelSheet(this, sheet));
+        }
     }
 
 }

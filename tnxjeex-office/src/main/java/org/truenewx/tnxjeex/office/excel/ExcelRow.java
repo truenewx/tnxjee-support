@@ -1,5 +1,8 @@
 package org.truenewx.tnxjeex.office.excel;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
@@ -57,6 +60,21 @@ public class ExcelRow {
 
     public void setHeightInPoints(Number height) {
         this.origin.setHeightInPoints(height.floatValue());
+    }
+
+    public String getStringCellValue(int columnIndex) {
+        Cell cell = this.origin.getCell(columnIndex);
+        return cell == null ? null : cell.getStringCellValue();
+    }
+
+    public BigDecimal getNumericCellValue(int columnIndex) {
+        Cell cell = this.origin.getCell(columnIndex);
+        return cell == null ? null : BigDecimal.valueOf(cell.getNumericCellValue());
+    }
+
+    public LocalDateTime getLocalDateTimeCellValue(int columnIndex) {
+        Cell cell = this.origin.getCell(columnIndex);
+        return cell == null ? null : cell.getLocalDateTimeCellValue();
     }
 
 }
