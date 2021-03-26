@@ -54,11 +54,7 @@ public class ExcelUtil {
             target.setCellComment(source.getCellComment());
         }
         // 不同数据类型处理
-        CellType type = source.getCellType();
-        if (type != CellType.FORMULA) {
-            target.setCellType(type);
-        }
-        switch (type) {
+        switch (source.getCellType()) {
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(source)) {
                     target.setCellValue(source.getDateCellValue());
@@ -69,14 +65,17 @@ public class ExcelUtil {
             case STRING:
                 target.setCellValue(source.getRichStringCellValue());
                 break;
+            case FORMULA:
+                target.setCellFormula(source.getCellFormula());
+                break;
+            case BLANK:
+                target.setBlank();
+                break;
             case BOOLEAN:
                 target.setCellValue(source.getBooleanCellValue());
                 break;
             case ERROR:
                 target.setCellErrorValue(source.getErrorCellValue());
-                break;
-            case FORMULA:
-                target.setCellFormula(source.getCellFormula());
                 break;
             default:
                 break;
