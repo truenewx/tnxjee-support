@@ -11,9 +11,9 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.truenewx.tnxjeex.office.excel.exports.ExcelExportUtil;
 
 /**
  * Excel文档
@@ -22,23 +22,25 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelDoc {
 
+    private static final String EXTENSION_XLS = "xls";
+
     private Workbook origin;
     private Map<String, CellStyle> styles = new HashMap<>();
     private Map<String, Font> fonts = new HashMap<>();
 
     public ExcelDoc(String extension) {
-        if ("xls".equalsIgnoreCase(extension)) {
+        if (EXTENSION_XLS.equalsIgnoreCase(extension)) {
             this.origin = new HSSFWorkbook();
         } else {
-            this.origin = new SXSSFWorkbook(new XSSFWorkbook());
+            this.origin = new XSSFWorkbook();
         }
     }
 
     public ExcelDoc(InputStream in, String extension) throws IOException {
-        if ("xls".equalsIgnoreCase(extension)) {
+        if (EXTENSION_XLS.equalsIgnoreCase(extension)) {
             this.origin = new HSSFWorkbook(in);
         } else {
-            this.origin = new SXSSFWorkbook(new XSSFWorkbook(in));
+            this.origin = new XSSFWorkbook(in);
         }
     }
 
@@ -124,7 +126,7 @@ public class ExcelDoc {
     public Font createFont(String name, HSSFFont baseFont, Consumer<Font> consumer) {
         Font font = createFont(name);
         if (baseFont != null) {
-            ExcelUtil.cloneFont(baseFont, font);
+            ExcelExportUtil.cloneFont(baseFont, font);
         }
         consumer.accept(font);
         return font;

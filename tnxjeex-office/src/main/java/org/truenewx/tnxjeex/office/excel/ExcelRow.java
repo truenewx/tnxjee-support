@@ -1,7 +1,7 @@
 package org.truenewx.tnxjeex.office.excel;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -64,17 +64,17 @@ public class ExcelRow {
 
     public String getStringCellValue(int columnIndex) {
         Cell cell = this.origin.getCell(columnIndex);
-        return cell == null ? null : cell.getStringCellValue();
+        return cell == null ? null : new ExcelCell(this, cell).getStringCellValue();
     }
 
     public BigDecimal getNumericCellValue(int columnIndex) {
         Cell cell = this.origin.getCell(columnIndex);
-        return cell == null ? null : BigDecimal.valueOf(cell.getNumericCellValue());
+        return cell == null ? null : new ExcelCell(this, cell).getNumericCellValue();
     }
 
-    public LocalDateTime getLocalDateTimeCellValue(int columnIndex) {
+    public LocalDate getLocalDateCellValue(int columnIndex) {
         Cell cell = this.origin.getCell(columnIndex);
-        return cell == null ? null : cell.getLocalDateTimeCellValue();
+        return cell == null ? null : new ExcelCell(this, cell).getLocalDateCellValue();
     }
 
 }

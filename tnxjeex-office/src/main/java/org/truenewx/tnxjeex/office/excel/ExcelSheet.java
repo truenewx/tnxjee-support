@@ -4,6 +4,7 @@ import java.util.function.BiConsumer;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.truenewx.tnxjeex.office.excel.exports.ExcelExportUtil;
 
 /**
  * Excel工作表
@@ -46,7 +47,7 @@ public class ExcelSheet {
     }
 
     public void mergeCells(int firstRowIndex, int firstColumnIndex, int lastRowIndex, int lastColumnIndex) {
-        ExcelUtil.mergeCells(this.origin, firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
+        ExcelExportUtil.mergeCells(this.origin, firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
     }
 
     public void forEach(BiConsumer<ExcelRow, Integer> consumer, int startIndex) {

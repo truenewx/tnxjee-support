@@ -1,4 +1,4 @@
-package org.truenewx.tnxjeex.office.excel;
+package org.truenewx.tnxjeex.office.excel.exports;
 
 import java.util.Iterator;
 
@@ -11,7 +11,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
  *
  * @author jianglei
  */
-public class ExcelUtil {
+public class ExcelExportUtil {
 
     public static void cloneRows(Sheet sheet, int sourceStartRowIndex, int rowsNum, int targetStartRowIndex) {
         for (int i = 0; i < rowsNum; i++) {

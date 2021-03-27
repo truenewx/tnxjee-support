@@ -1,10 +1,14 @@
 package org.truenewx.tnxjeex.office.excel;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.TemporalUtil;
 
@@ -49,7 +53,33 @@ public class ExcelCell {
     }
 
     public String getStringCellValue() {
+        if (this.origin.getCellType() == CellType.NUMERIC) {
+            return String.valueOf(this.origin.getNumericCellValue());
+        }
         return this.origin.getStringCellValue();
+    }
+
+    public BigDecimal getNumericCellValue() {
+        try {
+            if (this.origin.getCellType() == CellType.NUMERIC) {
+                return BigDecimal.valueOf(this.origin.getNumericCellValue());
+            } else {
+                return new BigDecimal(this.origin.getStringCellValue());
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
+    }
+
+    public LocalDate getLocalDateCellValue() {
+        try {
+            LocalDateTime dateTime = this.origin.getLocalDateTimeCellValue();
+            if (dateTime != null) {
+                return dateTime.toLocalDate();
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
     }
 
     public void setCellStyle(HSSFCellStyle style) {
