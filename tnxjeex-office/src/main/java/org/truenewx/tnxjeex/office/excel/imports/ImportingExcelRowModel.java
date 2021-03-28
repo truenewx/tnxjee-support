@@ -29,4 +29,16 @@ public abstract class ImportingExcelRowModel {
         this.cellErrors.put(fieldName, new ImportingExcelTextError(error.getCode(), error.getMessage(), originalText));
     }
 
+    /**
+     * 当字段类型为数组或集合时，添加字段指定位置元素值的错误
+     *
+     * @param fieldName    字段名称
+     * @param index        出错的元素位置索引
+     * @param error        错误对象
+     * @param originalText 原始文本
+     */
+    public void addCellError(String fieldName, int index, CodedError error, String originalText) {
+        addCellError(fieldName + "[" + index + "]", error, originalText);
+    }
+
 }
