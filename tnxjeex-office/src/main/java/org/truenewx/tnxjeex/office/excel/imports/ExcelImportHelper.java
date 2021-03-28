@@ -42,20 +42,33 @@ public class ExcelImportHelper {
     public void addCellError(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue, String errorCode,
             Locale locale, Object... args) {
         CodedError error = this.codedErrorResolver.resolveError(errorCode, locale, args);
-        rowModel.addCellError(fieldName, error, fieldValue == null ? null : fieldValue.toString());
+        rowModel.addFieldError(fieldName, fieldValue == null ? null : fieldValue.toString(), error);
+    }
+
+    public void addCellError(ImportingExcelRowModel rowModel, String fieldName, int index, Object fieldValue,
+            String errorCode, Locale locale, Object... args) {
+        CodedError error = this.codedErrorResolver.resolveError(errorCode, locale, args);
+        rowModel.addFieldError(fieldName, index, fieldValue == null ? null : fieldValue.toString(), error);
+    }
+
+    public <E extends Enum<E>> E getEnumConstant(ExcelRow row, int columnIndex, Class<E> enumClass, Locale locale) {
+        String caption = row.getStringCellValue(columnIndex);
+        if (StringUtils.isNotBlank(caption)) {
+            return this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, locale);
+        }
+        return null;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void applyRequiredValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
             Locale locale) {
-        Object value = null;
+        Object value;
         Field field = ClassUtil.findField(rowModel.getClass(), fieldName);
         Class<?> fieldType = field.getType();
         if (fieldType == String.class) {
             value = row.getStringCellValue(columnIndex);
         } else if (fieldType.isEnum()) {
-            String caption = row.getStringCellValue(columnIndex);
-            value = this.enumDictResolver.getEnumConstantByCaption((Class<Enum>) fieldType, caption, locale);
+            value = getEnumConstant(row, columnIndex, (Class<Enum>) fieldType, locale);
         } else if (fieldType == LocalDate.class) {
             value = row.getLocalDateCellValue(columnIndex);
         } else {
@@ -71,5 +84,6 @@ public class ExcelImportHelper {
             BeanUtil.setPropertyValue(rowModel, fieldName, value);
         }
     }
+
 
 }
