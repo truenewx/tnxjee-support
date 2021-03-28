@@ -51,7 +51,7 @@ public class ExcelSheet {
     }
 
     public void forEach(BiConsumer<ExcelRow, Integer> consumer, int startIndex) {
-        for (int i = startIndex; i < this.origin.getLastRowNum(); i++) {
+        for (int i = startIndex; i <= this.origin.getLastRowNum(); i++) {
             Row row = this.origin.getRow(i);
             consumer.accept(new ExcelRow(this, row), i);
         }
