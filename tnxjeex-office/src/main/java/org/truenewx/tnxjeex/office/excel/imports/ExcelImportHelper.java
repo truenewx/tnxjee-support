@@ -12,8 +12,10 @@ import org.truenewx.tnxjee.core.enums.EnumDictResolver;
 import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.ClassUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
+import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.service.exception.message.CodedErrorResolver;
 import org.truenewx.tnxjee.service.exception.model.CodedError;
+import org.truenewx.tnxjeex.office.excel.ExcelExceptionCodes;
 import org.truenewx.tnxjeex.office.excel.ExcelRow;
 
 /**
@@ -51,6 +53,15 @@ public class ExcelImportHelper {
         rowModel.addFieldError(fieldName, index, fieldValue == null ? null : fieldValue.toString(), error);
     }
 
+    public void addCellError(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue, BusinessException be,
+            Locale locale) {
+        addCellError(rowModel, fieldName, fieldValue, be.getCode(), locale, be.getArgs());
+    }
+
+    public void addCellRequiredError(ImportingExcelRowModel rowModel, String fieldName, Locale locale) {
+        addCellError(rowModel, fieldName, null, ExcelExceptionCodes.IMPORT_CELL_REQUIRED, locale);
+    }
+
     public <E extends Enum<E>> E getEnumConstant(ExcelRow row, int columnIndex, Class<E> enumClass, Locale locale) {
         String caption = row.getStringCellValue(columnIndex);
         if (StringUtils.isNotBlank(caption)) {
@@ -75,13 +86,15 @@ public class ExcelImportHelper {
             BigDecimal decimal = row.getNumericCellValue(columnIndex);
             value = MathUtil.toValue(decimal, fieldType);
         }
-        if (value == null || (value instanceof String && StringUtils.isBlank((String) value))) {
-            String originalText = row.getStringCellValue(columnIndex);
-            if (StringUtils.isBlank(originalText)) {
-                addCellError(rowModel, fieldName, originalText, ExcelImportExceptionCodes.CELL_REQUIRED, locale);
-            }
+        applyRequiredValue(rowModel, fieldName, value, locale);
+    }
+
+    public void applyRequiredValue(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue,
+            Locale locale) {
+        if (fieldValue == null || (fieldValue instanceof String && StringUtils.isBlank((String) fieldValue))) {
+            addCellRequiredError(rowModel, fieldName, locale);
         } else {
-            BeanUtil.setPropertyValue(rowModel, fieldName, value);
+            BeanUtil.setPropertyValue(rowModel, fieldName, fieldValue);
         }
     }
 

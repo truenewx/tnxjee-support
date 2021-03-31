@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -59,36 +60,60 @@ public class ExcelCell {
             }
             return this.origin.getStringCellValue();
         } catch (Exception ignored) {
+            throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_STRING_FORMAT_ERROR);
         }
-        return null;
     }
 
     public BigDecimal getNumericCellValue() {
-        try {
-            if (this.origin.getCellType() == CellType.NUMERIC) {
+        if (this.origin.getCellType() == CellType.NUMERIC) {
+            try {
                 return BigDecimal.valueOf(this.origin.getNumericCellValue());
+            } catch (Exception ignored) {
             }
-            return new BigDecimal(this.origin.getStringCellValue());
-        } catch (Exception ignored) {
+        }
+        String value = this.origin.getStringCellValue();
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                return new BigDecimal(value);
+            } catch (Exception e) {
+                throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_NUMBER_FORMAT_ERROR);
+            }
         }
         return null;
     }
 
     public LocalDate getLocalDateCellValue() {
-        try {
-            if (this.origin.getCellType() == CellType.NUMERIC) {
-                LocalDateTime dateTime = this.origin.getLocalDateTimeCellValue();
-                if (dateTime != null) {
-                    return dateTime.toLocalDate();
-                }
+        if (this.origin.getCellType() == CellType.NUMERIC) {
+            LocalDateTime dateTime = this.origin.getLocalDateTimeCellValue();
+            if (dateTime != null) {
+                return dateTime.toLocalDate();
             }
-            String value = this.origin.getStringCellValue();
+        }
+        String value = this.origin.getStringCellValue();
+        if (StringUtils.isNotBlank(value)) {
             LocalDate date = TemporalUtil.parseDate(value);
             if (date == null) {
                 date = TemporalUtil.parse(LocalDate.class, value, "yyyy-M-d");
             }
+            if (date == null) {
+                throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_DATE_FORMAT_ERROR);
+            }
             return date;
-        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public LocalDate getLocalMonthCellValue() {
+        String value = getStringCellValue();
+        if (StringUtils.isNotBlank(value)) {
+            LocalDate month = TemporalUtil.parseDate(value + "-01");
+            if (month == null) {
+                month = TemporalUtil.parse(LocalDate.class, value + "-1", "yyyy-M-d");
+            }
+            if (month == null) {
+                throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_MONTH_FORMAT_ERROR);
+            }
+            return month;
         }
         return null;
     }

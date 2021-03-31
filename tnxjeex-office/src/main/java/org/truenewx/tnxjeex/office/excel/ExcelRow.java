@@ -77,4 +77,9 @@ public class ExcelRow {
         return cell == null ? null : new ExcelCell(this, cell).getLocalDateCellValue();
     }
 
+    public LocalDate getLocalMonthCellValue(int columnIndex) {
+        Cell cell = this.origin.getCell(columnIndex);
+        return cell == null ? null : new ExcelCell(this, cell).getLocalMonthCellValue();
+    }
+
 }
