@@ -35,5 +35,15 @@ public class ExcelExceptionCodes {
      */
     public static final String IMPORT_CELL_REQUIRED = "tnxjeex.office.excel.import.cell_required";
 
+    /**
+     * 导入：单元格枚举显示名称错误
+     */
+    public static final String IMPORT_CELL_ENUM_ERROR = "tnxjeex.office.excel.import.cell_enum_error";
+
+    /**
+     * 导入：单元格行政区划显示名称错误
+     */
+    public static final String IMPORT_CELL_REGION_ERROR = "tnxjeex.office.excel.import.cell_region_error";
+
 
 }

@@ -9,12 +9,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.enums.EnumDictResolver;
+import org.truenewx.tnxjee.core.enums.EnumItem;
+import org.truenewx.tnxjee.core.enums.EnumItemKey;
+import org.truenewx.tnxjee.core.enums.EnumType;
 import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.ClassUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
+import org.truenewx.tnxjee.model.validation.constraint.RegionCode;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.service.exception.message.CodedErrorResolver;
 import org.truenewx.tnxjee.service.exception.model.CodedError;
+import org.truenewx.tnxjee.service.spec.region.NationalRegionSource;
+import org.truenewx.tnxjee.service.spec.region.Region;
+import org.truenewx.tnxjee.service.spec.region.RegionNationCodes;
+import org.truenewx.tnxjee.service.spec.region.RegionSource;
 import org.truenewx.tnxjeex.office.excel.ExcelExceptionCodes;
 import org.truenewx.tnxjeex.office.excel.ExcelRow;
 
@@ -30,6 +38,8 @@ public class ExcelImportHelper {
     private CodedErrorResolver codedErrorResolver;
     @Autowired
     private EnumDictResolver enumDictResolver;
+    @Autowired
+    private RegionSource regionSource;
 
     public void addSheetError(ImportingExcelSheetModel<?> sheetModel, String code, Locale locale, Object... args) {
         CodedError error = this.codedErrorResolver.resolveError(code, locale, args);
@@ -62,40 +72,71 @@ public class ExcelImportHelper {
         addCellError(rowModel, fieldName, null, ExcelExceptionCodes.IMPORT_CELL_REQUIRED, locale);
     }
 
-    public <E extends Enum<E>> E getEnumConstant(ExcelRow row, int columnIndex, Class<E> enumClass, Locale locale) {
-        String caption = row.getStringCellValue(columnIndex);
-        if (StringUtils.isNotBlank(caption)) {
-            return this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, locale);
-        }
-        return null;
+    public void applyValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
+            Locale locale, boolean required) {
+        Object value = getCellValue(rowModel, row, columnIndex, fieldName, locale);
+        applyValue(rowModel, fieldName, value, locale, required);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void applyRequiredValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
+    public <V> V getCellValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
             Locale locale) {
-        Object value;
         Field field = ClassUtil.findField(rowModel.getClass(), fieldName);
         Class<?> fieldType = field.getType();
         if (fieldType == String.class) {
-            value = row.getStringCellValue(columnIndex);
+            String value = row.getStringCellValue(columnIndex);
+            EnumItemKey enumItemKey = field.getAnnotation(EnumItemKey.class);
+            if (enumItemKey != null) {
+                EnumType enumType = this.enumDictResolver
+                        .getEnumType(enumItemKey.type(), enumItemKey.subtype(), locale);
+                if (enumType != null) {
+                    EnumItem enumItem = enumType.getItemByCaption(value);
+                    if (enumItem != null) {
+                        return (V) enumItem.getKey();
+                    }
+                }
+                addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+            }
+            RegionCode regionCode = field.getAnnotation(RegionCode.class);
+            if (regionCode != null) {
+                Region region = getNationalRegionSource().parseSubRegion(value, regionCode.withSuffix(), locale);
+                if (region != null) {
+                    return (V) region.getCode();
+                }
+                addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_REGION_ERROR, locale);
+            }
+            return (V) value;
         } else if (fieldType.isEnum()) {
-            value = getEnumConstant(row, columnIndex, (Class<Enum>) fieldType, locale);
+            String caption = row.getStringCellValue(columnIndex);
+            if (StringUtils.isNotBlank(caption)) {
+                V value = (V) this.enumDictResolver.getEnumConstantByCaption((Class<Enum>) fieldType, caption, locale);
+                if (value == null) {
+                    addCellError(rowModel, fieldName, caption, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+                }
+                return value;
+            }
+            return null;
         } else if (fieldType == LocalDate.class) {
-            value = row.getLocalDateCellValue(columnIndex);
+            return (V) row.getLocalDateCellValue(columnIndex);
         } else {
             BigDecimal decimal = row.getNumericCellValue(columnIndex);
-            value = MathUtil.toValue(decimal, fieldType);
+            return (V) MathUtil.toValue(decimal, fieldType);
         }
-        applyRequiredValue(rowModel, fieldName, value, locale);
     }
 
-    public void applyRequiredValue(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue,
-            Locale locale) {
-        if (fieldValue == null || (fieldValue instanceof String && StringUtils.isBlank((String) fieldValue))) {
-            addCellRequiredError(rowModel, fieldName, locale);
-        } else {
-            BeanUtil.setPropertyValue(rowModel, fieldName, fieldValue);
+    public NationalRegionSource getNationalRegionSource() {
+        return this.regionSource.getNationalRegionSource(RegionNationCodes.CHINA);
+    }
+
+    public void applyValue(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue, Locale locale,
+            boolean required) {
+        if (required) {
+            if (fieldValue == null || (fieldValue instanceof String && StringUtils.isBlank((String) fieldValue))) {
+                addCellRequiredError(rowModel, fieldName, locale);
+                return;
+            }
         }
+        BeanUtil.setPropertyValue(rowModel, fieldName, fieldValue);
     }
 
 
