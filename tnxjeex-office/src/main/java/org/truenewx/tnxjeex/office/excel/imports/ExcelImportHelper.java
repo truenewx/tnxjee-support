@@ -75,7 +75,7 @@ public class ExcelImportHelper {
     public void applyValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
             Locale locale, boolean required) {
         Object value = getCellValue(rowModel, row, columnIndex, fieldName, locale);
-        applyValue(rowModel, fieldName, value, locale, required);
+        applyValue(rowModel, value, fieldName, locale, required);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -109,7 +109,8 @@ public class ExcelImportHelper {
         } else if (fieldType.isEnum()) {
             String caption = row.getStringCellValue(columnIndex);
             if (StringUtils.isNotBlank(caption)) {
-                V value = (V) this.enumDictResolver.getEnumConstantByCaption((Class<Enum>) fieldType, caption, locale);
+                Class<Enum> enumClass = (Class<Enum>) fieldType;
+                V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, locale);
                 if (value == null) {
                     addCellError(rowModel, fieldName, caption, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
                 }
@@ -128,7 +129,7 @@ public class ExcelImportHelper {
         return this.regionSource.getNationalRegionSource(RegionNationCodes.CHINA);
     }
 
-    public void applyValue(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue, Locale locale,
+    public void applyValue(ImportingExcelRowModel rowModel, Object fieldValue, String fieldName, Locale locale,
             boolean required) {
         if (required) {
             if (fieldValue == null || (fieldValue instanceof String && StringUtils.isBlank((String) fieldValue))) {
