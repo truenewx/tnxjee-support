@@ -7,11 +7,13 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.truenewx.tnxjee.core.enums.EnumDictResolver;
 import org.truenewx.tnxjee.core.enums.EnumItem;
 import org.truenewx.tnxjee.core.enums.EnumItemKey;
 import org.truenewx.tnxjee.core.enums.EnumType;
+import org.truenewx.tnxjee.core.spec.EnumGrouped;
 import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.ClassUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
@@ -34,12 +36,20 @@ import org.truenewx.tnxjeex.office.excel.ExcelRow;
 @Component
 public class ExcelImportHelper {
 
+    private static final String GROUPED_ENUM_CAPTION_SEPARATOR = "constant.tnxjeex.office.excel.grouped_enum_caption_separator";
+
     @Autowired
     private CodedErrorResolver codedErrorResolver;
     @Autowired
     private EnumDictResolver enumDictResolver;
     @Autowired
     private RegionSource regionSource;
+    @Autowired
+    private MessageSource messageSource;
+
+    public String getGroupedCaptionSeparator(Locale locale) {
+        return this.messageSource.getMessage(GROUPED_ENUM_CAPTION_SEPARATOR, null, locale);
+    }
 
     public void addSheetError(ImportingExcelSheetModel<?> sheetModel, String code, Locale locale, Object... args) {
         CodedError error = this.codedErrorResolver.resolveError(code, locale, args);
@@ -107,12 +117,22 @@ public class ExcelImportHelper {
             }
             return (V) value;
         } else if (fieldType.isEnum()) {
-            String caption = row.getStringCellValue(columnIndex);
-            if (StringUtils.isNotBlank(caption)) {
+            String text = row.getStringCellValue(columnIndex);
+            if (StringUtils.isNotBlank(text)) {
                 Class<Enum> enumClass = (Class<Enum>) fieldType;
-                V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, locale);
+                String caption = text;
+                String groupCaption = null;
+                if (EnumGrouped.class.isAssignableFrom(enumClass)) {
+                    String separator = getGroupedCaptionSeparator(locale);
+                    int index = caption.indexOf(separator);
+                    if (index > 0) {
+                        groupCaption = caption.substring(0, index);
+                        caption = caption.substring(index + separator.length());
+                    }
+                }
+                V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, groupCaption, locale);
                 if (value == null) {
-                    addCellError(rowModel, fieldName, caption, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+                    addCellError(rowModel, fieldName, text, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
                 }
                 return value;
             }
