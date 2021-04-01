@@ -50,6 +50,10 @@ public class ExcelRow {
         return this.origin.getRowNum();
     }
 
+    public ExcelRowAddress getAddress() {
+        return new ExcelRowAddress(this.sheet.getOrigin().getSheetName(), this.sheet.getSheetIndex(), getRowIndex());
+    }
+
     public ExcelCell setCellValue(int columnIndex, Object value) {
         ExcelCell cell = getCell(columnIndex);
         if (cell != null) {

@@ -29,6 +29,10 @@ public class ExcelSheet {
         return this.doc;
     }
 
+    public int getSheetIndex() {
+        return this.doc.getOrigin().getSheetIndex(this.origin);
+    }
+
     public ExcelRow createRow(int rowIndex) {
         Row row = this.origin.createRow(rowIndex);
         return new ExcelRow(this, row);
