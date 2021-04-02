@@ -82,6 +82,10 @@ public class ExcelImportHelper {
         addCellError(rowModel, fieldName, null, ExcelExceptionCodes.IMPORT_CELL_REQUIRED, locale);
     }
 
+    public void addCellRequiredError(ImportingExcelRowModel rowModel, String fieldName, int index, Locale locale) {
+        addCellError(rowModel, fieldName, index, null, ExcelExceptionCodes.IMPORT_CELL_REQUIRED, locale);
+    }
+
     public void applyValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
             Locale locale, boolean required) {
         Object value = getCellValue(rowModel, row, columnIndex, fieldName, locale);
