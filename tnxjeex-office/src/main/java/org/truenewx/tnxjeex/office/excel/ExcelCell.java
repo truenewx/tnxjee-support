@@ -56,10 +56,14 @@ public class ExcelCell {
     public String getStringCellValue() {
         try {
             if (this.origin.getCellType() == CellType.NUMERIC) {
-                return String.valueOf(this.origin.getNumericCellValue());
+                try {
+                    BigDecimal decimal = BigDecimal.valueOf(this.origin.getNumericCellValue());
+                    return decimal.toString();
+                } catch (Exception ignored) {
+                }
             }
             return this.origin.getStringCellValue();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_STRING_FORMAT_ERROR);
         }
     }
