@@ -15,6 +15,7 @@
         <module>tnxjeex-notice</module>
         <module>tnxjeex-office</module>
         <module>tnxjeex-openapi</module>
+        <module>tnxjeex-payment</module>
         <module>tnxjeex-seata</module>
     </modules>
     <dependencyManagement>
@@ -67,11 +68,6 @@
                 <version>${tnxjee.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.truenewx.tnxjeex.notice</groupId>
-                <artifactId>tnxjeex-notice-web</artifactId>
-                <version>${tnxjee.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.truenewx.tnxjeex</groupId>
                 <artifactId>tnxjeex-office</artifactId>
                 <version>${tnxjee.version}</version>
@@ -89,6 +85,16 @@
             <dependency>
                 <groupId>org.truenewx.tnxjeex.openapi.client</groupId>
                 <artifactId>tnxjeex-openapi-client-web</artifactId>
+                <version>${tnxjee.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.payment</groupId>
+                <artifactId>tnxjeex-payment-core</artifactId>
+                <version>${tnxjee.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.truenewx.tnxjeex.payment</groupId>
+                <artifactId>tnxjeex-payment-web</artifactId>
                 <version>${tnxjee.version}</version>
             </dependency>
             <dependency><!-- 与 spring-cloud-starter-openfeign 中依赖的版本保持一致 -->
