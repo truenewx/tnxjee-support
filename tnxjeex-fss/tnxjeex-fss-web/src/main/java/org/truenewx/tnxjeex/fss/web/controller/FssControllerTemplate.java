@@ -18,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.tnxjee.core.Strings;
@@ -39,6 +43,7 @@ import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAuthority;
 import org.truenewx.tnxjee.webmvc.security.util.SecurityUtil;
 import org.truenewx.tnxjeex.fss.api.FssMetaResolver;
+import org.truenewx.tnxjeex.fss.api.FssUploader;
 import org.truenewx.tnxjeex.fss.api.model.FssTransferCommand;
 import org.truenewx.tnxjeex.fss.model.FssFileMeta;
 import org.truenewx.tnxjeex.fss.service.FssExceptionCodes;
@@ -52,7 +57,7 @@ import com.aliyun.oss.internal.Mimetypes;
  *
  * @author jianglei
  */
-public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver {
+public abstract class FssControllerTemplate<I extends UserIdentity<?>> implements FssMetaResolver, FssUploader {
 
     @Value(AppConstants.EL_SPRING_APP_NAME)
     private String appName;
@@ -78,6 +83,14 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         return this.service.getUploadLimit(type, getUserIdentity());
     }
 
+    @Override
+    @ResponseBody
+    @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
+    public String upload(String type, String scope, MultipartFile file) {
+        FssUploadedFileMeta meta = write(type, scope, file, null, true);
+        return meta == null ? null : meta.getStorageUrl();
+    }
+
     @PostMapping("/upload/{type}")
     @ResponseBody
     @ConfigAuthority // 登录用户才可上传文件，访问策略可能还有更多限定
@@ -94,6 +107,11 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
         boolean onlyStorage = Boolean.parseBoolean(request.getParameter("onlyStorage"));
         String fileId = request.getParameter("fileId");
         MultipartFile file = WebUtil.getMultipartFile(request, "file");
+        return write(type, scope, file, fileId, onlyStorage);
+    }
+
+    private FssUploadedFileMeta write(String type, String scope, MultipartFile file, String fileId,
+            boolean onlyStorage) {
         try {
             if (file != null) {
                 String filename = file.getOriginalFilename();
@@ -182,8 +200,8 @@ public abstract class FssControllerTemplate<I extends UserIdentity<?>> implement
                 String fileId = StringUtil.uuid32();
                 File file = new File(root, "/temp/" + fileId + Strings.UNDERLINE + filename);
                 NetUtil.download(url, null, file);
-                FssUploadedFileMeta meta = write(type, command.getScope(), fileId, file.length(),
-                        filename, new FileInputStream(file), true);
+                FssUploadedFileMeta meta = write(type, command.getScope(), fileId, file.length(), filename,
+                        new FileInputStream(file), true);
                 // 在独立线程中删除临时文件，以免影响正常流程
                 this.executor.execute(file::delete);
                 return meta.getStorageUrl();
