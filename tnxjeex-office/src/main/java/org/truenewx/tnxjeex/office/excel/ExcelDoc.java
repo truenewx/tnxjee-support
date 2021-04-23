@@ -10,7 +10,12 @@ import java.util.function.Consumer;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.truenewx.tnxjeex.office.excel.exports.ExcelExportUtil;
@@ -22,7 +27,8 @@ import org.truenewx.tnxjeex.office.excel.exports.ExcelExportUtil;
  */
 public class ExcelDoc {
 
-    private static final String EXTENSION_XLS = "xls";
+    public static final String EXTENSION_XLS = "xls";
+    public static final String EXTENSION_XLSX = "xlsx";
 
     private Workbook origin;
     private Map<String, CellStyle> styles = new HashMap<>();
