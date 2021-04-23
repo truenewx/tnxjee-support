@@ -19,7 +19,7 @@ import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
 
     @Override
-    protected final WechatAppType getAppType() {
+    public final WechatAppType getAppType() {
         return WechatAppType.MP;
     }
 
@@ -53,8 +53,8 @@ public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
      * @param hyaline 背景是否透明
      * @return 小程序图片的输入流
      */
-    public InputStream getUnlimitedWxacodeImage(String scene, String page, Integer width,
-            String color, boolean hyaline) {
+    public InputStream getUnlimitedWxacodeImage(String scene, String page, Integer width, String color,
+            boolean hyaline) {
         if (scene.length() > 32) {
             return null;
         }
@@ -92,8 +92,8 @@ public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
         // 为避免出现=，形如：a-1;b-2，所以key和value中都不能带减号和分号
         parameters.forEach((key, value) -> {
             String sValue = value.toString();
-            if (!key.contains(Strings.SEMICOLON) && !key.contains(Strings.MINUS)
-                    && !sValue.contains(Strings.SEMICOLON) && !sValue.contains(Strings.MINUS)) {
+            if (!key.contains(Strings.SEMICOLON) && !key.contains(Strings.MINUS) && !sValue.contains(Strings.SEMICOLON)
+                    && !sValue.contains(Strings.MINUS)) {
                 scene.append(Strings.SEMICOLON).append(key).append(Strings.MINUS).append(sValue);
             }
         });

@@ -8,7 +8,7 @@ import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatAppType;
 public abstract class WechatWebAccessor extends WechatOpenAppAccessSupport {
 
     @Override
-    protected final WechatAppType getAppType() {
+    public final WechatAppType getAppType() {
         return WechatAppType.WEB;
     }
 

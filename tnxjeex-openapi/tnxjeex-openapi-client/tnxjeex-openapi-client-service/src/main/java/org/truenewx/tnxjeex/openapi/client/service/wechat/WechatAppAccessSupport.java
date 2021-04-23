@@ -74,12 +74,12 @@ public abstract class WechatAppAccessSupport {
     /**
      * @return 应用类型
      */
-    protected abstract WechatAppType getAppType();
+    public abstract WechatAppType getAppType();
 
     /**
      * @return 应用id
      */
-    protected abstract String getAppId();
+    public abstract String getAppId();
 
     /**
      * @return 访问秘钥

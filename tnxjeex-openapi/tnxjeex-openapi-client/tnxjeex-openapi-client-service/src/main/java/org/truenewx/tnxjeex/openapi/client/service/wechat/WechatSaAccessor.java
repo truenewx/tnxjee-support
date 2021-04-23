@@ -17,7 +17,7 @@ import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 public abstract class WechatSaAccessor extends WechatPublicAppAccessSupport {
 
     @Override
-    protected final WechatAppType getAppType() {
+    public final WechatAppType getAppType() {
         return WechatAppType.SA;
     }
 
@@ -49,8 +49,8 @@ public abstract class WechatSaAccessor extends WechatPublicAppAccessSupport {
      * @param mpAppId    关联小程序AppId，为空时不关联小程序
      * @param mpPagePath 关联小程序打开的页面路径，为空时不关联小程序
      */
-    public void sendTemplateMessage(String openId, String templateId, WechatTemplateMessage message,
-            String mpAppId, String mpPagePath) {
+    public void sendTemplateMessage(String openId, String templateId, WechatTemplateMessage message, String mpAppId,
+            String mpPagePath) {
         Map<String, Object> params = new HashMap<>();
         params.put("touser", openId);
         params.put("template_id", templateId);
