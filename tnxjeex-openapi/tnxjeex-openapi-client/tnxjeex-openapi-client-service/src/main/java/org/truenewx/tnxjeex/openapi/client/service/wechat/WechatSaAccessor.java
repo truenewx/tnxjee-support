@@ -69,4 +69,9 @@ public abstract class WechatSaAccessor extends WechatPublicAppAccessSupport {
         }
     }
 
+    /**
+     * @return 开发者微信号
+     */
+    public abstract String getUsername();
+
 }

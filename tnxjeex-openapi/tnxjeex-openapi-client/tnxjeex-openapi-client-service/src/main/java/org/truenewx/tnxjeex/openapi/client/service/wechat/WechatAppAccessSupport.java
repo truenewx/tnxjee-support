@@ -13,20 +13,19 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.HttpClientUtil;
 import org.truenewx.tnxjee.core.util.JsonUtil;
 import org.truenewx.tnxjee.core.util.tuple.Binate;
-import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatAppType;
-import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 
 /**
  * 微信应用访问支持
  *
  * @author jianglei
  */
-public abstract class WechatAppAccessSupport {
+public abstract class WechatAppAccessSupport implements WechatAppAccessor {
 
     protected static final String HOST = "https://api.weixin.qq.com";
 
@@ -58,7 +57,7 @@ public abstract class WechatAppAccessSupport {
 
     protected Map<String, Object> postFormData(String url, InputStream in, String mimeType) {
         HttpPost request = new HttpPost(HOST + url);
-        request.addHeader("Content-Type", "application/octet-stream");
+        request.addHeader("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE);
         try {
             byte[] content = IOUtils.toByteArray(in);
             request.setEntity(new ByteArrayEntity(content, ContentType.create(mimeType)));
@@ -85,22 +84,5 @@ public abstract class WechatAppAccessSupport {
      * @return 访问秘钥
      */
     protected abstract String getSecret();
-
-    public abstract WechatUser getUser(String loginCode);
-
-    /**
-     * 根据登录编码加载微信用户信息
-     *
-     * @param loginCode 登录编码
-     * @return 微信用户信息
-     * @throws BusinessException 如果登录编码无效
-     */
-    public WechatUser loadUser(String loginCode) {
-        WechatUser user = getUser(loginCode);
-        if (user == null) { // 无效的微信登录编码
-            throw new BusinessException("error.openapi.client.invalid_login_code");
-        }
-        return user;
-    }
 
 }
