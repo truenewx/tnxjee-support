@@ -7,19 +7,19 @@ import com.aliyuncs.auth.sts.AssumeRoleResponse;
 import com.aliyuncs.exceptions.ClientException;
 
 /**
- * 阿里云STS临时角色假扮器
+ * 阿里云STS临时角色扮演者
  *
  * @author jianglei
  */
 public class AliyunStsRoleAssumer {
 
     private String roleArn;
-    private long durationSeconds = 60 * 15l; // 允许的最小时间
+    private long durationSeconds = 60 * 15L; // 允许的最小时间
     private AliyunAccount account;
 
     /**
-     * @param accountId 阿里云账号id
-     * @param roleName  sts临时角色名称
+     * @param account  阿里云账号
+     * @param roleName RAM角色名称
      */
     public AliyunStsRoleAssumer(AliyunAccount account, String roleName) {
         this.account = account;

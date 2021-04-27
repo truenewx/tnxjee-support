@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjeex.fss.service.FssAccessor;
 import org.truenewx.tnxjeex.fss.service.model.FssProvider;
 
@@ -19,11 +21,9 @@ import com.aliyun.oss.model.ObjectMetadata;
 public class AliyunFssAccessor implements FssAccessor {
 
     private AliyunAccount account;
-    private String bucket;
 
-    public AliyunFssAccessor(AliyunAccount account, String bucket) {
+    public AliyunFssAccessor(AliyunAccount account) {
         this.account = account;
-        this.bucket = bucket;
     }
 
     @Override
@@ -32,18 +32,26 @@ public class AliyunFssAccessor implements FssAccessor {
     }
 
     @Override
-    public void write(InputStream in, String path, String filename)
-            throws IOException {
+    public void write(InputStream in, String path, String filename) throws IOException {
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.getUserMetadata().put("filename", filename);
-        this.account.getOssClient().putObject(this.bucket, path, in, objectMetadata);
+        if (StringUtils.isNotBlank(filename)) {
+            filename = EncryptUtil.encryptByBase64(filename); // 中文文件名会乱码导致签名校验失败
+            objectMetadata.getUserMetadata().put("filename", filename);
+        }
+        path = AliyunOssUtil.standardizePath(path);
+        this.account.getOssClient().putObject(this.account.getOssBucket(), path, in, objectMetadata);
     }
 
     @Override
     public String getOriginalFilename(String path) {
         try {
-            ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.bucket, path);
-            return meta.getUserMetadata().get("filename");
+            path = AliyunOssUtil.standardizePath(path);
+            ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.account.getOssBucket(), path);
+            String filename = meta.getUserMetadata().get("filename");
+            if (StringUtils.isNotBlank(filename)) {
+                filename = EncryptUtil.decryptByBase64(filename);
+            }
+            return filename;
         } catch (Exception e) {
             return null;
         }
@@ -52,7 +60,8 @@ public class AliyunFssAccessor implements FssAccessor {
     @Override
     public Long getLastModifiedTime(String path) {
         try {
-            ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.bucket, path);
+            path = AliyunOssUtil.standardizePath(path);
+            ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.account.getOssBucket(), path);
             return meta.getLastModified().getTime();
         } catch (Exception e) {
             return null;
@@ -62,7 +71,9 @@ public class AliyunFssAccessor implements FssAccessor {
     @Override
     public boolean read(String path, OutputStream out) throws IOException {
         try {
-            InputStream in = this.account.getOssClient().getObject(this.bucket, path).getObjectContent();
+            path = AliyunOssUtil.standardizePath(path);
+            InputStream in = this.account.getOssClient().getObject(this.account.getOssBucket(), path)
+                    .getObjectContent();
             IOUtils.copy(in, out);
             in.close();
             return true;

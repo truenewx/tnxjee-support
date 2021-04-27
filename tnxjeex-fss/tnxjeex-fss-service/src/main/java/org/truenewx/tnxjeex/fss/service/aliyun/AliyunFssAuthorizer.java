@@ -41,7 +41,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
     }
 
     /**
-     * @param readStsRoleName 读权限的STS临时角色名
+     * @param readStsRoleName 读权限的STS临时扮演的RAM角色名称
      */
     public void setReadStsRoleName(String readStsRoleName) {
         this.readStsRoleAssumer = new AliyunStsRoleAssumer(this.account, readStsRoleName);
@@ -54,15 +54,13 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
 
     @Override
     public void authorizePublicRead(String path) {
-        this.account.getOssClient().setObjectAcl(this.account.getOssBucket(), path,
-                CannedAccessControlList.PublicRead);
+        this.account.getOssClient().setObjectAcl(this.account.getOssBucket(), path, CannedAccessControlList.PublicRead);
     }
 
     private boolean isPublicRead(String path) {
         ObjectAcl acl = this.account.getOssClient().getObjectAcl(this.account.getOssBucket(), path);
         ObjectPermission permission = acl.getPermission();
-        return permission == ObjectPermission.PublicRead
-                || permission == ObjectPermission.PublicReadWrite;
+        return permission == ObjectPermission.PublicRead || permission == ObjectPermission.PublicReadWrite;
     }
 
     protected String getReadHost() {
@@ -71,6 +69,7 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
 
     @Override
     public String getReadUrl(UserIdentity<?> userIdentity, String path) {
+        path = AliyunOssUtil.standardizePath(path);
         // 拆分请求参数，确保路径不带参数
         int index = path.indexOf(Strings.QUESTION);
         String parameterString = Strings.EMPTY;
@@ -81,22 +80,20 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
         try {
             if (isPublicRead(path)) {
                 // 以双斜杠开头，表示采用当前上下文的相同协议
-                StringBuilder url = new StringBuilder("//").append(getReadHost())
-                        .append(Strings.SLASH).append(path);
+                StringBuilder url = new StringBuilder("//").append(getReadHost()).append(Strings.SLASH).append(path);
                 if (parameterString.length() > 0) {
                     url.append(Strings.QUESTION).append(parameterString);
                 }
                 return url.toString();
             } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
                 String policyDocument = this.policyBuilder.buildReadDocument(path);
-                AssumeRoleResponse.Credentials credentials = this.readStsRoleAssumer
-                        .assumeRole(userIdentity.toString(), policyDocument);
+                AssumeRoleResponse.Credentials credentials = this.readStsRoleAssumer.assumeRole(userIdentity.toString(),
+                        policyDocument);
                 if (credentials != null) {
-                    OSS oss = AliyunOssUtil.buildOss(this.account.getOssEndpoint(),
-                            credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
-                            credentials.getSecurityToken());
-                    GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(
-                            this.account.getOssBucket(), path);
+                    OSS oss = AliyunOssUtil.buildOss(this.account.getOssEndpoint(), credentials.getAccessKeyId(),
+                            credentials.getAccessKeySecret(), credentials.getSecurityToken());
+                    GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(this.account.getOssBucket(),
+                            path);
                     Date expiration = DateUtil.addSeconds(new Date(), this.tempReadExpiredSeconds);
                     request.setExpiration(expiration);
                     if (parameterString.length() > 0) {
