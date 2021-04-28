@@ -8,11 +8,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.util.WebUtil;
@@ -26,12 +28,14 @@ import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
 public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final String REQUEST_URL_PREFIX = "/login/";
+    public static final RequestMatcher REQUEST_MATCHER = new AntPathRequestMatcher(
+            REQUEST_URL_PREFIX + Strings.ASTERISK, HttpMethod.POST.name());
 
     private Map<String, WechatAuthenticationTokenResolver> tokenResolverMapping = new HashMap<>();
 
     public WechatLoginAuthenticationFilter(ApplicationContext context) {
         // 处理所有/login/*请求
-        super(new AntPathRequestMatcher(REQUEST_URL_PREFIX + Strings.ASTERISK, "POST"));
+        super(REQUEST_MATCHER);
 
         context.getBeansOfType(WechatAuthenticationTokenResolver.class).forEach((id, resolver) -> {
             String loginMode = resolver.getLoginMode();

@@ -1,7 +1,6 @@
 package org.truenewx.tnxjeex.openapi.client.web.security.authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatAppAccessor;
 import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatMpAccessor;
 
 /**
@@ -19,7 +18,7 @@ public class WechatMpAuthenticationTokenResolver extends WechatAuthenticationTok
     }
 
     @Override
-    public WechatAppAccessor getAccessor() {
+    public WechatMpAccessor getAccessor() {
         return this.accessor;
     }
 
