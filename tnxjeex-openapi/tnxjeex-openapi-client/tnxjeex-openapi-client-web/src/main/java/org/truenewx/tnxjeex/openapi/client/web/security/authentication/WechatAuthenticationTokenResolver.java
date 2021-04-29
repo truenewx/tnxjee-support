@@ -8,15 +8,20 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.JsonUtil;
+import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.web.authentication.AbstractAuthenticationTokenResolver;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.WechatUser;
 import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatAppAccessor;
 
 /**
  * 微信登录认证令牌解决器
+ *
+ * @author jianglei
  */
 public abstract class WechatAuthenticationTokenResolver
         extends AbstractAuthenticationTokenResolver<WechatAuthenticationToken> {
+
+    private ThreadLocal<Map<String, String>> threadLocal = new ThreadLocal<>();
 
     public WechatAuthenticationTokenResolver(String loginMode) {
         super(loginMode);
@@ -31,7 +36,7 @@ public abstract class WechatAuthenticationTokenResolver
     }
 
     public Map<String, Object> resolveState(HttpServletRequest request) {
-        String state = request.getParameter("state");
+        String state = getParam(request, "state");
         if (StringUtils.isNotBlank(state) && !"undefined".equals(state)) {
             state = EncryptUtil.decryptByBase64(state);
             return JsonUtil.json2Map(state);
@@ -39,8 +44,27 @@ public abstract class WechatAuthenticationTokenResolver
         return Collections.emptyMap();
     }
 
+    protected final String getParam(HttpServletRequest request, String paramName) {
+        String paramValue = request.getParameter(paramName);
+        if (StringUtils.isBlank(paramValue)) { // 从请求参数里取不到就到body里取
+            Map<String, String> body = getRequestBody(request);
+            paramValue = body.get(paramName);
+        }
+        return paramValue;
+    }
+
+    protected final Map<String, String> getRequestBody(HttpServletRequest request) {
+        // 在当前线程中缓存body，以避免重复解析
+        Map<String, String> map = this.threadLocal.get();
+        if (map == null) {
+            map = WebUtil.getRequestBodyMap(request);
+            this.threadLocal.set(map);
+        }
+        return map;
+    }
+
     public WechatUser resolveUser(HttpServletRequest request) {
-        String loginCode = request.getParameter("code");
+        String loginCode = getParam(request, "code");
         return getAccessor().loadUser(loginCode);
     }
 
