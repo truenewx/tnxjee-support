@@ -16,9 +16,12 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.SpringUtil;
 import org.truenewx.tnxjee.service.exception.BusinessException;
 import org.truenewx.tnxjee.web.util.WebUtil;
 import org.truenewx.tnxjee.webmvc.security.core.BusinessAuthenticationException;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.AjaxAuthenticationSuccessHandler;
+import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptionAuthenticationFailureHandler;
 
 /**
  * 微信登录认证过滤器
@@ -43,6 +46,18 @@ public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProce
                 this.tokenResolverMapping.put(loginMode, resolver);
             }
         });
+
+        AjaxAuthenticationSuccessHandler successHandler = SpringUtil
+                .getFirstBeanByClass(context, AjaxAuthenticationSuccessHandler.class);
+        if (successHandler != null) {
+            setAuthenticationSuccessHandler(successHandler);
+        }
+
+        ResolvableExceptionAuthenticationFailureHandler failureHandler = SpringUtil
+                .getFirstBeanByClass(context, ResolvableExceptionAuthenticationFailureHandler.class);
+        if (failureHandler != null) {
+            setAuthenticationFailureHandler(failureHandler); // 指定登录失败时的处理器
+        }
     }
 
     private String getLoginMode(HttpServletRequest request) {
