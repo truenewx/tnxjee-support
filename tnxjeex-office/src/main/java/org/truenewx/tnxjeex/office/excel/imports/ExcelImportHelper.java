@@ -1,5 +1,6 @@
 package org.truenewx.tnxjeex.office.excel.imports;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import org.truenewx.tnxjee.core.enums.EnumDictResolver;
 import org.truenewx.tnxjee.core.enums.EnumItem;
 import org.truenewx.tnxjee.core.enums.EnumItemKey;
 import org.truenewx.tnxjee.core.enums.EnumType;
+import org.truenewx.tnxjee.core.spec.BooleanEnum;
 import org.truenewx.tnxjee.core.spec.EnumGrouped;
 import org.truenewx.tnxjee.core.util.BeanUtil;
 import org.truenewx.tnxjee.core.util.ClassUtil;
@@ -97,8 +99,36 @@ public class ExcelImportHelper {
             Locale locale) {
         Field field = ClassUtil.findField(rowModel.getClass(), fieldName);
         Class<?> fieldType = field.getType();
+        if (fieldType == LocalDate.class) {
+            return (V) row.getLocalDateCellValue(columnIndex);
+        } else if (ClassUtil.isNumeric(fieldType)) {
+            BigDecimal decimal = row.getNumericCellValue(columnIndex);
+            return (V) MathUtil.toValue(decimal, fieldType);
+        } else { // 其它都从字符串解析
+            String text = row.getStringCellValue(columnIndex);
+            if (fieldType.isArray()) {
+                if (StringUtils.isBlank(text)) {
+                    return null;
+                }
+                Class<?> componentType = fieldType.getComponentType();
+                String[] texts = text.split("\n");
+                Object array = Array.newInstance(componentType, texts.length);
+                for (int i = 0; i < texts.length; i++) {
+                    Object value = parseFromString(rowModel, field, componentType, texts[i], locale);
+                    Array.set(array, i, value);
+                }
+                return (V) array;
+            } else {
+                return parseFromString(rowModel, field, fieldType, text, locale);
+            }
+        }
+    }
+
+    private <V> V parseFromString(ImportingExcelRowModel rowModel, Field field, Class<?> fieldType, String text,
+            Locale locale) {
+        String fieldName = field.getName();
         if (fieldType == String.class) {
-            String value = row.getStringCellValue(columnIndex);
+            String value = text;
             EnumItemKey enumItemKey = field.getAnnotation(EnumItemKey.class);
             if (enumItemKey != null) {
                 EnumType enumType = this.enumDictResolver
@@ -121,32 +151,39 @@ public class ExcelImportHelper {
             }
             return (V) value;
         } else if (fieldType.isEnum()) {
-            String text = row.getStringCellValue(columnIndex);
             if (StringUtils.isNotBlank(text)) {
                 Class<Enum> enumClass = (Class<Enum>) fieldType;
-                String caption = text;
-                String groupCaption = null;
-                if (EnumGrouped.class.isAssignableFrom(enumClass)) {
-                    String separator = getGroupedCaptionSeparator(locale);
-                    int index = caption.indexOf(separator);
-                    if (index > 0) {
-                        groupCaption = caption.substring(0, index);
-                        caption = caption.substring(index + separator.length());
-                    }
-                }
-                V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, groupCaption, locale);
-                if (value == null) {
-                    addCellError(rowModel, fieldName, text, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
-                }
-                return value;
+                return (V) getEnumValue(rowModel, fieldName, text, enumClass, locale);
             }
             return null;
-        } else if (fieldType == LocalDate.class) {
-            return (V) row.getLocalDateCellValue(columnIndex);
-        } else {
-            BigDecimal decimal = row.getNumericCellValue(columnIndex);
-            return (V) MathUtil.toValue(decimal, fieldType);
+        } else if (fieldType == boolean.class || fieldType == Boolean.class) {
+            if (StringUtils.isNotBlank(text)) {
+                BooleanEnum enumValue = getEnumValue(rowModel, fieldName, text, BooleanEnum.class, locale);
+                return (V) Boolean.valueOf(enumValue == BooleanEnum.TRUE);
+            }
+            return null;
         }
+        throw new BusinessException(ExcelExceptionCodes.IMPORT_SUPPORTED_FIELD_TYPE,
+                rowModel.getClass().getSimpleName(), fieldType.getSimpleName(), fieldName);
+    }
+
+    private <V extends Enum> V getEnumValue(ImportingExcelRowModel rowModel, String fieldName, String fieldText,
+            Class<V> enumClass, Locale locale) {
+        String caption = fieldText;
+        String groupCaption = null;
+        if (EnumGrouped.class.isAssignableFrom(enumClass)) {
+            String separator = getGroupedCaptionSeparator(locale);
+            int index = caption.indexOf(separator);
+            if (index > 0) {
+                groupCaption = caption.substring(0, index);
+                caption = caption.substring(index + separator.length());
+            }
+        }
+        V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, groupCaption, locale);
+        if (value == null) {
+            addCellError(rowModel, fieldName, fieldText, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+        }
+        return value;
     }
 
     public NationalRegionSource getNationalRegionSource() {
@@ -157,8 +194,11 @@ public class ExcelImportHelper {
             boolean required) {
         if (required) {
             if (fieldValue == null || (fieldValue instanceof String && StringUtils.isBlank((String) fieldValue))) {
-                addCellRequiredError(rowModel, fieldName, locale);
-                return;
+                // 要求必填但为空的字段，如果存在其它类型的错误，则不再添加必填错误
+                if (!rowModel.getFieldWrongs().containsKey(fieldName)) {
+                    addCellRequiredError(rowModel, fieldName, locale);
+                    return;
+                }
             }
         }
         BeanUtil.setPropertyValue(rowModel, fieldName, fieldValue);

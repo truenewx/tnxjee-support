@@ -45,5 +45,10 @@ public class ExcelExceptionCodes {
      */
     public static final String IMPORT_CELL_REGION_ERROR = "tnxjeex.office.excel.import.cell_region_error";
 
+    /**
+     * 导入：不支持的字段类型
+     */
+    public static final String IMPORT_SUPPORTED_FIELD_TYPE = "tnxjeex.office.excel.import_supported_field_type";
+
 
 }
