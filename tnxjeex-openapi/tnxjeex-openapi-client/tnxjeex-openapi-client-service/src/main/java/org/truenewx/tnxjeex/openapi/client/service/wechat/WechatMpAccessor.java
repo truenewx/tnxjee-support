@@ -2,6 +2,7 @@ package org.truenewx.tnxjeex.openapi.client.service.wechat;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +26,7 @@ public abstract class WechatMpAccessor extends WechatPublicAppAccessSupport {
 
     @Override
     public WechatUser getUser(String loginCode) {
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new LinkedHashMap<>();
         params.put("appid", getAppId());
         params.put("secret", getSecret());
         params.put("js_code", loginCode);
