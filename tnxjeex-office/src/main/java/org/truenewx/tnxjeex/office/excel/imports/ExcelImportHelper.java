@@ -94,7 +94,7 @@ public class ExcelImportHelper {
         applyValue(rowModel, value, fieldName, locale, required);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     public <V> V getCellValue(ImportingExcelRowModel rowModel, ExcelRow row, int columnIndex, String fieldName,
             Locale locale) {
         Field field = ClassUtil.findField(rowModel.getClass(), fieldName);
@@ -114,32 +114,42 @@ public class ExcelImportHelper {
                 String[] texts = text.split("\n");
                 Object array = Array.newInstance(componentType, texts.length);
                 for (int i = 0; i < texts.length; i++) {
-                    Object value = parseFromString(rowModel, field, componentType, texts[i], locale);
+                    Object value = parseFromString(rowModel, field, i, texts[i], locale);
                     Array.set(array, i, value);
                 }
                 return (V) array;
             } else {
-                return parseFromString(rowModel, field, fieldType, text, locale);
+                return parseFromString(rowModel, field, null, text, locale);
             }
         }
     }
 
-    private <V> V parseFromString(ImportingExcelRowModel rowModel, Field field, Class<?> fieldType, String text,
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <V> V parseFromString(ImportingExcelRowModel rowModel, Field field, Integer componentIndex, String text,
             Locale locale) {
+        Class<?> fieldType = field.getType();
+        if (componentIndex != null) {
+            fieldType = fieldType.getComponentType();
+        }
         String fieldName = field.getName();
         if (fieldType == String.class) {
             String value = text;
             EnumItemKey enumItemKey = field.getAnnotation(EnumItemKey.class);
             if (enumItemKey != null) {
-                EnumType enumType = this.enumDictResolver
-                        .getEnumType(enumItemKey.type(), enumItemKey.subtype(), locale);
+                EnumType enumType = this.enumDictResolver.getEnumType(enumItemKey.type(), enumItemKey.subtype(),
+                        locale);
                 if (enumType != null) {
                     EnumItem enumItem = enumType.getItemByCaption(value);
                     if (enumItem != null) {
                         return (V) enumItem.getKey();
                     }
                 }
-                addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+                if (componentIndex == null) {
+                    addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+                } else {
+                    addCellError(rowModel, fieldName, componentIndex, value, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR,
+                            locale);
+                }
             }
             RegionCode regionCode = field.getAnnotation(RegionCode.class);
             if (regionCode != null) {
@@ -147,18 +157,24 @@ public class ExcelImportHelper {
                 if (region != null) {
                     return (V) region.getCode();
                 }
-                addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_REGION_ERROR, locale);
+                if (componentIndex == null) {
+                    addCellError(rowModel, fieldName, value, ExcelExceptionCodes.IMPORT_CELL_REGION_ERROR, locale);
+                } else {
+                    addCellError(rowModel, fieldName, componentIndex, value,
+                            ExcelExceptionCodes.IMPORT_CELL_REGION_ERROR, locale);
+                }
             }
             return (V) value;
         } else if (fieldType.isEnum()) {
             if (StringUtils.isNotBlank(text)) {
                 Class<Enum> enumClass = (Class<Enum>) fieldType;
-                return (V) getEnumValue(rowModel, fieldName, text, enumClass, locale);
+                return (V) getEnumValue(rowModel, fieldName, componentIndex, text, enumClass, locale);
             }
             return null;
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             if (StringUtils.isNotBlank(text)) {
-                BooleanEnum enumValue = getEnumValue(rowModel, fieldName, text, BooleanEnum.class, locale);
+                BooleanEnum enumValue = getEnumValue(rowModel, fieldName, componentIndex, text, BooleanEnum.class,
+                        locale);
                 return (V) Boolean.valueOf(enumValue == BooleanEnum.TRUE);
             }
             return null;
@@ -167,8 +183,9 @@ public class ExcelImportHelper {
                 rowModel.getClass().getSimpleName(), fieldType.getSimpleName(), fieldName);
     }
 
-    private <V extends Enum> V getEnumValue(ImportingExcelRowModel rowModel, String fieldName, String fieldText,
-            Class<V> enumClass, Locale locale) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <V extends Enum> V getEnumValue(ImportingExcelRowModel rowModel, String fieldName, Integer componentIndex,
+            String fieldText, Class<V> enumClass, Locale locale) {
         String caption = fieldText;
         String groupCaption = null;
         if (EnumGrouped.class.isAssignableFrom(enumClass)) {
@@ -181,7 +198,12 @@ public class ExcelImportHelper {
         }
         V value = (V) this.enumDictResolver.getEnumConstantByCaption(enumClass, caption, groupCaption, locale);
         if (value == null) {
-            addCellError(rowModel, fieldName, fieldText, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+            if (componentIndex == null) {
+                addCellError(rowModel, fieldName, fieldText, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR, locale);
+            } else {
+                addCellError(rowModel, fieldName, componentIndex, fieldText, ExcelExceptionCodes.IMPORT_CELL_ENUM_ERROR,
+                        locale);
+            }
         }
         return value;
     }
@@ -203,6 +225,5 @@ public class ExcelImportHelper {
         }
         BeanUtil.setPropertyValue(rowModel, fieldName, fieldValue);
     }
-
 
 }
