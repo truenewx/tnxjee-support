@@ -21,8 +21,6 @@ import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatAppAccessor;
 public abstract class WechatAuthenticationTokenResolver
         extends AbstractAuthenticationTokenResolver<WechatAuthenticationToken> {
 
-    private ThreadLocal<Map<String, String>> threadLocal = new ThreadLocal<>();
-
     public WechatAuthenticationTokenResolver(String loginMode) {
         super(loginMode);
     }
@@ -54,11 +52,11 @@ public abstract class WechatAuthenticationTokenResolver
     }
 
     protected final Map<String, String> getRequestBody(HttpServletRequest request) {
-        // 在当前线程中缓存body，以避免重复解析
-        Map<String, String> map = this.threadLocal.get();
+        String key = getClass().getName() + ".body";
+        Map<String, String> map = (Map<String, String>) request.getAttribute(key);
         if (map == null) {
             map = WebUtil.getRequestBodyMap(request);
-            this.threadLocal.set(map);
+            request.setAttribute(key, map);
         }
         return map;
     }
