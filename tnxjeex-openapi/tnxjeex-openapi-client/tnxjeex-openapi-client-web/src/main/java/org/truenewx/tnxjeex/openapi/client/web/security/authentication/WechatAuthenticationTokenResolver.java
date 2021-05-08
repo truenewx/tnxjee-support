@@ -21,6 +21,11 @@ import org.truenewx.tnxjeex.openapi.client.service.wechat.WechatAppAccessor;
 public abstract class WechatAuthenticationTokenResolver
         extends AbstractAuthenticationTokenResolver<WechatAuthenticationToken> {
 
+    private static final String BODY_CACHE_KEY = WechatAuthenticationTokenResolver.class.getName() + ".body";
+    private static final String PARAMETER_STATE = "state";
+    private static final String UNDEFINED_STATE = "undefined";
+    private static final String PARAMETER_CODE = "code";
+
     public WechatAuthenticationTokenResolver(String loginMode) {
         super(loginMode);
     }
@@ -34,8 +39,8 @@ public abstract class WechatAuthenticationTokenResolver
     }
 
     public Map<String, Object> resolveState(HttpServletRequest request) {
-        String state = getParam(request, "state");
-        if (StringUtils.isNotBlank(state) && !"undefined".equals(state)) {
+        String state = getParam(request, PARAMETER_STATE);
+        if (StringUtils.isNotBlank(state) && !UNDEFINED_STATE.equals(state)) {
             state = EncryptUtil.decryptByBase64(state);
             return JsonUtil.json2Map(state);
         }
@@ -51,18 +56,18 @@ public abstract class WechatAuthenticationTokenResolver
         return paramValue;
     }
 
+    @SuppressWarnings("unchecked")
     protected final Map<String, String> getRequestBody(HttpServletRequest request) {
-        String key = getClass().getName() + ".body";
-        Map<String, String> map = (Map<String, String>) request.getAttribute(key);
+        Map<String, String> map = (Map<String, String>) request.getAttribute(BODY_CACHE_KEY);
         if (map == null) {
             map = WebUtil.getRequestBodyMap(request);
-            request.setAttribute(key, map);
+            request.setAttribute(BODY_CACHE_KEY, map);
         }
         return map;
     }
 
     public WechatUser resolveUser(HttpServletRequest request) {
-        String loginCode = getParam(request, "code");
+        String loginCode = getParam(request, PARAMETER_CODE);
         return getAccessor().loadUser(loginCode);
     }
 
