@@ -54,10 +54,12 @@ public class AliyunFssAuthorizer implements FssAuthorizer {
 
     @Override
     public void authorizePublicRead(String path) {
+        path = AliyunOssUtil.standardizePath(path);
         this.account.getOssClient().setObjectAcl(this.account.getOssBucket(), path, CannedAccessControlList.PublicRead);
     }
 
     private boolean isPublicRead(String path) {
+        path = AliyunOssUtil.standardizePath(path);
         ObjectAcl acl = this.account.getOssClient().getObjectAcl(this.account.getOssBucket(), path);
         ObjectPermission permission = acl.getPermission();
         return permission == ObjectPermission.PublicRead || permission == ObjectPermission.PublicReadWrite;
