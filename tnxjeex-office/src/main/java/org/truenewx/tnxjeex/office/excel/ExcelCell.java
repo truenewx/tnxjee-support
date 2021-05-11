@@ -95,9 +95,17 @@ public class ExcelCell {
         }
         String value = this.origin.getStringCellValue();
         if (StringUtils.isNotBlank(value)) {
-            LocalDate date = TemporalUtil.parseDate(value);
-            if (date == null) {
-                date = TemporalUtil.parse(LocalDate.class, value, "yyyy-M-d");
+            LocalDate date = null;
+            if (value.contains(Strings.MINUS)) {
+                date = TemporalUtil.parseDate(value);
+                if (date == null) {
+                    date = TemporalUtil.parse(LocalDate.class, value, "yyyy-M-d");
+                }
+            } else if (value.contains(Strings.SLASH)) {
+                date = TemporalUtil.parse(LocalDate.class, value, "yyyy/MM/dd");
+                if (date == null) {
+                    date = TemporalUtil.parse(LocalDate.class, value, "yyyy/M/d");
+                }
             }
             if (date == null) {
                 throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_DATE_FORMAT_ERROR);
