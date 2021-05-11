@@ -49,7 +49,10 @@ public class AliyunFssAccessor implements FssAccessor {
             ObjectMetadata meta = this.account.getOssClient().getObjectMetadata(this.account.getOssBucket(), path);
             String filename = meta.getUserMetadata().get("filename");
             if (StringUtils.isNotBlank(filename)) {
-                filename = EncryptUtil.decryptByBase64(filename);
+                try {
+                    filename = EncryptUtil.decryptByBase64(filename);
+                } catch (Exception ignored) {
+                }
             }
             return filename;
         } catch (Exception e) {
