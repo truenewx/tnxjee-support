@@ -58,7 +58,7 @@ public class ExcelCell {
             if (this.origin.getCellType() == CellType.NUMERIC) {
                 try {
                     BigDecimal decimal = BigDecimal.valueOf(this.origin.getNumericCellValue());
-                    return decimal.toString();
+                    return decimal.toPlainString();
                 } catch (Exception ignored) {
                 }
             }
