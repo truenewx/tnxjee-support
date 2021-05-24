@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.model.spec.Terminal;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjeex.payment.core.PaymentManager;
 import org.truenewx.tnxjeex.payment.core.PaymentResult;
 import org.truenewx.tnxjeex.payment.core.gateway.PaymentGateway;
@@ -37,6 +37,7 @@ public abstract class AbstractPayController {
     }
 
     @RequestMapping(value = "/result/confirm/{gatewayName}")
+    @ConfigAnonymous
     @ResponseBody
     public String confirm(@PathVariable("gatewayName") String gatewayName, HttpServletRequest request) {
         Map<String, String> params = getHttpRequestParams(request);
@@ -73,9 +74,9 @@ public abstract class AbstractPayController {
     }
 
     @RequestMapping(value = "/result/show/{gatewayName}/{terminal}")
+    @ConfigAnonymous
     public String show(@PathVariable("gatewayName") String gatewayName,
-            @PathVariable(value = "terminal", required = false) String terminal, HttpServletRequest request,
-            RedirectAttributes attr) {
+            @PathVariable(value = "terminal", required = false) String terminal, HttpServletRequest request) {
         Map<String, String> params = getHttpRequestParams(request);
         PaymentResult result = this.paymentManager.notifyResult(gatewayName, false, Terminal.of(terminal), params);
         return result == null ? null : getShowResultName(result);
