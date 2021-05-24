@@ -25,6 +25,7 @@ import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.EncryptUtil;
 import org.truenewx.tnxjee.core.util.MathUtil;
 import org.truenewx.tnxjee.core.util.function.ProfileSupplier;
+import org.truenewx.tnxjee.webmvc.security.config.annotation.ConfigAnonymous;
 import org.truenewx.tnxjee.webmvc.view.util.WebViewUtil;
 import org.truenewx.tnxjeex.openapi.client.model.wechat.*;
 import org.truenewx.tnxjeex.openapi.client.service.NoSuchMessageHandlerException;
@@ -45,6 +46,7 @@ public abstract class WechatCallbackControllerSupport {
     private ProfileSupplier profileSupplier;
 
     @RequestMapping("/callback")
+    @ConfigAnonymous
     @ResponseBody
     public String callback(HttpServletRequest request, HttpServletResponse response) {
         if (checkSignature(request)) {
