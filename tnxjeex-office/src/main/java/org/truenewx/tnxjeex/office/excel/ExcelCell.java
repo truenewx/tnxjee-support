@@ -10,6 +10,7 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
 import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.util.TemporalUtil;
 
@@ -69,19 +70,29 @@ public class ExcelCell {
     }
 
     public BigDecimal getNumericCellValue() {
-        if (this.origin.getCellType() == CellType.NUMERIC) {
+        CellType cellType = this.origin.getCellType();
+        if (cellType == CellType.NUMERIC) {
             try {
                 return BigDecimal.valueOf(this.origin.getNumericCellValue());
             } catch (Exception ignored) {
             }
-        }
-        String value = this.origin.getStringCellValue();
-        if (StringUtils.isNotBlank(value)) {
+        } else if (cellType == CellType.FORMULA) {
             try {
-                return new BigDecimal(value);
-            } catch (Exception e) {
-                throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_NUMBER_FORMAT_ERROR);
+                CellValue cellValue = this.row.getSheet().getDoc().evaluateFormula(this.origin);
+                if (cellValue != null) {
+                    return BigDecimal.valueOf(cellValue.getNumberValue());
+                }
+                return null;
+            } catch (Exception ignored) {
             }
+        }
+        try {
+            String value = this.origin.getStringCellValue();
+            if (StringUtils.isNotBlank(value)) {
+                return new BigDecimal(value);
+            }
+        } catch (Exception e) {
+            throw new ExcelCellException(this.origin.getAddress(), ExcelExceptionCodes.CELL_NUMBER_FORMAT_ERROR);
         }
         return null;
     }

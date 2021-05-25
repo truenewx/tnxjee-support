@@ -10,12 +10,7 @@ import java.util.function.Consumer;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.truenewx.tnxjeex.office.excel.exports.ExcelExportUtil;
@@ -31,6 +26,7 @@ public class ExcelDoc {
     public static final String EXTENSION_XLSX = "xlsx";
 
     private Workbook origin;
+    private FormulaEvaluator evaluator;
     private Map<String, CellStyle> styles = new HashMap<>();
     private Map<String, Font> fonts = new HashMap<>();
 
@@ -52,6 +48,17 @@ public class ExcelDoc {
 
     public Workbook getOrigin() {
         return this.origin;
+    }
+
+    public CellValue evaluateFormula(Cell cell) {
+        return getEvaluator().evaluate(cell);
+    }
+
+    private FormulaEvaluator getEvaluator() {
+        if (this.evaluator == null) {
+            this.evaluator = this.origin.getCreationHelper().createFormulaEvaluator();
+        }
+        return this.evaluator;
     }
 
     public ExcelSheet cloneSheet(int sourceSheetIndex, String sheetName) {
