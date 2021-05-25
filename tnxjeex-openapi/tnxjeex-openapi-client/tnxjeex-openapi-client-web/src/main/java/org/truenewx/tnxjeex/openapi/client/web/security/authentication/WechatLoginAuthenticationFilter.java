@@ -31,14 +31,17 @@ import org.truenewx.tnxjee.webmvc.security.web.authentication.ResolvableExceptio
 public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final String REQUEST_URL_PREFIX = "/login/";
-    public static final RequestMatcher REQUEST_MATCHER = new AntPathRequestMatcher(
-            REQUEST_URL_PREFIX + Strings.ASTERISK, HttpMethod.POST.name());
+    private static final String REQUEST_URL_PATTERN = REQUEST_URL_PREFIX + Strings.ASTERISK; // 所有/login/*请求
 
     private Map<String, WechatAuthenticationTokenResolver> tokenResolverMapping = new HashMap<>();
 
-    public WechatLoginAuthenticationFilter(ApplicationContext context) {
-        // 处理所有/login/*请求
-        super(REQUEST_MATCHER);
+    public static RequestMatcher getRequestMatcher(boolean onlyPost) {
+        String method = onlyPost ? HttpMethod.POST.name() : null;
+        return new AntPathRequestMatcher(REQUEST_URL_PATTERN, method);
+    }
+
+    public WechatLoginAuthenticationFilter(ApplicationContext context, boolean onlyPost) {
+        super(getRequestMatcher(onlyPost));
 
         context.getBeansOfType(WechatAuthenticationTokenResolver.class).forEach((id, resolver) -> {
             String loginMode = resolver.getLoginMode();
