@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
+import org.truenewx.tnxjee.core.Strings;
 import org.truenewx.tnxjee.core.enums.EnumDictResolver;
 import org.truenewx.tnxjee.core.enums.EnumItem;
 import org.truenewx.tnxjee.core.enums.EnumItemKey;
@@ -65,6 +66,9 @@ public class ExcelImportHelper {
 
     public void addCellError(ImportingExcelRowModel rowModel, String fieldName, Object fieldValue, String errorCode,
             Locale locale, Object... args) {
+        if (errorCode.startsWith(Strings.LEFT_BRACE) && errorCode.endsWith(Strings.RIGHT_BRACE)) {
+            errorCode = errorCode.substring(1, errorCode.length() - 1);
+        }
         CodedError error = this.codedErrorResolver.resolveError(errorCode, locale, args);
         rowModel.addFieldError(fieldName, fieldValue == null ? null : fieldValue.toString(), error);
     }
