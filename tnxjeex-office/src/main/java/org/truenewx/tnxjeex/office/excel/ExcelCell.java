@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.truenewx.tnxjee.core.Strings;
+import org.truenewx.tnxjee.core.util.MathUtil;
 import org.truenewx.tnxjee.core.util.TemporalUtil;
 
 /**
@@ -59,7 +60,7 @@ public class ExcelCell {
             if (this.origin.getCellType() == CellType.NUMERIC) {
                 try {
                     BigDecimal decimal = BigDecimal.valueOf(this.origin.getNumericCellValue());
-                    return decimal.toPlainString();
+                    return MathUtil.toShortestString(decimal);
                 } catch (Exception ignored) {
                 }
             }
