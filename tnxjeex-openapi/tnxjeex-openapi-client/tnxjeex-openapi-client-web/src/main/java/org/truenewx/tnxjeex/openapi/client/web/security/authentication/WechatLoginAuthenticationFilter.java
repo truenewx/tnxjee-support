@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -63,7 +62,15 @@ public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProce
         }
     }
 
-    private String getLoginMode(HttpServletRequest request) {
+    @Override
+    protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        if (!super.requiresAuthentication(request, response)) {
+            return false;
+        }
+        return getTokenResolver(request) != null;
+    }
+
+    private WechatAuthenticationTokenResolver getTokenResolver(HttpServletRequest request) {
         String action = WebUtil.getRelativeRequestAction(request);
         if (action.startsWith(REQUEST_URL_PREFIX)) {
             String loginMode = action.substring(REQUEST_URL_PREFIX.length());
@@ -71,7 +78,7 @@ public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProce
             if (index > 0) {
                 loginMode = loginMode.substring(0, index);
             }
-            return loginMode;
+            return this.tokenResolverMapping.get(loginMode);
         }
         return null;
     }
@@ -79,12 +86,7 @@ public class WechatLoginAuthenticationFilter extends AbstractAuthenticationProce
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
-        String loginMode = getLoginMode(request);
-        WechatAuthenticationTokenResolver tokenResolver = this.tokenResolverMapping.get(loginMode);
-        if (tokenResolver == null) {
-            throw new AuthenticationServiceException("The " + WechatAuthenticationTokenResolver.class.getSimpleName() +
-                    " for loginMode('" + loginMode + "') does not exist.");
-        }
+        WechatAuthenticationTokenResolver tokenResolver = getTokenResolver(request);
         try {
             WechatAuthenticationToken authRequest = tokenResolver.resolveAuthenticationToken(request);
             setDetails(request, authRequest);
